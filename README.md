@@ -2,7 +2,9 @@
 
 # 📝 Hack4Impact-UMD Application Portal
 
-This repository contains the source code for the Hack4Impact-UMD application portal. The project includes both the frontend for applicants to submit and view the status of their applications and tools designed to make reviewing applications more efficient for club members.
+This repository contains the source code for the Hack4Impact-UMD Application Portal. The interface includes features for applicants to submit and view the status of their applications, and features to make reviewing applications more efficient for club members.
+
+In addition, the project is integrated with [Professor](https://github.com/Hack4Impact-UMD/professor), our autograder service for asynchronously testing engineering assessments in isolation. 
 
 ## ✨ Tech Stack
 
@@ -24,6 +26,7 @@ This repository contains the source code for the Hack4Impact-UMD application por
 - **Platform:** [Firebase](https://firebase.google.com/) (Cloud Functions, Firestore, Authentication, Storage)
 - **Language:** [TypeScript](https://www.typescriptlang.org/)
 - **Schema Validation:** [Zod](https://zod.dev/)
+- **Task Queue:** [Cloud Tasks](https://cloud.google.com/tasks)
 
 ## 📂 Directory Structure
 
