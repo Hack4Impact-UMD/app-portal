@@ -1,8 +1,12 @@
 import { z } from "zod";
 import { ApplicantRole } from "./appResponse";
 
+// TODO: PermissionRole and UserProfile shouldn't be here lol
+// also, there are a few spots that use the raw strings that need to be fixed
+// also, could be nice to have ">= role" helpers similar to firestore.rules
 export enum PermissionRole {
     SuperReviewer = "super-reviewer",
+    Board = "board",
     Reviewer = "reviewer",
     Applicant = "applicant"
 }
