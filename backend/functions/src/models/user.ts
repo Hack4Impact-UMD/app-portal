@@ -2,7 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 import { ApplicantRole, SectionResponseSchema } from "./appResponse";
 
-export type UserRole = "applicant" | "reviewer" | "super-reviewer"
+export type UserRole = "applicant" | "reviewer" | "board" | "super-reviewer"
 
 export type UserProfile = {
   id: string;
