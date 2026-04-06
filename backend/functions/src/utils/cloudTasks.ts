@@ -23,7 +23,7 @@ export function getCloudTasksClient(): CloudTasksClient {
 
 export function getQueuePath(): string {
   const projectId = process.env.GCP_PROJECT_ID;
-  const region = process.env.GCP_REGION;
+  const region = process.env.GCP_REGION || "us-east4";
   const queueName = process.env.CLOUD_TASKS_QUEUE_NAME;
 
   if (!projectId || !region || !queueName) {
