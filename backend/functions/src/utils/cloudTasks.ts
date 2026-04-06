@@ -13,7 +13,7 @@ export interface GradingTaskPayload {
   testRepo: string;
 }
 
-export function getCloudTasksClient(): CloudTasksClient {
+function getCloudTasksClient(): CloudTasksClient {
   if (!tasksClient) {
     tasksClient = new CloudTasksClient();
     logger.info("Initialized Cloud Tasks client");
@@ -21,7 +21,7 @@ export function getCloudTasksClient(): CloudTasksClient {
   return tasksClient;
 }
 
-export function getQueuePath(): string {
+function getQueuePath(): string {
   const projectId = process.env.GCP_PROJECT_ID;
   const region = process.env.GCP_REGION || "us-east4";
   const queueName = process.env.CLOUD_TASKS_QUEUE_NAME;
@@ -34,22 +34,48 @@ export function getQueuePath(): string {
   return client.queuePath(projectId, region, queueName);
 }
 
+function getProfessorURL(): string {
+  const professorUrl = process.env.PROFESSOR_SERVICE_URL;
+
+  if (!professorUrl) {
+    throw new Error("Missing PROFESSOR_SERVICE_URL env var");
+  }
+
+  return professorUrl;
+}
+
+function getServiceAccountEmail(): string {
+  const serviceAccountEmail = process.env.QUEUE_SERVICE_ACCOUNT_EMAIL;
+
+  if (!serviceAccountEmail) {
+    throw new Error("Missing QUEUE_SERVICE_ACCOUNT_EMAIL env var")
+  }
+
+  return serviceAccountEmail;
+}
+
 export async function publishGradingTask(
   payload: GradingTaskPayload
 ): Promise<string> {
   const client = getCloudTasksClient();
   const queuePath = getQueuePath();
+  const professorUrl = getProfessorURL();
+  const serviceAccountEmail = getServiceAccountEmail();
 
   const payloadBuffer = Buffer.from(JSON.stringify(payload));
   const body = payloadBuffer.toString('base64');
 
   const task: ITask = {
     httpRequest: {
+      url: professorUrl,
       headers: {
         'Content-Type': 'application/json',
       },
       httpMethod: 'POST',
       body: body,
+      oidcToken: {
+        serviceAccountEmail: serviceAccountEmail,
+      },
     },
   };
 

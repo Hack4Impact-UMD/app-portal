@@ -10,6 +10,8 @@ env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GCP_REGION: ${{ secrets.GCP_REGION }}
   CLOUD_TASKS_QUEUE_NAME: ${{ secrets.CLOUD_TASKS_QUEUE_NAME }}
+  PROFESSOR_SERVICE_URL: ${{ secrets.PROFESSOR_SERVICE_URL }}
+  QUEUE_SERVICE_ACCOUNT_EMAIL: ${{ secrets.QUEUE_SERVICE_ACCOUNT_EMAIL }}
 jobs:
   deploy_firebase:
     name: Deploy to Firebase Project
