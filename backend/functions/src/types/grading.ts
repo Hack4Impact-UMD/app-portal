@@ -63,5 +63,15 @@ export interface GradingJobDataInternal {
 
 export const submitGradingJobSchema = z.object({
   responseId: z.string(),
-  repoURL: z.string().url().regex(/^https:\/\/(www\.)?github\.com/i, "Must be a GitHub URL"),
+  repoURL: z.string().url().refine((val) => {
+      const url = new URL(val);
+      const allowedHosts = ["github.com", "www.github.com"]
+      const path = url.pathname.split("/").filter(Boolean);
+
+      return (
+        url.protocol === "https:" &&
+        allowedHosts.includes(url.hostname) &&
+        path.length === 2
+      );
+    }, "Repo URL must follow the format: https://github.com/USER/REPO"),
 });
