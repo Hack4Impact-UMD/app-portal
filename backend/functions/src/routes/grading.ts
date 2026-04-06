@@ -78,7 +78,7 @@ router.post(
       if (runningJobs.length > 0) {
         const existingJob = runningJobs[0].data();
         logger.info(`Found existing running job ${existingJob.id} for response ${responseId}`);
-        return res.status(502).send("A grading job is already in progress for this application.");
+        return res.status(409).send("A grading job is already in progress for this application.");
       }
 
       // CREATE: make job documents and task once all validations are passed
