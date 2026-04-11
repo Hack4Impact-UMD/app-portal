@@ -41,7 +41,6 @@ router.post(
 
       logger.info(`Received autograder request for responseId ${responseId}`);
 
-      // initialize connections to collections
       const applicationResponseCollection = db.collection(APPLICATION_RESPONSES_COLLECTION) as CollectionReference<ApplicationResponse>;
       const gradingJobsPublicCollection = db.collection(GRADING_JOBS_PUBLIC_COLLECTION) as CollectionReference<GradingJobPublic>;
       const gradingJobsInternalCollection = db.collection(GRADING_JOBS_INTERNAL_COLLECTION) as CollectionReference<GradingJobDataInternal>;
@@ -65,54 +64,59 @@ router.post(
         return res.status(403).send("You do not have permission to submit an autograder request for this application");
       }
 
-      // VALIDATION: verify user doesn't have an existing running job
-      const existingJobsSnapshot = await gradingJobsPublicCollection
-        .where("responseId", "==", responseId)
-        .get();
-
-      const runningJobs = existingJobsSnapshot.docs.filter(doc => {
-        const status = doc.data().status;
-        return status !== GradingJobStatus.Completed && status !== GradingJobStatus.Failed;
-      });
-
-      if (runningJobs.length > 0) {
-        const existingJob = runningJobs[0].data();
-        logger.info(`Found existing running job ${existingJob.id} for response ${responseId}`);
-        return res.status(409).send("A grading job is already in progress for this application.");
-      }
-
-      // CREATE: make job documents and task once all validations are passed
       const jobId = uuidv4();
       const now = Timestamp.now();
       const testRepo = "https://github.com/Hack4Impact-UMD/FAKE_REPO"; // TODO: replace with real repo
 
-      const publicJob = {
-        id: jobId,
-        responseId,
-        repoURL,
-        status: GradingJobStatus.Queued,
-        score: 0,
-        totalTests: 0, // TODO replace with fetch to real repo's # of tests
-        completedTests: 0,
-        started: now,
-        updated: now,
-        publicTests: {},
-      };  
+      const duplicateFound = await db.runTransaction(async (transaction) => {
+        // VALIDATION: exit if user has existing running job
+        const existingJobsSnapshot = await transaction.get(
+          gradingJobsPublicCollection.where("responseId", "==", responseId)
+        );
 
-      const internalJob = {
-        id: jobId,
-        testRepo,
-        buildLog: "",
-        installLog: "",
-        playwrightLog: "",
-        tests: {},
-      };
+        const runningJobs = existingJobsSnapshot.docs.filter(doc => {
+          const status = doc.data().status;
+          return status !== GradingJobStatus.Completed && status !== GradingJobStatus.Failed;
+        });
 
-      await db.runTransaction(async (transaction) => {
+        if (runningJobs.length > 0) {
+          return true; 
+        }
+
+        // CREATE: job docs and cloud tasks job
+        const publicJob = {
+          id: jobId,
+          responseId,
+          repoURL,
+          status: GradingJobStatus.Queued,
+          score: 0,
+          totalTests: 0, // TODO: fetch to real repo's # of tests
+          completedTests: 0,
+          started: now,
+          updated: now,
+          publicTests: {},
+        };
+
+        const internalJob = {
+          id: jobId,
+          testRepo,
+          buildLog: "",
+          installLog: "",
+          playwrightLog: "",
+          tests: {},
+        };
+
         transaction.set(gradingJobsPublicCollection.doc(jobId), publicJob);
         transaction.set(gradingJobsInternalCollection.doc(jobId), internalJob);
+
+        return false; 
       });
-      
+
+      if (duplicateFound) {
+        logger.info(`Found existing running job for response ${responseId}`);
+        return res.status(409).send("A grading job is already in progress for this application.");
+      }
+
       logger.info(`Created Firestore documents for job ${jobId}`);
 
       const taskName = await publishGradingTask({
