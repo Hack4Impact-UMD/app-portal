@@ -31,6 +31,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import ChangeDueDateDialog from "@/components/dor/ChangeDueDateDialog/ChangeDueDateDialog";
+import SubmitGradingJobDialog from "@/components/admin/SubmitGradingJobDialog";
 
 export default function AdminHome() {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ export default function AdminHome() {
   const [selectedForm, setSelectedForm] = useState<ApplicationForm>();
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
   const [showDueDateDialog, setShowDueDateDialog] = useState(false);
+  const [showGradingJobDialog, setShowGradingJobDialog] = useState(false);
   const [formsLocked, setFormsLocked] = useState(true);
 
   const { mutate: setFormActiveStatus, isPending: activePending } =
@@ -217,6 +219,18 @@ export default function AdminHome() {
               <UploadInterviewRubricDialog />
             </div>
           </div>
+          <div className="max-w-5xl w-full p-4 bg-white rounded-md">
+            <h1 className="text-xl">Submit Grading Job</h1>
+            <p className="text-muted-foreground">
+              Manually submit a grading job for an application response.
+            </p>
+            <div className="flex gap-2 mt-4">
+              <Button onClick={() => setShowGradingJobDialog(true)}>
+                Submit Grading Job
+              </Button>
+            </div>
+          </div>
+          
           {selectedForm && (
             <>
               <DuplicateFormDialog
@@ -231,6 +245,10 @@ export default function AdminHome() {
               />
             </>
           )}
+          <SubmitGradingJobDialog
+            open={showGradingJobDialog}
+            onOpenChange={setShowGradingJobDialog}
+          />
         </>
       )}
     </div>
