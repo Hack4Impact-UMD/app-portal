@@ -17,8 +17,6 @@ const GRADING_JOBS_PUBLIC_COLLECTION = "grading-jobs-public";
 const GRADING_JOBS_INTERNAL_COLLECTION = "grading-jobs-internal";
 const APPLICATION_RESPONSES_COLLECTION = "application-responses";
 
-// TODO:
-// 
 router.post(
   "/submit",
   [
@@ -131,6 +129,7 @@ router.post(
       return res.status(200).json({
         status: "success",
         message: "Grading job queued successfully",
+        jobId,
       });
 
     } catch (error) {
