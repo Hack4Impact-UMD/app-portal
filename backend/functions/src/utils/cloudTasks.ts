@@ -69,9 +69,9 @@ export async function publishGradingTask(
     httpRequest: {
       url: professorUrl,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      httpMethod: 'POST',
+      httpMethod: "POST",
       body: body,
       oidcToken: {
         serviceAccountEmail: serviceAccountEmail,
@@ -79,7 +79,7 @@ export async function publishGradingTask(
     },
   };
 
-  logger.info(`Publishing task for job ${payload.jobId}`);
+  logger.info("Publishing task for job: " + payload.jobId);
 
   try {
     const request: ICreateTaskRequest = {

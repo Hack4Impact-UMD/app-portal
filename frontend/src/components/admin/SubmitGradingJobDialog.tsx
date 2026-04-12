@@ -43,6 +43,7 @@ export default function SubmitGradingJobDialog({
 
     if (!responseId || ! repoURL) {
       throwErrorToast("Response ID or repo URL not provided");
+      return;
     }
 
     submitGradingJob(
