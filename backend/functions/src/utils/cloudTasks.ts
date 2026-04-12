@@ -1,5 +1,5 @@
-import { CloudTasksClient, protos } from '@google-cloud/tasks';
-import { logger } from 'firebase-functions';
+import { CloudTasksClient, protos } from "@google-cloud/tasks";
+import { logger } from "firebase-functions";
 
 type ITask = protos.google.cloud.tasks.v2.ITask;
 type ICreateTaskRequest = protos.google.cloud.tasks.v2.ICreateTaskRequest;
@@ -63,7 +63,7 @@ export async function publishGradingTask(
   const serviceAccountEmail = getServiceAccountEmail();
 
   const payloadBuffer = Buffer.from(JSON.stringify(payload));
-  const body = payloadBuffer.toString('base64');
+  const body = payloadBuffer.toString("base64");
 
   const task: ITask = {
     httpRequest: {
