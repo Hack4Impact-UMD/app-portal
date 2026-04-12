@@ -1,6 +1,6 @@
 import { Router, Response, Request } from "express";
 import { db } from "../index";
-import { isAuthenticated, hasRoles } from "../middleware/authentication";
+import { isAuthenticated, hasRoles, getUserById } from "../middleware/authentication";
 import { validateSchema } from "../middleware/validation";
 import { v4 as uuidv4 } from "uuid";
 import { CollectionReference, Timestamp } from "firebase-admin/firestore";
@@ -32,8 +32,9 @@ router.post(
     try {
       const { responseId, repoURL } = req.body;
       const userId = req.token?.uid;
+      const user = await getUserById(userId ?? "")
 
-      if (!userId) {
+      if (!userId || !user) {
         return res.status(401).send("Unauthorized");
       }
 
@@ -43,7 +44,6 @@ router.post(
       const gradingJobsPublicCollection = db.collection(GRADING_JOBS_PUBLIC_COLLECTION) as CollectionReference<GradingJobPublic>;
       const gradingJobsInternalCollection = db.collection(GRADING_JOBS_INTERNAL_COLLECTION) as CollectionReference<GradingJobDataInternal>;
 
-      // VALIDATION: application response exists
       const responseDoc = await applicationResponseCollection.doc(responseId).get();
 
       if (!responseDoc.exists) {
@@ -53,9 +53,8 @@ router.post(
 
       const responseData = responseDoc.data() as ApplicationResponse;
 
-      // VALIDATION: verify user is applicant who owns application (or is admin)
       const isOwner = responseData?.userId === userId;
-      const isAdmin = [PermissionRole.SuperReviewer, PermissionRole.Board].includes(req.token?.role);
+      const isAdmin = ["board", "super-reviewer"].includes(user.role);
 
       if (!isOwner && !isAdmin) {
         logger.warn(`User ${userId} attempted to submit grading for response ${responseId} they don't own`);
@@ -66,8 +65,9 @@ router.post(
       const now = Timestamp.now();
       const testRepo = "https://github.com/Hack4Impact-UMD/FAKE_REPO"; // TODO: replace with real repo
 
+      // NOTE: cloud tasks publishing is outside this transaction right now, so docs may be created and left even if publish fails
       const duplicateFound = await db.runTransaction(async (transaction) => {
-        // VALIDATION: exit if user has existing running job
+        // validation: exit if user has existing running job
         const existingJobsSnapshot = await transaction.get(
           gradingJobsPublicCollection.where("responseId", "==", responseId)
         );
@@ -81,7 +81,7 @@ router.post(
           return true; 
         }
 
-        // CREATE: job docs and cloud tasks job
+        // create: job docs and cloud tasks job
         const publicJob = {
           id: jobId,
           responseId,
