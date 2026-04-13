@@ -74,7 +74,7 @@ export default function Loading() {
   return (
     <div className="min-h-96 w-full p-4 grow flex gap-3 flex-col items-center justify-center">
       <img
-        className="w-full max-w-54"
+        className="w-full max-w-56"
         src="/terra.png"
         alt="Terra Image"
       />
