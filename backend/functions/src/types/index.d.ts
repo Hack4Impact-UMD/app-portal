@@ -1,6 +1,6 @@
-import { DecodedIdToken } from "firebase-admin/auth"
+import { DecodedIdToken } from "firebase-admin/auth";
 
-export { }
+export {};
 
 declare global {
   namespace Express {

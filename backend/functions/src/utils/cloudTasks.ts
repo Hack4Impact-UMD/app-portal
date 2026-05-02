@@ -48,14 +48,14 @@ function getServiceAccountEmail(): string {
   const serviceAccountEmail = process.env.QUEUE_SERVICE_ACCOUNT_EMAIL;
 
   if (!serviceAccountEmail) {
-    throw new Error("Missing QUEUE_SERVICE_ACCOUNT_EMAIL env var")
+    throw new Error("Missing QUEUE_SERVICE_ACCOUNT_EMAIL env var");
   }
 
   return serviceAccountEmail;
 }
 
 export async function publishGradingTask(
-  payload: GradingTaskPayload
+  payload: GradingTaskPayload,
 ): Promise<string> {
   const client = getCloudTasksClient();
   const queuePath = getQueuePath();
@@ -86,7 +86,7 @@ export async function publishGradingTask(
       parent: queuePath,
       task: task,
     };
-    
+
     const [response] = await client.createTask(request);
 
     logger.info(`Task created: ${response.name}`);

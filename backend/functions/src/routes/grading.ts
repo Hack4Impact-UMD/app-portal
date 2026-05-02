@@ -1,13 +1,22 @@
 import { Router, Response, Request } from "express";
 import { db } from "../index";
-import { isAuthenticated, hasRoles, getUserById } from "../middleware/authentication";
+import {
+  isAuthenticated,
+  hasRoles,
+  getUserById,
+} from "../middleware/authentication";
 import { validateSchema } from "../middleware/validation";
 import { v4 as uuidv4 } from "uuid";
 import { CollectionReference, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { publishGradingTask } from "../utils/cloudTasks";
 import { PermissionRole } from "../models/appReview";
-import { submitGradingJobSchema, GradingJobStatus, GradingJobPublic, GradingJobDataInternal } from "../types/grading";
+import {
+  submitGradingJobSchema,
+  GradingJobStatus,
+  GradingJobPublic,
+  GradingJobDataInternal,
+} from "../types/grading";
 import { ApplicationResponse } from "../models/appResponse";
 
 const router = Router();
@@ -32,7 +41,7 @@ router.post(
     try {
       const { responseId, repoURL } = req.body;
       const userId = req.token?.uid;
-      const user = await getUserById(userId ?? "")
+      const user = await getUserById(userId ?? "");
 
       if (!userId || !user) {
         return res.status(401).send("Unauthorized");
@@ -40,11 +49,19 @@ router.post(
 
       logger.info(`Received autograder request for responseId ${responseId}`);
 
-      const applicationResponseCollection = db.collection(APPLICATION_RESPONSES_COLLECTION) as CollectionReference<ApplicationResponse>;
-      const gradingJobsPublicCollection = db.collection(GRADING_JOBS_PUBLIC_COLLECTION) as CollectionReference<GradingJobPublic>;
-      const gradingJobsInternalCollection = db.collection(GRADING_JOBS_INTERNAL_COLLECTION) as CollectionReference<GradingJobDataInternal>;
+      const applicationResponseCollection = db.collection(
+        APPLICATION_RESPONSES_COLLECTION,
+      ) as CollectionReference<ApplicationResponse>;
+      const gradingJobsPublicCollection = db.collection(
+        GRADING_JOBS_PUBLIC_COLLECTION,
+      ) as CollectionReference<GradingJobPublic>;
+      const gradingJobsInternalCollection = db.collection(
+        GRADING_JOBS_INTERNAL_COLLECTION,
+      ) as CollectionReference<GradingJobDataInternal>;
 
-      const responseDoc = await applicationResponseCollection.doc(responseId).get();
+      const responseDoc = await applicationResponseCollection
+        .doc(responseId)
+        .get();
 
       if (!responseDoc.exists) {
         logger.warn(`Response ${responseId} not found`);
@@ -57,8 +74,14 @@ router.post(
       const isAdmin = ["board", "super-reviewer"].includes(user.role);
 
       if (!isOwner && !isAdmin) {
-        logger.warn(`User ${userId} attempted to submit grading for response ${responseId} they don't own`);
-        return res.status(403).send("You do not have permission to submit an autograder request for this application");
+        logger.warn(
+          `User ${userId} attempted to submit grading for response ${responseId} they don't own`,
+        );
+        return res
+          .status(403)
+          .send(
+            "You do not have permission to submit an autograder request for this application",
+          );
       }
 
       const jobId = uuidv4();
@@ -69,16 +92,19 @@ router.post(
       const duplicateFound = await db.runTransaction(async (transaction) => {
         // validation: exit if user has existing running job
         const existingJobsSnapshot = await transaction.get(
-          gradingJobsPublicCollection.where("responseId", "==", responseId)
+          gradingJobsPublicCollection.where("responseId", "==", responseId),
         );
 
-        const runningJobs = existingJobsSnapshot.docs.filter(doc => {
+        const runningJobs = existingJobsSnapshot.docs.filter((doc) => {
           const status = doc.data().status;
-          return status !== GradingJobStatus.Completed && status !== GradingJobStatus.Failed;
+          return (
+            status !== GradingJobStatus.Completed &&
+            status !== GradingJobStatus.Failed
+          );
         });
 
         if (runningJobs.length > 0) {
-          return true; 
+          return true;
         }
 
         // create: job docs and cloud tasks job
@@ -107,12 +133,14 @@ router.post(
         transaction.set(gradingJobsPublicCollection.doc(jobId), publicJob);
         transaction.set(gradingJobsInternalCollection.doc(jobId), internalJob);
 
-        return false; 
+        return false;
       });
 
       if (duplicateFound) {
         logger.info(`Found existing running job for response ${responseId}`);
-        return res.status(409).send("A grading job is already in progress for this application.");
+        return res
+          .status(409)
+          .send("A grading job is already in progress for this application.");
       }
 
       logger.info(`Created Firestore documents for job ${jobId}`);
@@ -131,12 +159,11 @@ router.post(
         message: "Grading job queued successfully",
         jobId,
       });
-
     } catch (error) {
       logger.error("Failed to submit grading job:", error);
       return res.status(500).send("Failed to submit grading job");
     }
-  }
+  },
 );
 
 export default router;

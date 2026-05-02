@@ -6,131 +6,178 @@ import { InternalApplicationStatus, ReviewStatus } from "../models/appStatus";
 import { ApplicationForm } from "../models/appForm";
 import { ApplicationResponse } from "../models/appResponse";
 import { logger } from "firebase-functions";
-import { DecisionLetterStatusSchema, DecisionLetterStatus } from "../models/confirmation";
+import {
+  DecisionLetterStatusSchema,
+  DecisionLetterStatus,
+} from "../models/confirmation";
 import { validateSchema } from "../middleware/validation";
 
 const router = Router();
-const APPLICATION_STATUS_COLLECTION = "app-status"
-const APPLICATION_FORMS_COLLECTION = "application-forms"
-const APPLICATION_RESPONSE_COLLECTION = "application-responses"
-const DECISION_STATUS_COLLECTION = "decision-status"
+const APPLICATION_STATUS_COLLECTION = "app-status";
+const APPLICATION_FORMS_COLLECTION = "application-forms";
+const APPLICATION_RESPONSE_COLLECTION = "application-responses";
+const DECISION_STATUS_COLLECTION = "decision-status";
 
 async function decisionsReleased(formId: string) {
-	const form = (await db.collection(APPLICATION_FORMS_COLLECTION).doc(formId).get()).data() as ApplicationForm
-	if (!form) throw new Error(`Form ${formId} not found!`)
-	return form.decisionsReleased
+  const form = (
+    await db.collection(APPLICATION_FORMS_COLLECTION).doc(formId).get()
+  ).data() as ApplicationForm;
+  if (!form) throw new Error(`Form ${formId} not found!`);
+  return form.decisionsReleased;
 }
 
+router.get(
+  "/:responseId/:role",
+  [isAuthenticated],
+  async (req: Request, res: Response) => {
+    const response = req.params.responseId;
+    const role = req.params.role;
 
-router.get("/:responseId/:role", [isAuthenticated], async (req: Request, res: Response) => {
-	const response = req.params.responseId;
-	const role = req.params.role;
+    const responseDoc = (
+      await db.collection(APPLICATION_RESPONSE_COLLECTION).doc(response).get()
+    ).data() as ApplicationResponse;
 
-	const responseDoc = (await db.collection(APPLICATION_RESPONSE_COLLECTION).doc(response).get()).data() as ApplicationResponse
+    if (!responseDoc) {
+      res.status(404).send();
+      return;
+    }
 
-	if (!responseDoc) {
-		res.status(404).send();
-		return;
-	}
+    if (req.token?.sub !== responseDoc.userId) {
+      res.status(401).send();
+      return;
+    }
 
-	if (req.token?.sub !== responseDoc.userId) {
-		res.status(401).send();
-		return
-	}
+    const statusCollection = db.collection(
+      APPLICATION_STATUS_COLLECTION,
+    ) as CollectionReference<InternalApplicationStatus>;
+    const status = await statusCollection
+      .where("role", "==", role)
+      .where("responseId", "==", response)
+      .get();
 
-	const statusCollection = db.collection(APPLICATION_STATUS_COLLECTION) as CollectionReference<InternalApplicationStatus>
-	const status = await statusCollection.where("role", "==", role).where("responseId", "==", response).get();
+    const data = status.docs[0]?.data() ?? undefined;
+    if (!data) {
+      res.status(404).send();
+      return;
+    }
 
-	const data = status.docs[0]?.data() ?? undefined
-	if (!data) {
-		res.status(404).send();
-		return;
-	}
+    if (await decisionsReleased(responseDoc.applicationFormId)) {
+      res.json({
+        id: status.docs[0].id,
+        status: data.status,
+        role: data.role,
+        released: true,
+      });
+    } else {
+      let publicStatus:
+        | ReviewStatus.UnderReview
+        | ReviewStatus.Interview
+        | "decided";
+      if (data.status == ReviewStatus.Interview) {
+        publicStatus = ReviewStatus.Interview;
+      } else if (
+        data.status == ReviewStatus.Accepted ||
+        data.status == ReviewStatus.Waitlisted ||
+        data.status == ReviewStatus.Denied
+      ) {
+        publicStatus = "decided";
+      } else {
+        publicStatus = ReviewStatus.UnderReview;
+      }
 
-	if (await decisionsReleased(responseDoc.applicationFormId)) {
-		res.json({
-			id: status.docs[0].id,
-			status: data.status,
-			role: data.role,
-			released: true
-		})
-	} else {
-		let publicStatus: ReviewStatus.UnderReview | ReviewStatus.Interview | "decided"
-		if (data.status == ReviewStatus.Interview) {
-			publicStatus = ReviewStatus.Interview
-		} else if (data.status == ReviewStatus.Accepted || data.status == ReviewStatus.Waitlisted || data.status == ReviewStatus.Denied) {
-			publicStatus = "decided"
-		} else {
-			publicStatus = ReviewStatus.UnderReview
-		}
-
-		res.json({
-			id: status.docs[0].id,
-			status: publicStatus,
-			role: data.role,
-			released: false
-		})
-	}
-})
+      res.json({
+        id: status.docs[0].id,
+        status: publicStatus,
+        role: data.role,
+        released: false,
+      });
+    }
+  },
+);
 
 router.post(
   "/decision",
-  [isAuthenticated, hasRoles(["applicant"]), validateSchema(DecisionLetterStatusSchema)],
+  [
+    isAuthenticated,
+    hasRoles(["applicant"]),
+    validateSchema(DecisionLetterStatusSchema),
+  ],
   async (req: Request, res: Response) => {
-	try {
-		console.log("Request received:", req.body); // Log the incoming request body
+    try {
+      console.log("Request received:", req.body); // Log the incoming request body
 
-      const decisionStatusCollection = db.collection(DECISION_STATUS_COLLECTION) as CollectionReference<DecisionLetterStatus>
+      const decisionStatusCollection = db.collection(
+        DECISION_STATUS_COLLECTION,
+      ) as CollectionReference<DecisionLetterStatus>;
 
-	  const input = req.body as DecisionLetterStatus;
-	  const { responseId, userId, internalStatusId } = input;
-	  const uid = req.token!.uid;
-	  
-	  // Check if user is editing their own decision
-	  if (userId != uid) {
-		logger.warn("User is not editing their own decision");
-		return res.status(401).send("You cannot edit another person's decision")
-	  }
+      const input = req.body as DecisionLetterStatus;
+      const { responseId, userId, internalStatusId } = input;
+      const uid = req.token!.uid;
 
-	  // Check if confirmation already exists for this responseId
-	  const existingConfirmation = await decisionStatusCollection
-		.where("responseId", "==", responseId)
-		.get();
-	  if (!existingConfirmation.empty) {
-		logger.warn(`Confirmation already exists for responseId: ${responseId}`);
-		return res.status(400).send("Confirmation already exists for this responseId.");
-	  }
+      // Check if user is editing their own decision
+      if (userId != uid) {
+        logger.warn("User is not editing their own decision");
+        return res
+          .status(401)
+          .send("You cannot edit another person's decision");
+      }
 
-	  // Look up applicant’s internal decision in app-status
-	  const statusCollection = db.collection(APPLICATION_STATUS_COLLECTION) as CollectionReference<InternalApplicationStatus>
-	  const statusDocs = await statusCollection.where("id", "==", internalStatusId).get();
+      // Check if confirmation already exists for this responseId
+      const existingConfirmation = await decisionStatusCollection
+        .where("responseId", "==", responseId)
+        .get();
+      if (!existingConfirmation.empty) {
+        logger.warn(
+          `Confirmation already exists for responseId: ${responseId}`,
+        );
+        return res
+          .status(400)
+          .send("Confirmation already exists for this responseId.");
+      }
 
-	  if (statusDocs.empty) {
-		logger.warn(`No app-status record found for internalStatusId: ${internalStatusId}`);
-		return res.status(403).send("No decision found for this response.");
-	  }
+      // Look up applicant’s internal decision in app-status
+      const statusCollection = db.collection(
+        APPLICATION_STATUS_COLLECTION,
+      ) as CollectionReference<InternalApplicationStatus>;
+      const statusDocs = await statusCollection
+        .where("id", "==", internalStatusId)
+        .get();
 
-	  const internalStatus = statusDocs.docs[0].data();
+      if (statusDocs.empty) {
+        logger.warn(
+          `No app-status record found for internalStatusId: ${internalStatusId}`,
+        );
+        return res.status(403).send("No decision found for this response.");
+      }
 
-	  if (internalStatus.status !== "accepted") {
-		logger.warn(`User ${userId} attempted to confirm but was not accepted. Status ID: ${internalStatusId}.`);
-		return res.status(403).send("You cannot confirm because you were not accepted.");
-	  }
+      const internalStatus = statusDocs.docs[0].data();
 
-	  // Create ConfirmationStatus document
-	  const confirmationId = `${responseId}_${userId}`;
-	  const docRef = decisionStatusCollection.doc(confirmationId);
+      if (internalStatus.status !== "accepted") {
+        logger.warn(
+          `User ${userId} attempted to confirm but was not accepted. Status ID: ${internalStatusId}.`,
+        );
+        return res
+          .status(403)
+          .send("You cannot confirm because you were not accepted.");
+      }
 
-	  await docRef.set(input);
+      // Create ConfirmationStatus document
+      const confirmationId = `${responseId}_${userId}`;
+      const docRef = decisionStatusCollection.doc(confirmationId);
 
-	  logger.info(`Created confirmation for responseId: ${responseId}`);
-	  return res.status(200).send({ message: "Confirmation recorded successfully." });
+      await docRef.set(input);
 
-	} catch (error) {
-	  logger.error("Error creating confirmation:", error);
-	  return res.status(500).send(error instanceof Error ? error.message : "Unknown error");
-	}
-  }
+      logger.info(`Created confirmation for responseId: ${responseId}`);
+      return res
+        .status(200)
+        .send({ message: "Confirmation recorded successfully." });
+    } catch (error) {
+      logger.error("Error creating confirmation:", error);
+      return res
+        .status(500)
+        .send(error instanceof Error ? error.message : "Unknown error");
+    }
+  },
 );
 
-export default router 
+export default router;

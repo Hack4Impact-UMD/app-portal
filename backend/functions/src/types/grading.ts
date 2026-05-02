@@ -12,7 +12,7 @@ export enum GradingJobStatus {
   Serving = "serving",
   Testing = "testing",
   Completed = "completed",
-  Failed = "failed"
+  Failed = "failed",
 }
 
 export interface TestResult {
@@ -64,14 +64,14 @@ export interface GradingJobDataInternal {
 export const submitGradingJobSchema = z.object({
   responseId: z.string(),
   repoURL: z.url().refine((val) => {
-      const url = new URL(val);
-      const allowedHosts = ["github.com", "www.github.com"]
-      const path = url.pathname.split("/").filter(Boolean);
+    const url = new URL(val);
+    const allowedHosts = ["github.com", "www.github.com"];
+    const path = url.pathname.split("/").filter(Boolean);
 
-      return (
-        url.protocol === "https:" &&
-        allowedHosts.includes(url.hostname) &&
-        path.length === 2
-      );
-    }, "Repo URL must follow the format: https://github.com/USER/REPO"),
+    return (
+      url.protocol === "https:" &&
+      allowedHosts.includes(url.hostname) &&
+      path.length === 2
+    );
+  }, "Repo URL must follow the format: https://github.com/USER/REPO"),
 });

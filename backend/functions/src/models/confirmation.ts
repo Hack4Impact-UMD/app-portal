@@ -5,7 +5,7 @@ export const DecisionLetterStatusSchema = z.object({
   userId: z.string(),
   formId: z.string(),
   responseId: z.string(),
-  internalStatusId: z.string()
+  internalStatusId: z.string(),
 });
 
 export type DecisionLetterStatus = {
@@ -14,5 +14,4 @@ export type DecisionLetterStatus = {
   formId: string;
   responseId: string;
   internalStatusId: string;
-}
-
+};
