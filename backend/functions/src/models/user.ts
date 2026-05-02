@@ -18,7 +18,7 @@ export type UserProfile = {
 }
 
 export const userRegisterFormSchema = z.object({
-  email: z.string().email("Must provide a valid email"),
+  email: z.email("Must provide a valid email"),
   firstName: z.string().nonempty("First name can't be empty"),
   lastName: z.string().nonempty("Last name can't be empty"),
   password: z.string()
@@ -31,7 +31,7 @@ export const userRegisterFormSchema = z.object({
 })
 
 export const updateUserSchema = z.object({
-  email: z.string().email("Must provide a valid email"),
+  email: z.email("Must provide a valid email"),
   firstName: z.string().nonempty("First name can't be empty"),
   lastName: z.string().nonempty("Last name can't be empty")
 })
@@ -40,7 +40,7 @@ export const createInternalApplicantSchema = z.object({
   firstName: z.string().nonempty("First name can't be empty"),
   lastName: z.string().nonempty("Last name can't be empty"),
   formId: z.string().nonempty("Form ID can't be empty"),
-  rolesApplied: z.array(z.nativeEnum(ApplicantRole)).nonempty("Must select at least one role"),
+  rolesApplied: z.array(z.enum(ApplicantRole)).nonempty("Must select at least one role"),
   sectionResponses: z.array(SectionResponseSchema).nonempty("Must provide section responses")
 })
 
