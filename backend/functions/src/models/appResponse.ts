@@ -57,18 +57,18 @@ export const appResponseFormSchema = z.object({
   id: z.string().nonempty("Cant have empty id"),
   userId: z.string().nonempty("Cant have empty userId"),
   rolesApplied: z
-    .array(z.nativeEnum(ApplicantRole)),
+    .array(z.enum(ApplicantRole)),
   sectionResponses: z
     .array(
       z.object({
         sectionId: z.string(),
-        forRoles: z.array(z.nativeEnum(ApplicantRole)).optional(),
+        forRoles: z.array(z.enum(ApplicantRole)).optional(),
         questions: z
           .array(
             z.object({
               applicationFormId: z.string(),
               questionId: z.string(),
-              questionType: z.nativeEnum(QuestionType),
+              questionType: z.enum(QuestionType),
               response: z.string().or(z.array(z.string())).optional(),
             })
           )
@@ -76,7 +76,7 @@ export const appResponseFormSchema = z.object({
     )
     .nonempty("At least one section must be provided"),
   status: z
-    .nativeEnum(ApplicationStatus)
+    .enum(ApplicationStatus)
     .refine((v) => v === ApplicationStatus.InProgress, {
       message: "Application status must be in progress to submit",
     }),
@@ -85,7 +85,7 @@ export const appResponseFormSchema = z.object({
 export type AppResponseForm = z.infer<typeof appResponseFormSchema>;
 
 export const QuestionResponseSchema = z.object({
-  questionType: z.nativeEnum(QuestionType),
+  questionType: z.enum(QuestionType),
   applicationFormId: z.string().nonempty(),
   questionId: z.string().nonempty(),
   response: z.string().or(z.array(z.string()))
@@ -99,7 +99,7 @@ export const SectionResponseSchema = z.object({
 export const ApplicationResponseSchema = z.object({
   id: z.string().nonempty(),
   applicationFormId: z.string().nonempty(),
-  rolesApplied: z.array(z.nativeEnum(ApplicantRole)),
+  rolesApplied: z.array(z.enum(ApplicantRole)),
   sectionResponses: z.array(SectionResponseSchema),
 });
 

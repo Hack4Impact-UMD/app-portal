@@ -10,7 +10,7 @@ export function validateSchema(schema: z.ZodSchema) {
       next()
     } catch (error) {
       if (error instanceof ZodError) {
-        const errorMessages = error.errors.map(issue => {
+        const errorMessages = error.issues.map(issue => {
           logger.warn(`Schema validation issue: ${issue.message}`)
           return {
             field: issue.path.join("."),

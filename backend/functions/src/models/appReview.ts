@@ -53,7 +53,7 @@ export const reviewSchema = z.object({
     applicantId: z.string(),
     applicantScores: z.record(z.string(), z.number().min(0).max(10)),
     reviewerNotes: z.array(z.string()).optional(),
-    forRole: z.nativeEnum(ApplicantRole)
+    forRole: z.enum(ApplicantRole)
 });
 
 export const reviewRubricQuestionSchema = z.object({
@@ -70,9 +70,9 @@ export const reviewRubricQuestionSchema = z.object({
 export const roleReviewRubricSchema = z.object({
     id: z.string().min(1),
     formId: z.string().min(1),
-    roles: z.array(z.nativeEnum(ApplicantRole)),
+    roles: z.array(z.enum(ApplicantRole)),
     rubricQuestions: z.array(reviewRubricQuestionSchema).min(1),
-    detailLink: z.string().url().optional(),
+    detailLink: z.url().optional(),
     commentsDescription: z.string().optional(),
 }).superRefine((rubric, ctx) => {
     const seen = new Set<string>();

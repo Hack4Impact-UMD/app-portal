@@ -20,13 +20,13 @@ export interface InterviewData {
 export const interviewSchema = z.object({
     applicationId: z.string(),
     reviewerId: z.string(),
-    interviewDate: z.string().datetime(),
-    status: z.nativeEnum(InterviewStatus),
+    interviewDate: z.iso.datetime(),
+    status: z.enum(InterviewStatus),
     notes: z.string().optional(),
 });
 
 export const updateInterviewSchema = z.object({
-    interviewDate: z.string().datetime().optional(),
-    status: z.nativeEnum(InterviewStatus).optional(),
+    interviewDate: z.iso.datetime().optional(),
+    status: z.enum(InterviewStatus).optional(),
     notes: z.string().optional(),
 }); 
