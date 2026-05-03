@@ -111,7 +111,8 @@ pip install pre-commit
 pre-commit install
 ```
 
-The hooks run `npm run format` in `frontend` and `backend/functions`.
+The hooks run Prettier on matching **staged files** in `frontend` and `backend/functions`.
+To format everything, run `pre-commit run --all-files` (or `npm run format` inside each package).
 
 ## 🖼️ Screenshots
 
