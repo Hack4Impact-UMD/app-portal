@@ -3,10 +3,11 @@ import { db } from "../index";
 import { validateSchema } from "../middleware/validation";
 import {
   ApplicationResponse,
-  ApplicationResponseInput,
-  ApplicationResponseSchema,
+  ApplicationResponseSaveRequest,
+  ApplicationResponseSaveRequestSchema,
+  ApplicationResponseSubmitRequest,
+  ApplicationResponseSubmitRequestSchema,
   ApplicationStatus,
-  appResponseFormSchema,
   QuestionResponse,
   QuestionType,
 } from "../models/appResponse";
@@ -45,7 +46,7 @@ type ValidationError = {
 };
 
 function validateResponses(
-  applicationResponse: ApplicationResponse,
+  applicationResponse: ApplicationResponseSubmitRequest,
   applicationForm: ApplicationForm,
 ): ValidationError[] {
   const errors: ValidationError[] = [];
@@ -174,11 +175,11 @@ router.post(
   [
     isAuthenticated,
     hasRoles(["applicant"]),
-    validateSchema(appResponseFormSchema),
+    validateSchema(ApplicationResponseSubmitRequestSchema),
   ],
   async (req: Request, res: Response) => {
     try {
-      const applicationResponse = req.body as ApplicationResponse;
+      const applicationResponse = req.body as ApplicationResponseSubmitRequest;
 
       logger.info(`${req.token?.email} is submitting an application!`);
 
@@ -243,9 +244,9 @@ router.post(
       }
 
       // Proceed with updating submission status
-      const newApp = {
+      const newApp: ApplicationResponse = {
         ...applicationResponse,
-        status: "submitted",
+        status: ApplicationStatus.Submitted,
         dateSubmitted: Timestamp.now(),
       };
       await applicationResponseCollection
@@ -289,10 +290,10 @@ router.put(
   [
     isAuthenticated,
     hasRoles([PermissionRole.Applicant]),
-    validateSchema(ApplicationResponseSchema),
+    validateSchema(ApplicationResponseSaveRequestSchema),
   ],
   async (req: Request, res: Response) => {
-    const input = req.body as ApplicationResponseInput;
+    const input = req.body as ApplicationResponseSaveRequest;
     const respId = req.params.respId;
     logger.info("Received save request for response ID: ", respId);
 
