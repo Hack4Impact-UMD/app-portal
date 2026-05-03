@@ -51,8 +51,8 @@ export interface IUserProfile {
 
 export interface ApplicantUserProfile extends IUserProfile {
   role: PermissionRole.Applicant;
-  activeApplicationIds: string[];
-  inactiveApplicationIds: string[];
+  activeApplications: string[];
+  inactiveApplications: string[];
   isInternal?: boolean; // for club members reapplying, will skip to interview
 }
 
@@ -182,4 +182,7 @@ export type ReviewRubricQuestion = {
   minValue?: number; // assume 0
 };
 
-export type CsvRow = Record<string, string | number | boolean | null | undefined>;
+export type CsvRow = Record<
+  string,
+  string | number | boolean | null | undefined
+>;
