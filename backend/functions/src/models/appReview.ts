@@ -32,20 +32,6 @@ export interface ReviewerUserProfile extends UserProfile {
   };
 }
 
-// One of these per review. Reviews tie together an application, role, and reviewer.
-export interface ApplicationReviewData {
-  id: string;
-  reviewerId: string;
-  applicationFormId: string;
-  applicationResponseId: string;
-  applicantId: string;
-  applicantScores: {
-    [scoreCategory in string]: number; // between 0-4, each review category in the rubric will have a value here
-  };
-  reviewerNotes?: string[];
-  forRole: ApplicantRole; // what role is this review for
-}
-
 export const reviewSchema = z.object({
   reviewerId: z.string(),
   applicationFormId: z.string(),
@@ -95,7 +81,5 @@ export const roleReviewRubricSchema = z
     }
   });
 
-export const updateReviewSchema = reviewSchema.partial();
-export type ApplicationReviewForm = z.infer<typeof reviewSchema>;
 export type RoleReviewRubric = z.infer<typeof roleReviewRubricSchema>;
 export type ReviewRubricQuestion = z.infer<typeof reviewRubricQuestionSchema>;
