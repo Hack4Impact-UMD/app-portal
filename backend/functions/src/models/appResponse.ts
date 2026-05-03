@@ -49,7 +49,6 @@ export interface ApplicationResponse {
   sectionResponses: SectionResponse[];
   status: ApplicationStatus;
   dateSubmitted: Timestamp;
-  decisionLetterId?: string;
 }
 
 export const appResponseFormSchema = z.object({
