@@ -1,0 +1,14 @@
+repos:
+  - repo: local
+    hooks:
+      - id: format-frontend
+        name: Format frontend
+        entry: npx --prefix frontend prettier --write --ignore-unknown
+        language: system
+        files: ^frontend/
+
+      - id: format-backend-functions
+        name: Format backend functions
+        entry: npx --prefix backend/functions prettier --write --ignore-unknown
+        language: system
+        files: ^backend/functions/
