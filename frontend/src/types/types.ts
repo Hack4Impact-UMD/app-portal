@@ -16,7 +16,6 @@ export enum ApplicationStatus {
   UnderReview = "in-review",
   Interview = "interview",
   Decided = "decided",
-  InActive = "inactive",
 }
 
 export enum ReviewStatus {
@@ -92,6 +91,7 @@ export type AppReviewAssignment = {
 };
 
 export type Assignment = AppReviewAssignment | InterviewAssignment;
+
 // stores the actual user submitted application responses
 export interface ApplicationResponse {
   id: string;
