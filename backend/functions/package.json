@@ -8,7 +8,8 @@
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "format": "npx prettier . --write"
   },
   "engines": {
     "node": "22"
@@ -33,6 +34,7 @@
     "eslint-plugin-import": "^2.31.0",
     "firebase-functions-test": "^3.1.0",
     "globals": "^16.0.0",
+    "prettier": "^3.8.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.34.0"
   },

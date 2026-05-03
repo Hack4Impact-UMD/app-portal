@@ -9,12 +9,12 @@
 
 import { onRequest } from "firebase-functions/v2/https";
 // import * as logger from "firebase-functions/logger";
-import * as admin from "firebase-admin"
+import * as admin from "firebase-admin";
 import app from "./app";
 // import { uploadMockData } from "./utils/mockData";
 
-admin.initializeApp()
-export const db = admin.firestore()
+admin.initializeApp();
+export const db = admin.firestore();
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript

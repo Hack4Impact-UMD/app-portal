@@ -11,42 +11,48 @@ import { FlatCompat } from "@eslint/eslintrc";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
-	baseDirectory: __dirname,
-	recommendedConfig: js.configs.recommended,
-	allConfig: js.configs.all
+  baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+  allConfig: js.configs.all,
 });
 
-export default [{
-	ignores: ["lib/**/*", "generated/**/*"],
-}, ...fixupConfigRules(compat.extends(
-	"eslint:recommended",
-	"plugin:import/errors",
-	"plugin:import/warnings",
-	"plugin:import/typescript",
-	"plugin:@typescript-eslint/recommended",
-)), {
-	plugins: {
-		"@typescript-eslint": fixupPluginRules(typescriptEslint),
-		import: fixupPluginRules(_import),
-	},
+export default [
+  {
+    ignores: ["lib/**/*", "generated/**/*"],
+  },
+  ...fixupConfigRules(
+    compat.extends(
+      "eslint:recommended",
+      "plugin:import/errors",
+      "plugin:import/warnings",
+      "plugin:import/typescript",
+      "plugin:@typescript-eslint/recommended",
+    ),
+  ),
+  {
+    plugins: {
+      "@typescript-eslint": fixupPluginRules(typescriptEslint),
+      import: fixupPluginRules(_import),
+    },
 
-	languageOptions: {
-		globals: {
-			...globals.node,
-		},
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
 
-		parser: tsParser,
-		ecmaVersion: 5,
-		sourceType: "module",
+      parser: tsParser,
+      ecmaVersion: 5,
+      sourceType: "module",
 
-		parserOptions: {
-			project: ["tsconfig.json", "tsconfig.dev.json"],
-		},
-	},
+      parserOptions: {
+        project: ["tsconfig.json", "tsconfig.dev.json"],
+      },
+    },
 
-	rules: {
-		quotes: ["error", "double"],
-		"import/no-unresolved": 0,
-		"object-curly-spacing": 0,
-	},
-}];
+    rules: {
+      quotes: ["error", "double"],
+      "import/no-unresolved": 0,
+      "object-curly-spacing": 0,
+    },
+  },
+];
