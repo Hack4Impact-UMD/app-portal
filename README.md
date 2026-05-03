@@ -101,7 +101,7 @@ For instructions on setting up the Firebase emulators, see the [Firebase Emulato
     npm run serve
     ```
 
-## Formatting
+### Formatting
 
 This repository includes pre-commit hooks that format the frontend and backend
 functions before each commit. Enable by running:
