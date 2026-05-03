@@ -100,6 +100,19 @@ For instructions on setting up the Firebase emulators, see the [Firebase Emulato
     ```bash
     npm run serve
     ```
+
+## Formatting
+
+This repository includes pre-commit hooks that format the frontend and backend
+functions before each commit. Enable by running:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+The hooks run `npm run format` in `frontend` and `backend/functions`.
+
 ## 🖼️ Screenshots
 
 _Note: Some of these may be outdated_
