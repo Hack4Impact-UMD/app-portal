@@ -62,7 +62,6 @@ export const appResponseFormSchema = z.object({
     .array(
       z.object({
         sectionId: z.string(),
-        forRoles: z.array(z.enum(ApplicantRole)).optional(),
         questions: z.array(
           z.object({
             applicationFormId: z.string(),
