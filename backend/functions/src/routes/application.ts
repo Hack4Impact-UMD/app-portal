@@ -54,14 +54,21 @@ function validateResponses(
   // fill formQuestions map
   const formQuestions = new Map<string, QuestionMetadata>(
     applicationForm.sections.flatMap((section) =>
-      section.questions.map((q) => [
-        q.questionId,
-        {
+      section.questions.map((q) => {
+        const metadata: QuestionMetadata = {
           optional: q.optional,
-          minimumWordCount: q.minimumWordCount,
-          maximumWordCount: q.maximumWordCount,
-        },
-      ]),
+        };
+
+        if (
+          q.questionType === QuestionType.ShortAnswer ||
+          q.questionType === QuestionType.LongAnswer
+        ) {
+          metadata.minimumWordCount = q.minimumWordCount;
+          metadata.maximumWordCount = q.maximumWordCount;
+        }
+
+        return [q.questionId, metadata];
+      }),
     ),
   );
 
