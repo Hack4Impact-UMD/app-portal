@@ -1,46 +1,14 @@
 import { z } from "zod";
 import { ApplicantRole } from "./appResponse";
 
-// TODO: PermissionRole and UserProfile shouldn't be here lol
+// TODO: PermissionRole shouldn't be here lol
 // also, there are a few spots that use the raw strings that need to be fixed
-// also, could be nice to have ">= role" helpers similar to firestore.rules
 export enum PermissionRole {
   SuperReviewer = "super-reviewer",
   Board = "board",
   Reviewer = "reviewer",
   Applicant = "applicant",
 }
-
-export type UserProfile = {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: PermissionRole;
-};
-
-export type ReviewAssignment = {
-  applicantId: string; // the applicant that was assigned for review
-  applicationId: string; // the submitted application that was assigned for review
-};
-
-export interface ReviewerUserProfile extends UserProfile {
-  role: PermissionRole.Reviewer;
-  reviewAssignments: {
-    applicationReviewAssignments: ReviewAssignment[];
-    interviewAssignmentIds: ReviewAssignment[];
-  };
-}
-
-export const reviewSchema = z.object({
-  reviewerId: z.string(),
-  applicationFormId: z.string(),
-  applicationResponseId: z.string(),
-  applicantId: z.string(),
-  applicantScores: z.record(z.string(), z.number().min(0).max(10)),
-  reviewerNotes: z.array(z.string()).optional(),
-  forRole: z.enum(ApplicantRole),
-});
 
 export const reviewRubricQuestionSchema = z
   .object({
