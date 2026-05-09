@@ -137,20 +137,22 @@ export async function fetchOrCreateApplicationResponse(
   }
   console.log("creating new response object!");
 
-  const sectionResponses: SectionResponse[] = form.sections.map((section) => ({
-    sectionId: section.sectionId,
-    sectionName: section.sectionName,
-    questions: section.questions.map((question) => ({
-      questionId: question.questionId,
-      questionType: question.questionType,
-      applicationFormId: form.id,
-      response:
-        question.questionType === "multiple-select" ||
-        question.questionType == "role-select"
-          ? []
-          : "",
-    })),
-  }));
+  const sectionResponses = form.sections.map(
+    (section): SectionResponse => ({
+      sectionId: section.sectionId,
+      sectionName: section.sectionName,
+      questions: section.questions.map((question) => ({
+        questionId: question.questionId,
+        questionType: question.questionType,
+        applicationFormId: form.id,
+        response:
+          question.questionType === "multiple-select" ||
+          question.questionType == "role-select"
+            ? []
+            : "",
+      })),
+    }),
+  );
 
   const newResponse = {
     id: uuidv4(),

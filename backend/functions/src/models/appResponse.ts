@@ -41,6 +41,7 @@ export type QuestionResponse = z.infer<typeof QuestionResponseSchema>;
 
 export const SectionResponseSchema = z.object({
   sectionId: z.string().nonempty(),
+  sectionName: z.string().nonempty(),
   questions: z.array(QuestionResponseSchema),
 });
 

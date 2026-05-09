@@ -149,6 +149,7 @@ export interface ApplicationInterviewData {
 
 export interface SectionResponse {
   sectionId: string;
+  sectionName: string;
   questions: QuestionResponse[];
 }
 
