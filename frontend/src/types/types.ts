@@ -51,8 +51,8 @@ export interface IUserProfile {
 
 export interface ApplicantUserProfile extends IUserProfile {
   role: PermissionRole.Applicant;
-  activeApplications: string[];
-  inactiveApplications: string[];
+  activeApplications?: string[];
+  inactiveApplications?: string[];
   isInternal?: boolean; // for club members reapplying, will skip to interview
 }
 
