@@ -366,7 +366,7 @@ router.put(
   },
 );
 
-// TEMPORARY ENDPOINT - Remove after form upload is complete
+// todo: this should be updated to test newer ApplicationForm fields
 router.post(
   "/forms",
   [isAuthenticated, hasRoles([PermissionRole.SuperReviewer])],

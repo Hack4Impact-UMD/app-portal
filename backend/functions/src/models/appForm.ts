@@ -43,10 +43,12 @@ export const ApplicationQuestionSchema = z.discriminatedUnion("questionType", [
 ]);
 
 export const ApplicationSectionSchema = z.object({
-  sectionName: z.string(),
-  sectionId: z.string(),
+  sectionId: z.string().nonempty(),
+  sectionName: z.string().nonempty(),
+  description: z.string().optional(),
   forRoles: z.array(z.enum(ApplicantRole)).optional(),
   questions: z.array(ApplicationQuestionSchema),
+  hideFromReviewers: z.boolean().optional(),
 });
 
 const RoleDecisionLetterSchema = z.object({
