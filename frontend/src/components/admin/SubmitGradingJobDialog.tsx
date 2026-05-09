@@ -41,15 +41,18 @@ export default function SubmitGradingJobDialog({
       return;
     }
 
-    if (!responseId || !repoURL) {
+    const normalizedResponseId = responseId.trim();
+    const normalizedRepoUrl = responseId.trim();
+
+    if (!normalizedResponseId || !normalizedRepoUrl) {
       throwErrorToast("Response ID or repo URL not provided");
       return;
     }
 
     submitGradingJob(
       {
-        responseId,
-        repoURL,
+        responseId: normalizedResponseId,
+        repoURL: normalizedRepoUrl,
         token: (await token()) ?? "",
       },
       {
@@ -110,7 +113,7 @@ export default function SubmitGradingJobDialog({
           <Button
             type="submit"
             onClick={handleSubmit}
-            disabled={isPending || !responseId || !repoURL}
+            disabled={isPending || !responseId.trim() || !repoURL.trim()}
           >
             {isPending ? "Submitting..." : "Submit Job"}
           </Button>
