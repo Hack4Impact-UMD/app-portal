@@ -208,7 +208,7 @@ router.post(
 
       // Check that the response is submitted before the due date specified by the application form
       const applicationFormDoc = await applicationFormCollection
-        .doc(applicationResponse.applicationFormId)
+        .doc(formattedApplicationDoc.applicationFormId)
         .get();
       const applicationFormDocData = applicationFormDoc.data();
 
@@ -245,7 +245,11 @@ router.post(
 
       // Proceed with updating submission status
       const newApp: ApplicationResponse = {
-        ...applicationResponse,
+        id: formattedApplicationDoc.id,
+        userId: formattedApplicationDoc.userId,
+        applicationFormId: formattedApplicationDoc.applicationFormId,
+        rolesApplied: applicationResponse.rolesApplied,
+        sectionResponses: applicationResponse.sectionResponses,
         status: ApplicationStatus.Submitted,
         dateSubmitted: Timestamp.now(),
       };
