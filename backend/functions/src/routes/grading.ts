@@ -10,7 +10,6 @@ import { v4 as uuidv4 } from "uuid";
 import { CollectionReference, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { publishGradingTask } from "../utils/cloudTasks";
-import { PermissionRole } from "../models/appReview";
 import {
   submitGradingJobSchema,
   GradingJobStatus,
@@ -18,6 +17,7 @@ import {
   GradingJobDataInternal,
 } from "../types/grading";
 import { ApplicationResponse } from "../models/appResponse";
+import { UserRole } from "../models/user";
 
 const router = Router();
 
@@ -30,11 +30,7 @@ router.post(
   "/submit",
   [
     isAuthenticated,
-    hasRoles([
-      PermissionRole.Applicant,
-      PermissionRole.Board,
-      PermissionRole.SuperReviewer,
-    ]),
+    hasRoles([UserRole.Applicant, UserRole.Board, UserRole.SuperReviewer]),
     validateSchema(submitGradingJobSchema),
   ],
   async (req: Request, res: Response) => {
@@ -71,7 +67,9 @@ router.post(
       const responseData = responseDoc.data() as ApplicationResponse;
 
       const isOwner = responseData?.userId === userId;
-      const isAdmin = ["board", "super-reviewer"].includes(user.role);
+      const isAdmin = [UserRole.Board, UserRole.SuperReviewer].includes(
+        user.role,
+      );
 
       if (!isOwner && !isAdmin) {
         logger.warn(

@@ -15,14 +15,11 @@ import { CollectionReference, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { hasRoles, isAuthenticated } from "../middleware/authentication";
 import { ApplicationForm } from "../models/appForm";
-import {
-  PermissionRole,
-  RoleReviewRubric,
-  roleReviewRubricSchema,
-} from "../models/appReview";
+import { RoleReviewRubric, roleReviewRubricSchema } from "../models/appReview";
 import { InternalApplicationStatus, ReviewStatus } from "../models/appStatus";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
+import { UserRole } from "../models/user";
 // import * as admin from "firebase-admin"
 
 const router = Router();
@@ -181,7 +178,7 @@ router.post(
   "/submit",
   [
     isAuthenticated,
-    hasRoles(["applicant"]),
+    hasRoles([UserRole.Applicant]),
     validateSchema(ApplicationResponseSubmitRequestSchema),
   ],
   async (req: Request, res: Response) => {
@@ -300,7 +297,7 @@ router.put(
   "/save/:respId",
   [
     isAuthenticated,
-    hasRoles([PermissionRole.Applicant]),
+    hasRoles([UserRole.Applicant]),
     validateSchema(ApplicationResponseSaveRequestSchema),
   ],
   async (req: Request, res: Response) => {
@@ -369,7 +366,7 @@ router.put(
 // todo: this should be updated to test newer ApplicationForm fields
 router.post(
   "/forms",
-  [isAuthenticated, hasRoles([PermissionRole.SuperReviewer])],
+  [isAuthenticated, hasRoles([UserRole.SuperReviewer])],
   async (req: Request, res: Response) => {
     try {
       const formData = req.body as ApplicationForm;
@@ -460,7 +457,7 @@ router.post(
   "/rubrics",
   [
     isAuthenticated,
-    hasRoles([PermissionRole.SuperReviewer]),
+    hasRoles([UserRole.SuperReviewer]),
     validateSchema(z.array(roleReviewRubricSchema)),
   ],
   async (req: Request, res: Response) => {
@@ -534,7 +531,7 @@ router.post(
   "/interview-rubrics",
   [
     isAuthenticated,
-    hasRoles([PermissionRole.SuperReviewer]),
+    hasRoles([UserRole.SuperReviewer]),
     validateSchema(z.array(roleReviewRubricSchema)),
   ],
   async (req: Request, res: Response) => {

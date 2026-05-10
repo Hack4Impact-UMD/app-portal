@@ -1,15 +1,6 @@
 import { z } from "zod";
 import { ApplicantRole } from "./appResponse";
 
-// TODO: PermissionRole shouldn't be here lol
-// also, there are a few spots that use the raw strings that need to be fixed
-export enum PermissionRole {
-  SuperReviewer = "super-reviewer",
-  Board = "board",
-  Reviewer = "reviewer",
-  Applicant = "applicant",
-}
-
 export const reviewRubricQuestionSchema = z
   .object({
     scoreKey: z.string().min(1),

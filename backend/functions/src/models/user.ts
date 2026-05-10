@@ -2,7 +2,12 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 import { ApplicantRole, SectionResponseSchema } from "./appResponse";
 
-export type UserRole = "applicant" | "reviewer" | "board" | "super-reviewer";
+export enum UserRole {
+  Applicant = "applicant",
+  Reviewer = "reviewer",
+  Board = "board",
+  SuperReviewer = "super-reviewer",
+}
 
 export type UserProfile = {
   id: string;

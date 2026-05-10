@@ -11,6 +11,7 @@ import {
   DecisionLetterStatus,
 } from "../models/confirmation";
 import { validateSchema } from "../middleware/validation";
+import { UserRole } from "../models/user";
 
 const router = Router();
 const APPLICATION_STATUS_COLLECTION = "app-status";
@@ -99,7 +100,7 @@ router.post(
   "/decision",
   [
     isAuthenticated,
-    hasRoles(["applicant"]),
+    hasRoles([UserRole.Applicant]),
     validateSchema(DecisionLetterStatusSchema),
   ],
   async (req: Request, res: Response) => {
