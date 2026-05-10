@@ -9,18 +9,18 @@ export enum UserRole {
   SuperReviewer = "super-reviewer",
 }
 
-export type UserProfile = {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  dateCreated: Timestamp;
-  activeApplications?: string[];
-  inactiveApplications?: string[];
-  isInternal?: boolean;
-  inactive?: boolean;
-};
+export const UserProfileSchema = z.object({
+  id: z.string().nonempty(),
+  email: z.email().nonempty(),
+  firstName: z.string().nonempty(),
+  lastName: z.string().nonempty(),
+  role: z.enum(UserRole),
+  dateCreated: z.custom<Timestamp>((d) => d instanceof Timestamp),
+  activeApplications: z.array(z.string()).optional(),
+  inactiveApplications: z.array(z.string()).optional(),
+  isInternal: z.boolean().optional(),
+  inactive: z.boolean().optional(),
+});
 
 export const userRegisterFormSchema = z.object({
   email: z.email("Must provide a valid email"),
@@ -56,6 +56,7 @@ export const createInternalApplicantSchema = z.object({
     .nonempty("Must provide section responses"),
 });
 
+export type UserProfile = z.infer<typeof UserProfileSchema>;
 export type UserRegisterForm = z.infer<typeof userRegisterFormSchema>;
 export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type CreateInternalApplicant = z.infer<
