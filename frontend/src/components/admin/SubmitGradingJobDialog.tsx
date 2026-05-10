@@ -42,7 +42,7 @@ export default function SubmitGradingJobDialog({
     }
 
     const normalizedResponseId = responseId.trim();
-    const normalizedRepoUrl = responseId.trim();
+    const normalizedRepoUrl = repoURL.trim();
 
     if (!normalizedResponseId || !normalizedRepoUrl) {
       throwErrorToast("Response ID or repo URL not provided");
