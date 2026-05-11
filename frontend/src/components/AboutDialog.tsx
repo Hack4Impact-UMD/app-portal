@@ -33,7 +33,7 @@ export default function AboutDialog() {
   const [localCommitCopied, setLocalCommitCopied] = useState(false);
   const [remoteCommitCopied, setRemoteCommitCopied] = useState(false);
   const [confetti, setConfetti] = useState(false);
-  const confettiTimeout = useRef<NodeJS.Timeout | null>(null);
+  const confettiTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleLocalCopy = async () => {
     try {
