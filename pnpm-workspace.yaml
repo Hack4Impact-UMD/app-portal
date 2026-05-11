@@ -1,0 +1,9 @@
+packages:
+  - 'frontend'
+  - 'backend/functions'
+  - 'shared'
+allowBuilds:
+  '@firebase/util': true
+  esbuild: true
+  protobufjs: true
+  unrs-resolver: true

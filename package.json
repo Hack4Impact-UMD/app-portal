@@ -1,0 +1,14 @@
+{
+    "name": "app-portal",
+    "private": true,
+    "packageManager": "pnpm@11.0.9",
+    "scripts": {
+        "build": "pnpm -r build",
+        "lint": "pnpm -r lint",
+        "format": "pnpm -r format"
+    },
+    "devDependencies": {
+        "prettier": "3.5.3",
+        "typescript": "~5.6.2"
+    }
+}

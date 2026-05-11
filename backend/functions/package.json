@@ -9,13 +9,14 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "format": "npx prettier . --write"
+    "format": "prettier . --write"
   },
   "engines": {
     "node": "22"
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@app-portal/shared": "workspace:*",
     "@google-cloud/tasks": "^6.2.1",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
@@ -34,8 +35,6 @@
     "eslint-plugin-import": "^2.31.0",
     "firebase-functions-test": "^3.1.0",
     "globals": "^16.0.0",
-    "prettier": "^3.8.3",
-    "typescript": "^5.8.3",
     "typescript-eslint": "^8.34.0"
   },
   "private": true
