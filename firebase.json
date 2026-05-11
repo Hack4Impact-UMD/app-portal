@@ -15,9 +15,10 @@
         "*.local"
       ],
       "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" install",
-        "npm --prefix \"$RESOURCE_DIR\" run lint",
-        "npm --prefix \"$RESOURCE_DIR\" run build"
+        "pnpm install --frozen-lockfile",
+        "pnpm --filter @app-portal/shared build",
+        "pnpm --filter functions lint",
+        "pnpm --filter functions build"
       ]
     }
   ],
@@ -50,7 +51,7 @@
   },
   "hosting": {
     "public": "frontend/dist",
-    "predeploy": "cd frontend && npm install && npm run build",
+    "predeploy": "pnpm install --frozen-lockfile && pnpm --filter @app-portal/shared build && pnpm --filter frontend build",
     "ignore": [
       "firebase.json",
       "**/.*",
