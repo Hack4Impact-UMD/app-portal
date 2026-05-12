@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { throwErrorToast } from "../../components/toasts/ErrorToast";
 import { Eye, EyeOff } from "lucide-react";
+import { PermissionRole } from "@/types/types";
 
 export default function LogInCard() {
   const { login } = useAuth();
@@ -73,7 +74,7 @@ export default function LogInCard() {
         if (state && state.path) {
           navigate(state.path);
         } else {
-          if (user.role == "applicant") {
+          if (user.role == PermissionRole.Applicant) {
             navigate("/apply");
           } else {
             navigate("/admin");

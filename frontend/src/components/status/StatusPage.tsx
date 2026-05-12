@@ -109,7 +109,7 @@ function StatusPage() {
     if (!activeApplications.length) return false;
 
     const allRoles = activeApplications.flatMap((app) => app.rolesApplied);
-    return allRoles.length === 1 && allRoles[0] === "bootcamp";
+    return allRoles.length === 1 && allRoles[0] === ApplicantRole.Bootcamp;
   }, [activeApplications]);
 
   const timelineItems = useMemo(() => {

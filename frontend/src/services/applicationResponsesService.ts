@@ -14,6 +14,7 @@ import { API_URL, db } from "../config/firebase";
 import {
   ApplicationForm,
   ApplicationResponse,
+  QuestionType,
   SectionResponse,
   ValidationError,
 } from "../types/types";
@@ -146,8 +147,8 @@ export async function fetchOrCreateApplicationResponse(
         questionType: question.questionType,
         applicationFormId: form.id,
         response:
-          question.questionType === "multiple-select" ||
-          question.questionType == "role-select"
+          question.questionType === QuestionType.MultipleSelect ||
+          question.questionType == QuestionType.RoleSelect
             ? []
             : "",
       })),

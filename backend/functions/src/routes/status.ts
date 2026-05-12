@@ -153,7 +153,7 @@ router.post(
 
       const internalStatus = statusDocs.docs[0].data();
 
-      if (internalStatus.status !== "accepted") {
+      if (internalStatus.status !== ReviewStatus.Accepted) {
         logger.warn(
           `User ${userId} attempted to confirm but was not accepted. Status ID: ${internalStatusId}.`,
         );
