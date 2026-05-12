@@ -11,9 +11,9 @@ export enum UserRole {
 
 export const UserProfileSchema = z.object({
   id: z.string().nonempty(),
-  email: z.email().nonempty(),
-  firstName: z.string().nonempty(),
-  lastName: z.string().nonempty(),
+  email: z.email("Must provide a valid email"),
+  firstName: z.string().nonempty("First name can't be empty"),
+  lastName: z.string().nonempty("Last name can't be empty"),
   role: z.enum(UserRole),
   dateCreated: z.custom<Timestamp>((d) => d instanceof Timestamp),
   activeApplications: z.array(z.string()).optional(),
@@ -22,10 +22,11 @@ export const UserProfileSchema = z.object({
   inactive: z.boolean().optional(),
 });
 
-export const userRegisterFormSchema = z.object({
-  email: z.email("Must provide a valid email"),
-  firstName: z.string().nonempty("First name can't be empty"),
-  lastName: z.string().nonempty("Last name can't be empty"),
+export const userRegisterFormSchema = UserProfileSchema.pick({
+  email: true,
+  firstName: true,
+  lastName: true,
+}).extend({
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -38,15 +39,16 @@ export const userRegisterFormSchema = z.object({
     ),
 });
 
-export const updateUserSchema = z.object({
-  email: z.email("Must provide a valid email"),
-  firstName: z.string().nonempty("First name can't be empty"),
-  lastName: z.string().nonempty("Last name can't be empty"),
+export const updateUserSchema = UserProfileSchema.pick({
+  email: true,
+  firstName: true,
+  lastName: true,
 });
 
-export const createInternalApplicantSchema = z.object({
-  firstName: z.string().nonempty("First name can't be empty"),
-  lastName: z.string().nonempty("Last name can't be empty"),
+export const createInternalApplicantSchema = UserProfileSchema.pick({
+  firstName: true,
+  lastName: true,
+}).extend({
   formId: z.string().nonempty("Form ID can't be empty"),
   rolesApplied: z
     .array(z.enum(ApplicantRole))

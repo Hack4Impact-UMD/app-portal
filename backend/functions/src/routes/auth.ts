@@ -9,6 +9,7 @@ import {
   CreateInternalApplicant,
   createInternalApplicantSchema,
   UserRole,
+  UpdateUser,
 } from "../models/user";
 import {
   CollectionReference,
@@ -93,7 +94,7 @@ router.post(
   "/update",
   [isAuthenticated, validateSchema(updateUserSchema)],
   async (req: Request, res: Response) => {
-    const updateForm = req.body as UserRegisterForm;
+    const updateForm = req.body as UpdateUser;
     const uid = req.token!.uid;
 
     try {
