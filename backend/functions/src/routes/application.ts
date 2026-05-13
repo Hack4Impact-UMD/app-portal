@@ -309,7 +309,7 @@ router.put(
 
       if (respId !== newAppResponse.id) {
         logger.error("Application save: Response ID mismatch");
-        res.status(500).send();
+        res.status(400).send();
         return;
       }
 
