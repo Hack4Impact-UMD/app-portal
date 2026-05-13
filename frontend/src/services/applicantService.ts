@@ -22,7 +22,7 @@ export async function getApplicantByEmail(
   email: string,
 ): Promise<ApplicantUserProfile | undefined> {
   const user = await getUserByEmail(email);
-  if (user.role == PermissionRole.Applicant) {
+  if (user.role === PermissionRole.Applicant) {
     return user as ApplicantUserProfile;
   } else {
     return undefined;

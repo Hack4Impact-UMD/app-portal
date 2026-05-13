@@ -32,7 +32,7 @@ const LongFormInput: React.FC<LongFormInputProps> = ({
 }) => {
   const wordCount = useMemo(() => {
     const words = value.trim().split(" ");
-    if (words.length == 1 && words[0] == "") return 0;
+    if (words.length === 1 && words[0] === "") return 0;
     return words.length;
   }, [value]);
 
@@ -51,16 +51,16 @@ const LongFormInput: React.FC<LongFormInputProps> = ({
       <FormMarkdown>{label}</FormMarkdown>
       {minWordCount && maxWordCount ? (
         <p className="mb-1 text-xs">
-          Minimum: {minWordCount} word{minWordCount != 1 && "s"}. Maximum:{" "}
-          {maxWordCount} word{minWordCount != 1 && "s"}.
+          Minimum: {minWordCount} word{minWordCount !== 1 && "s"}. Maximum:{" "}
+          {maxWordCount} word{minWordCount !== 1 && "s"}.
         </p>
       ) : minWordCount ? (
         <p className="mb-1 text-xs">
-          Minimum: {minWordCount} word{minWordCount != 1 && "s"}.
+          Minimum: {minWordCount} word{minWordCount !== 1 && "s"}.
         </p>
       ) : maxWordCount ? (
         <p className="mb-1 text-xs">
-          Maximum: {maxWordCount} word{minWordCount != 1 && "s"}.
+          Maximum: {maxWordCount} word{minWordCount !== 1 && "s"}.
         </p>
       ) : (
         <></>
@@ -82,7 +82,7 @@ const LongFormInput: React.FC<LongFormInputProps> = ({
         ></Textarea>
       )}
       <p className="text-xs mt-1 font-light">
-        {wordCount} word{wordCount != 1 && "s"}
+        {wordCount} word{wordCount !== 1 && "s"}
       </p>
       {errorMessage && <p className="text-red-600">{errorMessage}</p>}
     </main>

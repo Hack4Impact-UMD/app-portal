@@ -43,7 +43,7 @@ export function useRows(assignments: AppReviewAssignment[], formId: string) {
             getReviewDataForAssignment(assignment),
           ]);
 
-          if (applicant.role != PermissionRole.Applicant)
+          if (applicant.role !== PermissionRole.Applicant)
             throw new Error(`User ${applicant.id} is not an applicant`);
 
           const row: AssignedAppRow = {

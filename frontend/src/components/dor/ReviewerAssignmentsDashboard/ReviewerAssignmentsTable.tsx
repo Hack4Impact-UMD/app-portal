@@ -200,10 +200,10 @@ export default function ReviewerAssignmentsTable({
               | ApplicationReviewData
               | undefined;
 
-            if (filterValue == "all") return true;
-            else if (filterValue == "pending")
+            if (filterValue === "all") return true;
+            else if (filterValue === "pending")
               return !(value?.submitted ?? false);
-            else if (filterValue == "reviewed")
+            else if (filterValue === "reviewed")
               return value?.submitted ?? false;
             else return true;
           },

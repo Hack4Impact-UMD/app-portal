@@ -27,7 +27,7 @@ export default function RequireNoAuth({
     children
   ) : (
     <Navigate
-      to={typeof redirect == "string" ? redirect : redirect[user!.role]}
+      to={typeof redirect === "string" ? redirect : redirect[user!.role]}
       replace
     />
   );

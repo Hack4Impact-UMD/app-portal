@@ -105,7 +105,7 @@ export function AssignedInterviewsPage() {
         <div className="flex flex-row gap-2 items-center min-h-28 justify-stretch mt-8">
           <Button
             className={`h-28 min-w-40 text-white p-4 flex flex-col items-start 
-					${statusFilter == "all" ? "bg-[#17476B] hover:bg-[#17476B]/90 text-[#D5E7F2]" : "bg-[#D5E7F2] hover:bg-[#D5E7F2]/90 text-[#17476B]"}`}
+					${statusFilter === "all" ? "bg-[#17476B] hover:bg-[#17476B]/90 text-[#D5E7F2]" : "bg-[#D5E7F2] hover:bg-[#D5E7F2]/90 text-[#17476B]"}`}
             onClick={() => setStatusFilter("all")}
           >
             <span className="text-3xl">{assignedApps.length}</span>
@@ -113,7 +113,7 @@ export function AssignedInterviewsPage() {
           </Button>
           <Button
             className={`h-28 min-w-40 p-4 flex flex-col items-start 
-					${statusFilter != "interviewed" ? "bg-[#DCEBDD] hover:bg-[#DCEBDD]/90 text-[#1D3829]" : "bg-[#1D3829] hover:bg-[#1D3829]/90 text-[#DCEBDD]"}`}
+					${statusFilter !== "interviewed" ? "bg-[#DCEBDD] hover:bg-[#DCEBDD]/90 text-[#1D3829]" : "bg-[#1D3829] hover:bg-[#1D3829]/90 text-[#DCEBDD]"}`}
             onClick={() => setStatusFilter("interviewed")}
           >
             <span className="text-3xl">{numInterviewed}</span>
@@ -121,7 +121,7 @@ export function AssignedInterviewsPage() {
           </Button>
           <Button
             className={`h-28 min-w-40 p-4 flex flex-col items-start 
-					${statusFilter != "pending" ? "bg-[#FBDED9] hover:bg-[#FBDED9]/90 text-[#5D1615]" : "bg-[#5D1615] hover:bg-[#5D1615]/90 text-[#FBDED9]"}`}
+					${statusFilter !== "pending" ? "bg-[#FBDED9] hover:bg-[#FBDED9]/90 text-[#5D1615]" : "bg-[#5D1615] hover:bg-[#5D1615]/90 text-[#FBDED9]"}`}
             onClick={() => setStatusFilter("pending")}
           >
             <span className="text-3xl">

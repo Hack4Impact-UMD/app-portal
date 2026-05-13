@@ -65,7 +65,7 @@ export function BoardMembersTable({
     }) => {
       const prevRoles =
         (await getBoardMemberById(boardId)).applicantRoles ?? [];
-      const newRoles = prevRoles.filter((role) => role != roleToRemove);
+      const newRoles = prevRoles.filter((role) => role !== roleToRemove);
       return await setBoardApplicantRoles(boardId, newRoles);
     },
     onSuccess: async () => {

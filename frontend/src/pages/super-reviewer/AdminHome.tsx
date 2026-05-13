@@ -194,7 +194,7 @@ export default function AdminHome() {
           })}
         </ul>
       </div>
-      {user.role == PermissionRole.SuperReviewer && (
+      {user.role === PermissionRole.SuperReviewer && (
         <>
           <div className="max-w-5xl w-full p-4 bg-white rounded-md">
             <h1 className="text-xl">Or Manage Users </h1>
@@ -230,7 +230,7 @@ export default function AdminHome() {
               </Button>
             </div>
           </div>
-          
+
           {selectedForm && (
             <>
               <DuplicateFormDialog

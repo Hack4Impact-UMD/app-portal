@@ -39,14 +39,14 @@ export default function AppSubmitPage() {
     try {
       const resp = await submitMutation.mutateAsync(response);
       console.log("Submit Response:", resp);
-      if (resp.status == "success") {
+      if (resp.status === "success") {
         navigate("/apply/success");
       }
     } catch (err) {
       console.error("Submit error");
       if (err instanceof AxiosError) {
         const resp = err.response?.data as ApplicationSubmitResponse;
-        if (resp.status == "error") {
+        if (resp.status === "error") {
           throwErrorToast("Oops, looks like you've missed some things!");
           setValidationErrors(resp.validationErrors ?? []);
         } else if (Timestamp.now() > form.dueDate) {
@@ -98,7 +98,7 @@ export default function AppSubmitPage() {
                 section={s}
                 responses={
                   response.sectionResponses.find(
-                    (r) => r.sectionId == s.sectionId,
+                    (r) => r.sectionId === s.sectionId,
                   )!.questions
                 }
                 onChangeResponse={() => {}}

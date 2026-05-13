@@ -39,7 +39,7 @@ export default function AuthProvider(props: AuthProviderProps) {
     mutationFn: (roles: ApplicantRole[]) =>
       setReviewCapableUserRolePreferences(authState.user?.id ?? "", roles),
     onSuccess: (_data, vars) => {
-      if (authState.user?.role == PermissionRole.Reviewer) {
+      if (authState.user?.role === PermissionRole.Reviewer) {
         setAuthState({
           ...authState,
           user: {
@@ -95,7 +95,7 @@ export default function AuthProvider(props: AuthProviderProps) {
         },
       }}
     >
-      {authState.user?.role == PermissionRole.Reviewer && (
+      {authState.user?.role === PermissionRole.Reviewer && (
         <ReviewerRoleSelectDialog
           open={
             !authState.user.applicantRolePreferences ||

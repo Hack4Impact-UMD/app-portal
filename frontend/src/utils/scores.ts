@@ -81,7 +81,7 @@ export function calculateScore(
 }
 
 function averageScore(scores: Record<string, number>) {
-  if (Object.values(scores).length == 0) return 0;
+  if (Object.values(scores).length === 0) return 0;
   const scoreValues = Object.values(scores);
   return scoreValues.reduce((acc, s) => acc + s, 0) / scoreValues.length;
 }

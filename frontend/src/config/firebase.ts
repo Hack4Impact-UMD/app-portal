@@ -22,7 +22,7 @@ export const firebaseConfig = {
 };
 
 export const API_URL =
-  import.meta.env.MODE == "development"
+  import.meta.env.MODE === "development"
     ? "http://127.0.0.1:5001/h4i-applications/us-east4/api"
     : "https://api-4orgfxckcq-uk.a.run.app";
 
@@ -58,7 +58,7 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 
-if (import.meta.env.MODE == "development") {
+if (import.meta.env.MODE === "development") {
   console.log(`CONNECTING TO LOCAL FIREBASE EMULATORS!`);
   connectAuthEmulator(auth, "http://127.0.0.1:9099");
   connectFirestoreEmulator(db, "127.0.0.1", 8080);

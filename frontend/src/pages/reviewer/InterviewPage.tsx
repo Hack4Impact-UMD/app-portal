@@ -319,7 +319,7 @@ const InterviewPage: React.FC = () => {
             disabled={true}
             section={s}
             responses={
-              response.sectionResponses.find((r) => r.sectionId == s.sectionId)
+              response.sectionResponses.find((r) => r.sectionId === s.sectionId)
                 ?.questions ?? []
             }
             onChangeResponse={() => {}}

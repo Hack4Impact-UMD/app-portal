@@ -90,7 +90,7 @@ function StatusPage() {
   );
 
   const activeList =
-    activeTab == "active" ? activeApplications : inactiveApplications;
+    activeTab === "active" ? activeApplications : inactiveApplications;
   const semesterGrouping = activeList.reduce((map, application) => {
     const semester = application.semester;
 
@@ -180,11 +180,11 @@ function StatusPage() {
               <p className="w-full">
                 Error fetching applications: {error.message}
               </p>
-            ) : activeList.length == 0 ? (
+            ) : activeList.length === 0 ? (
               <p className="w-full">
                 You don't have any {activeTab} applications. Go apply!
               </p>
-            ) : activeTab == "inactive" ? (
+            ) : activeTab === "inactive" ? (
               Array.from(semesterGrouping.entries()).map(
                 ([semester, apps], index) => (
                   <div key={index}>

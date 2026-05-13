@@ -28,7 +28,7 @@ function Navbar({ className }: { className?: string }) {
           <span className="text-blue font-bold text-lg sm:hidden block">
             <img className="w-7" src="/h4i-logo.png" alt="hack4impact-UMD" />
           </span>
-          {user?.role && user.role != PermissionRole.Applicant && (
+          {user?.role && user.role !== PermissionRole.Applicant && (
             <>
               <span className="font-light sm:mb-1">
                 | {displayUserRoleName(user.role)}

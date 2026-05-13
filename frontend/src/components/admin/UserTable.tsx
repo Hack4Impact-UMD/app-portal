@@ -164,16 +164,16 @@ export default function UserTable({
       const emails = input
         .split("\n")
         .map((e) => e.trim())
-        .filter((e) => e.length != 0);
+        .filter((e) => e.length !== 0);
       const usersToUpdate = emails
-        .map((email) => users.find((u) => u.email == email))
-        .filter((u) => u != undefined);
+        .map((email) => users.find((u) => u.email === email))
+        .filter((u) => u !== undefined);
 
       console.log("Setting the following users to REVIEWER: ", usersToUpdate);
 
-      if (usersToUpdate.length == 0) {
+      if (usersToUpdate.length === 0) {
         throwErrorToast("The emails you entered don't match any users");
-      } else if (usersToUpdate.length != emails.length) {
+      } else if (usersToUpdate.length !== emails.length) {
         throwErrorToast(
           `Some emails did not match existing users. Inputted ${emails.length} emails, but found ${usersToUpdate.length} corresponding users!`,
         );
@@ -518,7 +518,7 @@ export default function UserTable({
               <DropdownMenuSeparator></DropdownMenuSeparator>
               <DialogTrigger
                 className="cursor-pointer"
-                disabled={selectedUsers.length == 0}
+                disabled={selectedUsers.length === 0}
                 asChild
                 onClick={() => {
                   setToUpdate(selectedUsers);
@@ -531,7 +531,7 @@ export default function UserTable({
               </DialogTrigger>
               <DialogTrigger
                 className="cursor-pointer text-destructive"
-                disabled={selectedUsers.length == 0}
+                disabled={selectedUsers.length === 0}
                 asChild
                 onClick={() => {
                   setToUpdate(selectedUsers);
@@ -546,7 +546,7 @@ export default function UserTable({
           </DropdownMenu>
 
           <DialogContent className="sm:max-w-md">
-            {action == "delete" ? <DeleteDialog /> : <RoleDialog />}
+            {action === "delete" ? <DeleteDialog /> : <RoleDialog />}
           </DialogContent>
         </Dialog>
       </div>

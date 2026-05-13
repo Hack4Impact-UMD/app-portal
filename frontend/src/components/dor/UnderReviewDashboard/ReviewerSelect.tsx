@@ -71,7 +71,7 @@ export function ReviewerSearchPopover({
       if (query.data) {
         const reviewerAssignments = query.data;
         return !reviewerAssignments.find(
-          (a) => a.applicationResponseId == responseId && a.forRole == role,
+          (a) => a.applicationResponseId === responseId && a.forRole === role,
         );
       } else {
         return true;
@@ -100,7 +100,7 @@ export function ReviewerSearchPopover({
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>
           {validReviewers
-            ?.filter((r) => reviewers?.find((x) => x.id == r.id))
+            ?.filter((r) => reviewers?.find((x) => x.id === r.id))
             .map((reviewer) => {
               const index = reviewers!.findIndex((r) => r.id === reviewer.id);
               return (
