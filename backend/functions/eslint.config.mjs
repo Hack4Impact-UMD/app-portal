@@ -46,6 +46,7 @@ export default [
 
       parserOptions: {
         project: ["tsconfig.json", "tsconfig.dev.json"],
+        tsconfigRootDir: __dirname,
       },
     },
 
@@ -53,6 +54,7 @@ export default [
       quotes: ["error", "double"],
       "import/no-unresolved": 0,
       "object-curly-spacing": 0,
+      eqeqeq: ["error", "always", { null: "ignore" }],
     },
   },
 ];
