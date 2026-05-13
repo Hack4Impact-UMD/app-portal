@@ -52,7 +52,7 @@ const LongFormInput: React.FC<LongFormInputProps> = ({
       {minWordCount && maxWordCount ? (
         <p className="mb-1 text-xs">
           Minimum: {minWordCount} word{minWordCount !== 1 && "s"}. Maximum:{" "}
-          {maxWordCount} word{minWordCount !== 1 && "s"}.
+          {maxWordCount} word{maxWordCount !== 1 && "s"}.
         </p>
       ) : minWordCount ? (
         <p className="mb-1 text-xs">
@@ -60,7 +60,7 @@ const LongFormInput: React.FC<LongFormInputProps> = ({
         </p>
       ) : maxWordCount ? (
         <p className="mb-1 text-xs">
-          Maximum: {maxWordCount} word{minWordCount !== 1 && "s"}.
+          Maximum: {maxWordCount} word{maxWordCount !== 1 && "s"}.
         </p>
       ) : (
         <></>
