@@ -49,16 +49,16 @@ export default function FormProvider() {
       let rsid = undefined;
       for (const section of data.form.sections) {
         const rs = section.questions.find(
-          (q) => q.questionType == QuestionType.RoleSelect,
+          (q) => q.questionType === QuestionType.RoleSelect,
         );
-        if (rs != undefined) {
+        if (rs !== undefined) {
           rsid = rs.questionId;
         }
       }
 
       for (const section of data.response.sectionResponses) {
         const roleResponse = section.questions.find(
-          (q) => q.questionId == rsid,
+          (q) => q.questionId === rsid,
         ) as QuestionResponse | undefined;
         if (roleResponse) {
           setSelectedRoles(roleResponse.response as ApplicantRole[]);
@@ -140,7 +140,7 @@ export default function FormProvider() {
   );
 
   const nextSection = useCallback(() => {
-    const idx = sections.findIndex((s) => s == sectionId);
+    const idx = sections.findIndex((s) => s === sectionId);
     if (idx >= 0 && idx + 1 < sections.length) {
       return sections[idx + 1];
     } else {
@@ -149,7 +149,7 @@ export default function FormProvider() {
   }, [sections, sectionId]);
 
   const previousSection = useCallback(() => {
-    const idx = sections.findIndex((s) => s == sectionId);
+    const idx = sections.findIndex((s) => s === sectionId);
     if (idx >= 1) {
       return sections[idx - 1];
     } else {
@@ -190,7 +190,7 @@ export default function FormProvider() {
   //NOTE: not sure if it's a good idea to put this here, this component might need to be reused
   //in a case where in-progress apps are allowed. But for now, this is the best way to prevent
   //editing apps that are complete!
-  if (dbResponse.status != ApplicationStatus.InProgress)
+  if (dbResponse.status !== ApplicationStatus.InProgress)
     return <Navigate to="/apply/status" />;
 
   return (
@@ -206,7 +206,7 @@ export default function FormProvider() {
                   <Spinner className="inline size-4" />
                   Saving...
                 </p>
-              ) : saveMutation.submittedAt != 0 && !saveMutation.isError ? (
+              ) : saveMutation.submittedAt !== 0 && !saveMutation.isError ? (
                 <p>
                   Last save:{" "}
                   {new Date(saveMutation.submittedAt).toLocaleTimeString()}

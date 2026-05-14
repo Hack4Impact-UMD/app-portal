@@ -295,8 +295,8 @@ export default function SuperReviewerApplicationsTable({
           filterFn: (row, columnId, filterValue) => {
             const value = row.getValue(columnId);
 
-            if (filterValue == "all") return true;
-            else return filterValue == value;
+            if (filterValue === "all") return true;
+            else return filterValue === value;
           },
         }),
         columnHelper.accessor("reviewers.assigned", {
@@ -352,7 +352,7 @@ export default function SuperReviewerApplicationsTable({
             return <SortableHeader column={column}>AVG. SCORE</SortableHeader>;
           },
           cell: ({ getValue, row }) => {
-            if (row.original.reviews.completed == 0) return "N/A";
+            if (row.original.reviews.completed === 0) return "N/A";
             const hasLowScore = row.original.reviews.reviewData.some(
               (reviewData) =>
                 reviewData.submitted &&

@@ -20,7 +20,7 @@ export function useApplicationForm(formId?: string, refetch: boolean = true) {
   return useQuery<ApplicationForm>({
     queryKey: ["form", formId],
     queryFn: () => getApplicationForm(formId!),
-    enabled: formId != undefined,
+    enabled: formId != null,
     refetchOnWindowFocus: refetch,
   });
 }
@@ -99,6 +99,6 @@ export function useApplicationFormForResponseId(responseId?: string) {
   return useQuery<ApplicationForm>({
     queryKey: ["form", "responseId", responseId],
     queryFn: () => getApplicationFormForResponseId(responseId!),
-    enabled: responseId != undefined,
+    enabled: responseId != null,
   });
 }

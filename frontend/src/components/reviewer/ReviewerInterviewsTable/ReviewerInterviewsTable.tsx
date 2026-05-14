@@ -212,10 +212,10 @@ export default function ReviewerInterviewsTable({
             ): v is ApplicationInterviewData =>
               typeof v === "object" && v !== null && "submitted" in v;
 
-            if (filterValue == "all") return true;
-            else if (filterValue == "pending")
+            if (filterValue === "all") return true;
+            else if (filterValue === "pending")
               return !isInterviewData(value) || value.submitted === false;
-            else if (filterValue == "completed")
+            else if (filterValue === "completed")
               return isInterviewData(value) && value.submitted === true;
             else return true;
           },

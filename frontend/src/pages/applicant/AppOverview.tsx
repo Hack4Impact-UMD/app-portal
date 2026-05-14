@@ -24,7 +24,7 @@ const AppOverview: React.FC = () => {
     console.log("applications:", applications);
     if (form && applications)
       return applications
-        .filter((app) => app.status == ApplicationStatus.Submitted)
+        .filter((app) => app.status === ApplicationStatus.Submitted)
         .map((app) => app.applicationFormId)
         .includes(form.id);
     else return false;
@@ -33,7 +33,7 @@ const AppOverview: React.FC = () => {
   const inProgress = useMemo(() => {
     if (form && applications)
       return applications
-        .filter((app) => app.status == ApplicationStatus.InProgress)
+        .filter((app) => app.status === ApplicationStatus.InProgress)
         .map((app) => app.applicationFormId)
         .includes(form.id);
     else return false;

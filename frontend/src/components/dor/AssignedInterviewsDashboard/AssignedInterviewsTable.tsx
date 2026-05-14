@@ -104,10 +104,10 @@ export default function AssignedInterviewsTable({
               | ApplicationInterviewData
               | undefined;
 
-            if (filterValue == "all") return true;
-            else if (filterValue == "pending")
+            if (filterValue === "all") return true;
+            else if (filterValue === "pending")
               return !(value?.submitted ?? false);
-            else if (filterValue == "interviewed")
+            else if (filterValue === "interviewed")
               return value?.submitted ?? false;
             else return true;
           },

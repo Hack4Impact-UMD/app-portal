@@ -66,9 +66,10 @@ export function useRows(applications: ApplicationResponse[], formId: string) {
             .filter((r) => r.submitted)
             .map((r) => calculateReviewScore(r, form));
           const avgScore =
-            completedReviews == 0
+            completedReviews === 0
               ? 0
-              : individualScores.reduce((acc, v) => acc + v, 0) / completedReviews;
+              : individualScores.reduce((acc, v) => acc + v, 0) /
+                completedReviews;
           let status: InternalApplicationStatus | undefined;
 
           try {
@@ -166,8 +167,12 @@ export function flattenRows(
         });
       } else {
         flat[`Review ${n} - Overall Score`] = "";
-        scoreKeys.forEach((key) => { flat[`Review ${n} - ${key}`] = ""; });
-        noteKeys.forEach((key) => { flat[`Review ${n} Notes - ${key}`] = ""; });
+        scoreKeys.forEach((key) => {
+          flat[`Review ${n} - ${key}`] = "";
+        });
+        noteKeys.forEach((key) => {
+          flat[`Review ${n} Notes - ${key}`] = "";
+        });
       }
     }
 

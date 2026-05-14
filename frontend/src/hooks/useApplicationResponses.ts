@@ -31,7 +31,7 @@ export function useMyApplicationResponseAndForm(formId?: string) {
 
   return useQuery<{ form: ApplicationForm; response: ApplicationResponse }>({
     queryKey: ["responses", "user", user?.id, formId],
-    enabled: !isLoading && isAuthed && formId != undefined,
+    enabled: !isLoading && isAuthed && formId !== undefined,
     queryFn: async () => {
       const form = await getApplicationForm(formId!);
       console.log(`form found: ${form.semester}`);
@@ -63,7 +63,7 @@ export function useAssignedApplicationResponsesForForm(formId: string) {
 
   return useQuery<ApplicationResponse[]>({
     queryKey: ["responses", "assigned", user?.id, formId],
-    enabled: !isLoading && isAuthed && formId != undefined,
+    enabled: !isLoading && isAuthed && formId !== undefined,
     queryFn: async () => {
       if (!user || !reviewCapable(user))
         throw new Error(

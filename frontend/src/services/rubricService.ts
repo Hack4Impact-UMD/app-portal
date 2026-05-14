@@ -40,7 +40,7 @@ export async function getRoleRubricsForFormRole(
 
   return (await getDocs(q)).docs
     .map((d) => d.data() as RoleReviewRubric)
-    .filter((r) => r.roles.length == 0 || r.roles.includes(role));
+    .filter((r) => r.roles.length === 0 || r.roles.includes(role));
 }
 
 export async function updateRoleRubric(
