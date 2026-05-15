@@ -10,10 +10,11 @@ export async function getBoardMemberById(
 ): Promise<BoardUserProfile> {
   const user = await getUserById(id);
   if (user.role === PermissionRole.Board) {
-    return {
+    const boardUser: BoardUserProfile = {
       ...user,
       applicantRoles: user.applicantRoles ?? [],
-    } as BoardUserProfile;
+    };
+    return boardUser;
   } else {
     throw new Error("user is not a board member");
   }
@@ -37,10 +38,9 @@ export async function getAllBoardMembers(): Promise<BoardUserProfile[]> {
   return (await getDocs(q)).docs
     .map((d) => d.data() as BoardUserProfile)
     .map(
-      (b) =>
-        ({
-          ...b,
-          applicantRoles: b.applicantRoles ?? [],
-        }) as BoardUserProfile,
+      (b: BoardUserProfile): BoardUserProfile => ({
+        ...b,
+        applicantRoles: b.applicantRoles ?? [],
+      }),
     );
 }

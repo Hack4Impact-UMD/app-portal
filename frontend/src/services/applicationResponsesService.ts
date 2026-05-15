@@ -14,6 +14,7 @@ import { API_URL, db } from "../config/firebase";
 import {
   ApplicationForm,
   ApplicationResponse,
+  ApplicationStatus,
   SectionResponse,
   ValidationError,
 } from "../types/types";
@@ -137,30 +138,31 @@ export async function fetchOrCreateApplicationResponse(
   }
   console.log("creating new response object!");
 
-  const sectionResponses: SectionResponse[] = form.sections.map((section) => ({
-    sectionId: section.sectionId,
-    sectionName: section.sectionName,
-    questions: section.questions.map((question) => ({
-      questionId: question.questionId,
-      questionType: question.questionType,
-      applicationFormId: form.id,
-      response:
-        question.questionType === "multiple-select" ||
-        question.questionType === "role-select"
-          ? []
-          : "",
-    })),
-  }));
+  const sectionResponses: SectionResponse[] = form.sections.map(
+    (section): SectionResponse => ({
+      sectionId: section.sectionId,
+      questions: section.questions.map((question) => ({
+        questionId: question.questionId,
+        questionType: question.questionType,
+        applicationFormId: form.id,
+        response:
+          question.questionType === "multiple-select" ||
+          question.questionType === "role-select"
+            ? []
+            : "",
+      })),
+    }),
+  );
 
-  const newResponse = {
+  const newResponse: ApplicationResponse = {
     id: uuidv4(),
     userId,
     applicationFormId: form.id,
     sectionResponses,
-    status: "in-progress",
+    status: ApplicationStatus.InProgress,
     dateSubmitted: Timestamp.now(),
     rolesApplied: [],
-  } as ApplicationResponse;
+  };
 
   console.log("new response:");
   console.log(newResponse);

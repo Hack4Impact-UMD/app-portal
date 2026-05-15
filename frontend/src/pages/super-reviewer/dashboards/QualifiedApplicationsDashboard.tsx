@@ -52,11 +52,10 @@ export default function QualifiedApplicationsDashboard() {
         ?.filter((app) => app.status !== ApplicationStatus.InProgress)
         ?.flatMap((app) =>
           app.rolesApplied.map(
-            (role) =>
-              ({
-                ...app,
-                rolesApplied: [role],
-              }) as ApplicationResponse,
+            (role): ApplicationResponse => ({
+              ...app,
+              rolesApplied: [role],
+            }),
           ),
         ) ?? [],
     [apps],
