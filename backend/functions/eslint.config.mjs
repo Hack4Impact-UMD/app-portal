@@ -55,6 +55,13 @@ export default [
       "import/no-unresolved": 0,
       "object-curly-spacing": 0,
       eqeqeq: ["error", "always", { null: "ignore" }],
+      "@typescript-eslint/consistent-type-assertions": [
+        "error",
+        {
+          assertionStyle: "as",
+          objectLiteralTypeAssertions: "never",
+        },
+      ],
     },
   },
 ];
