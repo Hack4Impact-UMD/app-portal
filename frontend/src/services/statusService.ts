@@ -61,9 +61,11 @@ export async function rejectUndecidedApplicantsForForm(formId: string) {
     const batch = writeBatch(db);
 
     chunk.forEach((s) => {
-      batch.update(doc(statusCollection, s.id), {
+      const update: Partial<InternalApplicationStatus> = {
         status: ReviewStatus.Denied,
-      } as Partial<InternalApplicationStatus>);
+      };
+
+      batch.update(doc(statusCollection, s.id), update);
     });
 
     await batch.commit();
