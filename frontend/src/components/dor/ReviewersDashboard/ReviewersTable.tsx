@@ -93,7 +93,7 @@ export default function ReviewersTable({
         await getReviewerById(reviewerId),
       );
       const newRolePreferences = prevRolePreferences.filter(
-        (role) => role != roleToRemove,
+        (role) => role !== roleToRemove,
       );
       return await setReviewCapableUserRolePreferences(
         reviewerId,

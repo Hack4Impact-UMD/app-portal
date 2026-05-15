@@ -54,7 +54,7 @@ export default function ResetPassCard() {
         "Invalid Password, Please ensure your password meets the following requirements: At least 8 characters long, At least one uppercase letter (A-Z), At least one lowercase letter (a-z), At least one digit (0-9), At least one special character (e.g., @$!%*?&#).";
       errors.confirmPassword = "Invalid Password";
     }
-    if (formData.password != formData.confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       valid = false;
       errors.confirmPassword = "Invalid Confirmation Password";
     }

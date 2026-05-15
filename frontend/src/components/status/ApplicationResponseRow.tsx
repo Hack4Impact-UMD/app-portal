@@ -35,10 +35,10 @@ export function ApplicationResponseRow({
 
   const decided = useMemo(
     () =>
-      status == "decided" ||
-      status == ReviewStatus.Accepted ||
-      status == ReviewStatus.Waitlisted ||
-      status == ReviewStatus.Denied,
+      status === "decided" ||
+      status === ReviewStatus.Accepted ||
+      status === ReviewStatus.Waitlisted ||
+      status === ReviewStatus.Denied,
     [status],
   );
 

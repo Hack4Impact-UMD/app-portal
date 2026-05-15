@@ -13,7 +13,7 @@ export async function getPreviouslyAppliedCount(
   const inactiveFormIds = new Set<string>();
 
   for (const response of responses) {
-    if (!response.active && response.status != ApplicationStatus.InProgress) {
+    if (!response.active && response.status !== ApplicationStatus.InProgress) {
       inactiveFormIds.add(response.applicationFormId);
     }
   }

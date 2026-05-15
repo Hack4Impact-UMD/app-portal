@@ -74,7 +74,7 @@ function validateResponses(
     let sectionId: string | undefined;
     for (const section of applicationResponse.sectionResponses) {
       roleSelectQuestion = section.questions.find(
-        (q) => q.questionType == QuestionType.RoleSelect,
+        (q) => q.questionType === QuestionType.RoleSelect,
       );
       sectionId = section.sectionId;
       if (roleSelectQuestion) break;
@@ -83,7 +83,7 @@ function validateResponses(
     return { roleSelectQuestion, sectionId };
   };
 
-  if (applicationResponse.rolesApplied.length == 0) {
+  if (applicationResponse.rolesApplied.length === 0) {
     const { roleSelectQuestion, sectionId } = findRoleSelect();
     return [
       {
@@ -115,7 +115,7 @@ function validateResponses(
   // validate each response
   for (const section of applicationResponse.sectionResponses) {
     const formSection = applicationForm.sections.find(
-      (s) => s.sectionId == section.sectionId,
+      (s) => s.sectionId === section.sectionId,
     );
     if (!formSection) {
       throw new Error("Invalid form section: " + section.sectionId);
@@ -125,7 +125,7 @@ function validateResponses(
       if (
         formSection.forRoles.filter((role) =>
           applicationResponse.rolesApplied.includes(role),
-        ).length == 0
+        ).length === 0
       ) {
         continue;
       }
@@ -140,7 +140,7 @@ function validateResponses(
 
       if (metaData?.optional) continue; // no need for validation
 
-      if (metaData?.optional === false && question.response.length == 0) {
+      if (metaData?.optional === false && question.response.length === 0) {
         errors.push({
           sectionId: section.sectionId,
           questionId: question.questionId,
@@ -231,7 +231,7 @@ router.post(
           applicationFormDocData!,
         );
 
-        if (errors.length != 0) {
+        if (errors.length !== 0) {
           logger.warn(
             "Validation errors found for response:" + applicationResponse.id,
           );
@@ -316,9 +316,9 @@ router.put(
         status: ApplicationStatus.InProgress,
       };
 
-      if (respId != newAppResponse.id) {
+      if (respId !== newAppResponse.id) {
         logger.error("Application save: Response ID mismatch");
-        res.status(500).send();
+        res.status(400).send();
         return;
       }
 
@@ -339,7 +339,7 @@ router.put(
         return;
       }
 
-      if (existingResp.userId != req.token!.uid) {
+      if (existingResp.userId !== req.token!.uid) {
         logger.warn(
           `Unauthorized application save! UID: ${req.token!.uid} vs existing user id in response ${existingResp.userId}`,
         );

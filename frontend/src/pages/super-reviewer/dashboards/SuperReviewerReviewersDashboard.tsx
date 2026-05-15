@@ -88,7 +88,7 @@ export default function SuperReviewerReviewersDashboard() {
       <div className="overflow-x-scroll flex flex-row gap-2 justify-stretch mt-4 no-scrollbar">
         <Button
           className={`h-28 min-w-40 text-white p-4 flex flex-col items-start 
-					${statusFilter == "all" ? "bg-[#17476B] hover:bg-[#17476B]/90 text-[#D5E7F2]" : "bg-[#D5E7F2] hover:bg-[#D5E7F2]/90 text-[#17476B]"}`}
+					${statusFilter === "all" ? "bg-[#17476B] hover:bg-[#17476B]/90 text-[#D5E7F2]" : "bg-[#D5E7F2] hover:bg-[#D5E7F2]/90 text-[#17476B]"}`}
           onClick={() => setStatusFilter("all")}
         >
           <span className="text-3xl">{reviewers.length}</span>
@@ -96,7 +96,7 @@ export default function SuperReviewerReviewersDashboard() {
         </Button>
         <Button
           className={`h-28  min-w-40 p-4 flex flex-col items-start 
-					${statusFilter != "complete" ? "bg-[#DCEBDD] hover:bg-[#DCEBDD]/90 text-[#1D3829]" : "bg-[#1D3829] hover:bg-[#1D3829]/90 text-[#DCEBDD]"}`}
+					${statusFilter !== "complete" ? "bg-[#DCEBDD] hover:bg-[#DCEBDD]/90 text-[#1D3829]" : "bg-[#1D3829] hover:bg-[#1D3829]/90 text-[#DCEBDD]"}`}
           onClick={() => setStatusFilter("complete")}
         >
           <span className="text-3xl">{numComplete}</span>
@@ -104,7 +104,7 @@ export default function SuperReviewerReviewersDashboard() {
         </Button>
         <Button
           className={`h-28 min-w-40 p-4 flex flex-col items-start 
-					${statusFilter != "pending" ? "bg-[#FBDED9] hover:bg-[#FBDED9]/90 text-[#5D1615]" : "bg-[#5D1615] hover:bg-[#5D1615]/90 text-[#FBDED9]"}`}
+					${statusFilter !== "pending" ? "bg-[#FBDED9] hover:bg-[#FBDED9]/90 text-[#5D1615]" : "bg-[#5D1615] hover:bg-[#5D1615]/90 text-[#FBDED9]"}`}
           onClick={() => setStatusFilter("pending")}
         >
           <span className="text-3xl">
@@ -114,7 +114,7 @@ export default function SuperReviewerReviewersDashboard() {
         </Button>
         <Button
           className={`h-28 min-w-40 p-4 flex flex-col items-start 
-					${statusFilter != "unassigned" ? "bg-[#F8E6BA] hover:bg-[#F8E6BA]/90 text-[#402C1B]" : "bg-[#402C1B] hover:bg-[#402C1B]/90 text-[#F8E6BA]"}`}
+					${statusFilter !== "unassigned" ? "bg-[#F8E6BA] hover:bg-[#F8E6BA]/90 text-[#402C1B]" : "bg-[#402C1B] hover:bg-[#402C1B]/90 text-[#F8E6BA]"}`}
           onClick={() => setStatusFilter("unassigned")}
         >
           <span className="text-3xl">{numNoAssignments}</span>

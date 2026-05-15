@@ -103,7 +103,7 @@ export default function ViewApplicationPage() {
                 section={s}
                 responses={
                   response.sectionResponses.find(
-                    (r) => r.sectionId == s.sectionId,
+                    (r) => r.sectionId === s.sectionId,
                   )?.questions ?? []
                 }
                 onChangeResponse={() => {}}

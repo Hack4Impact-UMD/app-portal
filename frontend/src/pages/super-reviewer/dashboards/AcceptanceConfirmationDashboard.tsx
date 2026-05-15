@@ -46,7 +46,7 @@ export default function AcceptanceConfirmationDashboard() {
         </Button>
         <Button
           className={`h-28  min-w-40 p-4 flex flex-col items-start 
-					${decisionFilter != "accepted" ? "bg-[#DCEBDD] hover:bg-[#DCEBDD]/90 text-[#1D3829]" : "bg-[#1D3829] hover:bg-[#1D3829]/90 text-[#DCEBDD]"}`}
+					${decisionFilter !== "accepted" ? "bg-[#DCEBDD] hover:bg-[#DCEBDD]/90 text-[#1D3829]" : "bg-[#1D3829] hover:bg-[#1D3829]/90 text-[#DCEBDD]"}`}
           onClick={() => setDecisionFilter("accepted")}
         >
           <span className="text-3xl">{numAccepted}</span>
@@ -54,7 +54,7 @@ export default function AcceptanceConfirmationDashboard() {
         </Button>
         <Button
           className={`h-28 min-w-40 p-4 flex flex-col items-start 
-					${decisionFilter != "denied" ? "bg-[#FBDED9] hover:bg-[#FBDED9]/90 text-[#5D1615]" : "bg-[#5D1615] hover:bg-[#5D1615]/90 text-[#FBDED9]"}`}
+					${decisionFilter !== "denied" ? "bg-[#FBDED9] hover:bg-[#FBDED9]/90 text-[#5D1615]" : "bg-[#5D1615] hover:bg-[#5D1615]/90 text-[#FBDED9]"}`}
           onClick={() => setDecisionFilter("denied")}
         >
           <span className="text-3xl">

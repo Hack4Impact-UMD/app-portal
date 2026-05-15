@@ -103,11 +103,11 @@ export async function getAssignedApplicationResponsesByFormId(
   reviewerId: string,
 ): Promise<ApplicationResponse[]> {
   const assignments = (await getReviewAssignments(formId, reviewerId)).filter(
-    (a) => a.assignmentType == "review",
+    (a) => a.assignmentType === "review",
   );
   const responses = collection(db, APPLICATION_RESPONSES_COLLECTION);
 
-  if (assignments.length == 0) return [];
+  if (assignments.length === 0) return [];
 
   const q = query(
     responses,
@@ -148,7 +148,7 @@ export async function fetchOrCreateApplicationResponse(
         applicationFormId: form.id,
         response:
           question.questionType === QuestionType.MultipleSelect ||
-          question.questionType == QuestionType.RoleSelect
+          question.questionType === QuestionType.RoleSelect
             ? []
             : "",
       })),

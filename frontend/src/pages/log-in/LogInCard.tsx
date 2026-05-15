@@ -74,7 +74,7 @@ export default function LogInCard() {
         if (state && state.path) {
           navigate(state.path);
         } else {
-          if (user.role == PermissionRole.Applicant) {
+          if (user.role === PermissionRole.Applicant) {
             navigate("/apply");
           } else {
             navigate("/admin");

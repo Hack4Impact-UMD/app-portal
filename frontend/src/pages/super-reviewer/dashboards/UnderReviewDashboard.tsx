@@ -30,7 +30,7 @@ export default function UnderReviewDashboard() {
   const expandedSubmittedApps = useMemo(
     () =>
       apps
-        ?.filter((app) => app.status != ApplicationStatus.InProgress)
+        ?.filter((app) => app.status !== ApplicationStatus.InProgress)
         ?.flatMap((app) =>
           app.rolesApplied.map(
             (role) =>
@@ -62,7 +62,7 @@ export default function UnderReviewDashboard() {
       <div className="overflow-x-scroll flex flex-row gap-2 items-center min-h-28 justify-stretch mt-4 no-scrollbar">
         <Button
           className={`h-28 min-w-40 text-white p-4 flex flex-col items-start 
-					${roleFilter == "all" ? "bg-[#4A280D] hover:bg-[#4A280D]/90 text-[#F1D5C4]" : "bg-[#F1D5C4] hover:bg-[#F1D5C4]/90 text-[#4A280D]"}`}
+					${roleFilter === "all" ? "bg-[#4A280D] hover:bg-[#4A280D]/90 text-[#F1D5C4]" : "bg-[#F1D5C4] hover:bg-[#F1D5C4]/90 text-[#4A280D]"}`}
           onClick={() => setRoleFilter("all")}
         >
           <span className="text-3xl">{expandedSubmittedApps.length}</span>
@@ -71,7 +71,7 @@ export default function UnderReviewDashboard() {
         {Object.values(ApplicantRole).map((role) => {
           const dark = applicantRoleDarkColor(role) ?? "#000000";
           const light = applicantRoleColor(role) ?? "#FFFFFF";
-          const active = roleFilter == role;
+          const active = roleFilter === role;
 
           return (
             <Button

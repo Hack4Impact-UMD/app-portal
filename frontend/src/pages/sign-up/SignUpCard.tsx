@@ -110,7 +110,7 @@ export default function SignUpCard() {
           genericError: "",
         };
         if (error instanceof AxiosError) {
-          if (error.response?.data.error == "Invalid Data") {
+          if (error.response?.data.error === "Invalid Data") {
             error.response?.data.details.map(
               (issue: {
                 field: "firstName" | "lastName" | "email";

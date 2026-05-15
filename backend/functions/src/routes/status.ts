@@ -74,12 +74,12 @@ router.get(
         | ReviewStatus.UnderReview
         | ReviewStatus.Interview
         | "decided";
-      if (data.status == ReviewStatus.Interview) {
+      if (data.status === ReviewStatus.Interview) {
         publicStatus = ReviewStatus.Interview;
       } else if (
-        data.status == ReviewStatus.Accepted ||
-        data.status == ReviewStatus.Waitlisted ||
-        data.status == ReviewStatus.Denied
+        data.status === ReviewStatus.Accepted ||
+        data.status === ReviewStatus.Waitlisted ||
+        data.status === ReviewStatus.Denied
       ) {
         publicStatus = "decided";
       } else {
@@ -116,7 +116,7 @@ router.post(
       const uid = req.token!.uid;
 
       // Check if user is editing their own decision
-      if (userId != uid) {
+      if (userId !== uid) {
         logger.warn("User is not editing their own decision");
         return res
           .status(401)
