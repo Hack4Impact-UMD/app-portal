@@ -87,9 +87,11 @@ export async function setFormDecisionRelease(
   ) as CollectionReference<ApplicationForm>;
   const docRef = doc(forms, formId);
 
-  await updateDoc(docRef, {
+  const update: Partial<ApplicationForm> = {
     decisionsReleased: released,
-  } as Partial<ApplicationForm>);
+  };
+
+  await updateDoc(docRef, update);
 }
 
 export async function setApplicationFormActiveStatus(
@@ -102,9 +104,11 @@ export async function setApplicationFormActiveStatus(
   ) as CollectionReference<ApplicationForm>;
   const docRef = doc(forms, formId);
 
-  await updateDoc(docRef, {
+  const update: Partial<ApplicationForm> = {
     isActive: active,
-  } as Partial<ApplicationForm>);
+  };
+
+  await updateDoc(docRef, update);
 }
 
 export async function setApplicationFormDueDate(formId: string, dueDate: Date) {
@@ -114,7 +118,9 @@ export async function setApplicationFormDueDate(formId: string, dueDate: Date) {
   ) as CollectionReference<ApplicationForm>;
   const docRef = doc(forms, formId);
 
-  await updateDoc(docRef, {
+  const update: Partial<ApplicationForm> = {
     dueDate: Timestamp.fromDate(dueDate),
-  } as Partial<ApplicationForm>);
+  };
+
+  await updateDoc(docRef, update);
 }

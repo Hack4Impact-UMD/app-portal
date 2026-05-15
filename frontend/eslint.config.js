@@ -29,6 +29,13 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-unsafe-enum-comparison": "error",
       eqeqeq: ["error", "always", { null: "ignore" }],
+      "@typescript-eslint/consistent-type-assertions": [
+        "error",
+        {
+          assertionStyle: "as",
+          objectLiteralTypeAssertions: "never",
+        },
+      ],
     },
   },
 );

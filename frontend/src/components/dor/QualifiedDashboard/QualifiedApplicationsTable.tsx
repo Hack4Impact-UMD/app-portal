@@ -6,7 +6,6 @@ import {
   ApplicantRole,
   ApplicationResponse,
   ReviewStatus,
-  InternalApplicationStatus,
   ReviewCapableUser,
 } from "@/types/types";
 import {
@@ -144,14 +143,14 @@ export default function QualifiedApplicationsTable({
 
       queryClient.setQueryData<QualifiedAppRow[]>(queryKey, (old) => {
         if (!old) return [];
-        return old.map((row: QualifiedAppRow) => {
+        return old.map((row: QualifiedAppRow): QualifiedAppRow => {
           if (row.status?.id === statusId) {
             return {
               ...row,
               status: {
                 ...row.status,
                 status: newStatus,
-              } as InternalApplicationStatus,
+              },
             };
           }
           return row;

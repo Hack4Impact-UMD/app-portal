@@ -56,6 +56,13 @@ export default [
       "object-curly-spacing": 0,
       eqeqeq: ["error", "always", { null: "ignore" }],
       "@typescript-eslint/no-unsafe-enum-comparison": "error",
+      "@typescript-eslint/consistent-type-assertions": [
+        "error",
+        {
+          assertionStyle: "as",
+          objectLiteralTypeAssertions: "never",
+        },
+      ],
     },
   },
 ];

@@ -263,9 +263,11 @@ export async function setReviewerRolePreferences(
   const users = collection(db, USER_COLLECTION);
   const userDoc = doc(users, reviewerId);
 
-  await updateDoc(userDoc, {
+  const update: Partial<ReviewerUserProfile> = {
     applicantRolePreferences: prefs,
-  } as Partial<ReviewerUserProfile>);
+  };
+
+  await updateDoc(userDoc, update);
 }
 
 export async function setBoardApplicantRoles(
@@ -279,9 +281,11 @@ export async function setBoardApplicantRoles(
   const users = collection(db, USER_COLLECTION);
   const userDoc = doc(users, boardId);
 
-  await updateDoc(userDoc, {
+  const update: Partial<BoardUserProfile> = {
     applicantRoles: roles,
-  } as Partial<BoardUserProfile>);
+  };
+
+  await updateDoc(userDoc, update);
 }
 
 export function onAuthStateChange(

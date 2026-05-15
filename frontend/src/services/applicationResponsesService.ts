@@ -155,15 +155,15 @@ export async function fetchOrCreateApplicationResponse(
     }),
   );
 
-  const newResponse = {
+  const newResponse: ApplicationResponse = {
     id: uuidv4(),
     userId,
     applicationFormId: form.id,
     sectionResponses,
-    status: "in-progress",
+    status: ApplicationStatus.InProgress,
     dateSubmitted: Timestamp.now(),
     rolesApplied: [],
-  } as ApplicationResponse;
+  };
 
   console.log("new response:");
   console.log(newResponse);
