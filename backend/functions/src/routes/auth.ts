@@ -8,7 +8,7 @@ import {
   updateUserSchema,
   CreateInternalApplicant,
   createInternalApplicantSchema,
-  UserRole,
+  PermissionRole,
   UpdateUser,
 } from "../models/user";
 import {
@@ -66,7 +66,7 @@ router.post(
         email: registerForm.email,
         firstName: registerForm.firstName,
         lastName: registerForm.lastName,
-        role: UserRole.Applicant, // by default, everyone is set to applicant. higher privelages can only be assigned by super-reviewers
+        role: PermissionRole.Applicant, // by default, everyone is set to applicant. higher privelages can only be assigned by super-reviewers
         dateCreated: Timestamp.now(),
         activeApplications: [],
         inactiveApplications: [],
@@ -157,7 +157,7 @@ router.post(
       const requestorSnap = await requestorRef.get();
       const requestor = requestorSnap.data();
 
-      if (!requestor || requestor.role !== UserRole.SuperReviewer) {
+      if (!requestor || requestor.role !== PermissionRole.SuperReviewer) {
         return res
           .status(403)
           .send("Only super-reviewers can create internal applicants");
@@ -190,7 +190,7 @@ router.post(
         email: `dummy${uuidv4()}@uva.edu`,
         firstName: requestData.firstName,
         lastName: requestData.lastName,
-        role: UserRole.Applicant,
+        role: PermissionRole.Applicant,
         isInternal: true,
         dateCreated: Timestamp.now(),
         activeApplications: [requestData.formId],

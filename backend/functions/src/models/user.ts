@@ -2,7 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 import { ApplicantRole, SectionResponseSchema } from "./appResponse";
 
-export enum UserRole {
+export enum PermissionRole {
   Applicant = "applicant",
   Reviewer = "reviewer",
   Board = "board",
@@ -14,7 +14,7 @@ export const UserProfileSchema = z.object({
   email: z.email("Must provide a valid email"),
   firstName: z.string().nonempty("First name can't be empty"),
   lastName: z.string().nonempty("Last name can't be empty"),
-  role: z.enum(UserRole),
+  role: z.enum(PermissionRole),
   dateCreated: z.custom<Timestamp>((d) => d instanceof Timestamp),
   activeApplications: z.array(z.string()).optional(),
   inactiveApplications: z.array(z.string()).optional(),

@@ -17,7 +17,7 @@ import {
   GradingJobDataInternal,
 } from "../types/grading";
 import { ApplicationResponse } from "../models/appResponse";
-import { UserRole } from "../models/user";
+import { PermissionRole } from "../models/user";
 
 const router = Router();
 
@@ -30,7 +30,11 @@ router.post(
   "/submit",
   [
     isAuthenticated,
-    hasRoles([UserRole.Applicant, UserRole.Board, UserRole.SuperReviewer]),
+    hasRoles([
+      PermissionRole.Applicant,
+      PermissionRole.Board,
+      PermissionRole.SuperReviewer,
+    ]),
     validateSchema(submitGradingJobSchema),
   ],
   async (req: Request, res: Response) => {
@@ -67,9 +71,10 @@ router.post(
       const responseData = responseDoc.data() as ApplicationResponse;
 
       const isOwner = responseData?.userId === userId;
-      const isAdmin = [UserRole.Board, UserRole.SuperReviewer].includes(
-        user.role,
-      );
+      const isAdmin = [
+        PermissionRole.Board,
+        PermissionRole.SuperReviewer,
+      ].includes(user.role);
 
       if (!isOwner && !isAdmin) {
         logger.warn(
