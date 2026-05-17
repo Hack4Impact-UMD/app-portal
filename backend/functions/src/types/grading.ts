@@ -62,7 +62,7 @@ export interface GradingJobDataInternal {
 }
 
 export const submitGradingJobSchema = z.object({
-  responseId: z.string(),
+  responseId: z.string().nonempty(),
   repoURL: z.url().refine((val) => {
     try {
       const url = new URL(val);
@@ -72,7 +72,8 @@ export const submitGradingJobSchema = z.object({
       return (
         url.protocol === "https:" &&
         allowedHosts.includes(url.hostname) &&
-        path.length === 2
+        path.length === 2 &&
+        url.hash
       );
     } catch {
       return false;
