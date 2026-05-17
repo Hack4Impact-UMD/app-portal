@@ -73,7 +73,8 @@ export const submitGradingJobSchema = z.object({
         url.protocol === "https:" &&
         allowedHosts.includes(url.hostname) &&
         path.length === 2 &&
-        url.hash
+        url.search === "" &&
+        url.hash === ""
       );
     } catch {
       return false;
