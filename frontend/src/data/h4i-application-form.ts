@@ -236,7 +236,6 @@ Thank you for your patience during the application and interview process. Based 
           questionType: QuestionType.MultipleChoice,
           optional: false,
           questionText: "Year",
-          multipleSelect: false,
           questionOptions: [
             "Freshman",
             "Sophomore",
@@ -292,7 +291,6 @@ CS classes are NOT a requirement for members, we take all majors!
           questionType: QuestionType.MultipleChoice,
           optional: true,
           questionText: "Gender",
-          multipleSelect: false,
           questionOptions: [
             "Woman",
             "Man",
@@ -313,7 +311,6 @@ CS classes are NOT a requirement for members, we take all majors!
           questionType: QuestionType.MultipleSelect,
           optional: true,
           questionText: "Racial/Ethnic Groups",
-          multipleSelect: true,
           questionOptions: [
             "American Indian or Alaska Native",
             "Asian",
@@ -391,7 +388,6 @@ You can choose which roles to apply to here! You are free to apply to as many ro
           secondaryText: `
 We consider applicants with all experience levels! You are not required to have technical experience, just a willingness to learn. People with fewer technical skills, but sufficient interest and passion, may be placed on a bootcamp group. If you don't have any of these yet, don't worry (especially if you're interested in sourcing). Please only check the following skills that you have used for a project (in class, internship, research, or for fun).
 `,
-          multipleSelect: true,
           questionOptions: [
             "HTML/CSS",
             "JavaScript",
@@ -474,7 +470,6 @@ We consider applicants with all experience levels! You are not required to have 
           questionType: QuestionType.MultipleSelect,
           optional: false,
           questionText: "How did you hear about us?",
-          multipleSelect: true,
           questionOptions: [
             "Friend/Word of mouth",
             "Social media",
@@ -546,7 +541,6 @@ Bootcamp essentially teaches members the foundation to join a project team. In b
           optional: false,
           questionText:
             "Are you interested in applying for project teams this semester?",
-          multipleSelect: false,
           questionOptions: ["Yes", "No", "Maybe - depends on my progress"],
         },
       ],
@@ -648,7 +642,6 @@ PM Specific Responsibilities:
           questionType: QuestionType.MultipleChoice,
           optional: false,
           questionText: "Rate your proficiency with Notion",
-          multipleSelect: false,
           questionOptions: [
             "1 - Unfamiliar",
             "2 - Basic knowledge",
@@ -662,7 +655,6 @@ PM Specific Responsibilities:
           questionType: QuestionType.MultipleChoice,
           optional: false,
           questionText: "Rate your proficiency with Agile",
-          multipleSelect: false,
           questionOptions: [
             "1 - Unfamiliar",
             "2 - Basic knowledge",
@@ -676,7 +668,6 @@ PM Specific Responsibilities:
           questionType: QuestionType.MultipleChoice,
           optional: false,
           questionText: "Rate your proficiency with kanban boards",
-          multipleSelect: false,
           questionOptions: [
             "1 - Unfamiliar",
             "2 - Basic knowledge",
@@ -937,7 +928,6 @@ Note: Those applying for the engineer and/or tech lead role must also complete a
           secondaryText:
             "Please only select Yes if you have **prior experience working with ML!**",
           questionOptions: ["Yes", "No"],
-          multipleSelect: false,
         },
       ],
     },
@@ -1019,7 +1009,6 @@ Focuses on developing and maintaining Hack4Impact-UMD’s social media presence 
           questionText:
             "If you are applying to both roles, please rank your preference here",
           secondaryText: "Select your top preference",
-          multipleSelect: false,
           questionOptions: [
             "Social Media Manager",
             "Outreach Coordinator",
@@ -1127,7 +1116,6 @@ Optional specialization tracks allow Outreach Coordinators to further support ke
           optional: false,
           questionText:
             "How comfortable are you going on video calls with a potential nonprofit organization?",
-          multipleSelect: false,
           questionOptions: [
             "Very comfortable",
             "Somewhat comfortable",

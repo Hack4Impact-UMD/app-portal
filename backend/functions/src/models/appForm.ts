@@ -22,7 +22,6 @@ const OptionQuestionSchema = ApplicationQuestionBaseSchema.extend({
     QuestionType.MultipleChoice,
     QuestionType.MultipleSelect,
   ]),
-  multipleSelect: z.boolean(),
   questionOptions: z.array(z.string()),
 });
 
