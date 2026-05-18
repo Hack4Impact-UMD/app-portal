@@ -1,32 +1,44 @@
 repos:
   - repo: local
     hooks:
-      - id: format-frontend
-        name: Format frontend
-        entry: npx --prefix frontend prettier --write --ignore-unknown
-        language: system
-        files: ^frontend/
-
-      - id: format-backend-functions
-        name: Format backend functions
-        entry: npx --prefix backend/functions prettier --write --ignore-unknown
-        language: system
-        files: ^backend/functions/
-
-      - id: lint-frontend
-        name: Lint frontend
-        entry: npx --prefix frontend eslint --fix --config frontend/eslint.config.js
-        language: system
-        files: ^frontend/.*\.(ts|tsx|js|jsx)$
-
-      - id: lint-backend-functions
-        name: Lint backend functions
-        entry: npx --prefix backend/functions eslint --fix --config backend/functions/eslint.config.mjs
-        language: system
-        files: ^backend/functions/.*\.(ts|js|mjs)$
-
       - id: check-staged-diff
         name: Check staged diff
         entry: git diff --staged --check
         language: system
         pass_filenames: false
+
+      - id: format-frontend
+        name: Format frontend
+        entry: pnpm exec oxfmt --write
+        language: system
+        files: ^frontend/
+
+      - id: format-backend-functions
+        name: Format backend functions
+        entry: pnpm exec oxfmt --write
+        language: system
+        files: ^backend/functions/
+
+      - id: format-shared
+        name: Format shared
+        entry: pnpm exec oxfmt --write
+        language: system
+        files: ^shared/
+
+      - id: lint-frontend
+        name: Lint frontend
+        entry: pnpm exec oxlint --fix
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js|jsx)$
+
+      - id: lint-backend-functions
+        name: Lint backend functions
+        entry: pnpm exec oxlint --fix
+        language: system
+        files: ^backend/functions/.*\.(ts|js|mjs)$
+
+      - id: lint-shared
+        name: Lint shared
+        entry: pnpm exec oxlint --fix
+        language: system
+        files: ^shared/.*\.(ts|js|mjs)$
