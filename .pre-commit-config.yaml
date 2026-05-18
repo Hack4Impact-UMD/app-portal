@@ -13,6 +13,18 @@ repos:
         language: system
         files: ^backend/functions/
 
+      - id: lint-frontend
+        name: Lint frontend
+        entry: npx --prefix frontend eslint --fix --config frontend/eslint.config.js
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js|jsx)$
+
+      - id: lint-backend-functions
+        name: Lint backend functions
+        entry: npx --prefix backend/functions eslint --fix --config backend/functions/eslint.config.mjs
+        language: system
+        files: ^backend/functions/.*\.(ts|js|mjs)$
+
       - id: check-staged-diff
         name: Check staged diff
         entry: git diff --staged --check

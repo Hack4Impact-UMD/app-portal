@@ -1,7 +1,6 @@
 {
   "name": "functions",
   "scripts": {
-    "lint": "eslint --ext .js,.ts ./src/",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "serve": "npm run build && firebase emulators:start --only functions",
@@ -9,7 +8,10 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "format": "prettier . --write"
+    "lint": "oxlint .",
+    "lint:fix": "oxlint . --fix",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check ."
   },
   "engines": {
     "node": "22"

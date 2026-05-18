@@ -13,7 +13,12 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "lint": "echo \"No lint configured for shared; TODO\"",
-    "format": "prettier . --write"
+    "lint": "oxlint .",
+    "lint:fix": "oxlint . --fix",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check ."
+  },
+  "dependencies": {
+    "zod": "catalog:"
   }
 }
