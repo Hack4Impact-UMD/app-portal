@@ -16,9 +16,8 @@
       ],
       "predeploy": [
         "pnpm install --frozen-lockfile",
-        "pnpm --filter @app-portal/shared build",
         "pnpm --filter functions lint",
-        "pnpm --filter functions build"
+        "pnpm --filter functions... build"
       ]
     }
   ],
@@ -51,7 +50,7 @@
   },
   "hosting": {
     "public": "frontend/dist",
-    "predeploy": "pnpm install --frozen-lockfile && pnpm --filter @app-portal/shared build && pnpm --filter frontend build",
+    "predeploy": "pnpm install --frozen-lockfile && pnpm --filter frontend... build",
     "ignore": [
       "firebase.json",
       "**/.*",
