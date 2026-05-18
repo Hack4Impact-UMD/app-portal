@@ -16,7 +16,6 @@ export enum ApplicationStatus {
   UnderReview = "in-review",
   Interview = "interview",
   Decided = "decided",
-  InActive = "inactive",
 }
 
 export enum ReviewStatus {
@@ -52,8 +51,8 @@ export interface IUserProfile {
 
 export interface ApplicantUserProfile extends IUserProfile {
   role: PermissionRole.Applicant;
-  activeApplicationIds: string[];
-  inactiveApplicationIds: string[];
+  activeApplications?: string[];
+  inactiveApplications?: string[];
   isInternal?: boolean; // for club members reapplying, will skip to interview
 }
 
@@ -92,6 +91,7 @@ export type AppReviewAssignment = {
 };
 
 export type Assignment = AppReviewAssignment | InterviewAssignment;
+
 // stores the actual user submitted application responses
 export interface ApplicationResponse {
   id: string;
@@ -149,6 +149,7 @@ export interface ApplicationInterviewData {
 
 export interface SectionResponse {
   sectionId: string;
+  sectionName: string;
   questions: QuestionResponse[];
 }
 
@@ -182,4 +183,7 @@ export type ReviewRubricQuestion = {
   minValue?: number; // assume 0
 };
 
-export type CsvRow = Record<string, string | number | boolean | null | undefined>;
+export type CsvRow = Record<
+  string,
+  string | number | boolean | null | undefined
+>;

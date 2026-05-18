@@ -1,23 +1,70 @@
 import { z } from "zod";
-import { ApplicantRole } from "./appResponse";
+import { ApplicantRole, QuestionType } from "./appResponse";
 import { Timestamp } from "firebase-admin/firestore";
+import { ReviewStatus } from "./appStatus";
 
-export const ApplicationQuestion = z.object({
+const ApplicationQuestionBaseSchema = z.object({
   questionId: z.string().nonempty(),
-  questionType: z.string().nonempty(),
   optional: z.boolean(),
   questionText: z.string(),
   secondaryText: z.string().optional(),
+});
+
+const TextQuestionSchema = ApplicationQuestionBaseSchema.extend({
+  questionType: z.enum([QuestionType.ShortAnswer, QuestionType.LongAnswer]),
+  placeholderText: z.string(),
   minimumWordCount: z.number().optional(),
   maximumWordCount: z.number().optional(),
 });
 
-export const ApplicationSectionSchema = z.object({
-  sectionName: z.string(),
-  sectionId: z.string(),
-  forRoles: z.array(z.enum(ApplicantRole)).optional(),
-  questions: z.array(ApplicationQuestion),
+const OptionQuestionSchema = ApplicationQuestionBaseSchema.extend({
+  questionType: z.enum([
+    QuestionType.MultipleChoice,
+    QuestionType.MultipleSelect,
+  ]),
+  questionOptions: z.array(z.string()),
 });
+
+const FileUploadQuestionSchema = ApplicationQuestionBaseSchema.extend({
+  questionType: z.literal(QuestionType.FileUpload),
+  fileId: z.string(),
+});
+
+const RoleSelectQuestionSchema = ApplicationQuestionBaseSchema.extend({
+  questionType: z.literal(QuestionType.RoleSelect),
+});
+
+export const ApplicationQuestionSchema = z.discriminatedUnion("questionType", [
+  TextQuestionSchema,
+  OptionQuestionSchema,
+  FileUploadQuestionSchema,
+  RoleSelectQuestionSchema,
+]);
+
+export const ApplicationSectionSchema = z.object({
+  sectionId: z.string().nonempty(),
+  sectionName: z.string().nonempty(),
+  description: z.string().optional(),
+  forRoles: z.array(z.enum(ApplicantRole)).optional(),
+  questions: z.array(ApplicationQuestionSchema),
+  hideFromReviewers: z.boolean().optional(),
+});
+
+const RoleDecisionLetterSchema = z.object({
+  [ApplicantRole.Bootcamp]: z.string(),
+  team: z.string(),
+});
+
+export const DecisionLetterSchema = z.object({
+  [ReviewStatus.Accepted]: RoleDecisionLetterSchema,
+  [ReviewStatus.Waitlisted]: RoleDecisionLetterSchema,
+  [ReviewStatus.Denied]: z.string(),
+});
+
+export const ScoreWeightsSchema = z.record(
+  z.enum(ApplicantRole),
+  z.record(z.string(), z.number().min(0).max(4)),
+);
 
 export const ApplicationFormSchema = z.object({
   id: z.string().nonempty(),
@@ -28,8 +75,11 @@ export const ApplicationFormSchema = z.object({
   sections: z.array(ApplicationSectionSchema),
   decisionsReleased: z.boolean().default(false),
   disabledRoles: z.array(z.enum(ApplicantRole)).optional(),
+  decisionLetter: DecisionLetterSchema.optional(),
+  scoreWeights: ScoreWeightsSchema,
+  interviewScoreWeights: ScoreWeightsSchema,
 });
 
 export type ApplicationSection = z.infer<typeof ApplicationSectionSchema>;
 export type ApplicationForm = z.infer<typeof ApplicationFormSchema>;
-export type ApplicationQuestion = z.infer<typeof ApplicationQuestion>;
+export type ApplicationQuestion = z.infer<typeof ApplicationQuestionSchema>;

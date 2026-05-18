@@ -41,23 +41,28 @@ export default function SubmitGradingJobDialog({
       return;
     }
 
-    if (!responseId || ! repoURL) {
+    const normalizedResponseId = responseId.trim();
+    const normalizedRepoUrl = repoURL.trim();
+
+    if (!normalizedResponseId || !normalizedRepoUrl) {
       throwErrorToast("Response ID or repo URL not provided");
       return;
     }
 
     submitGradingJob(
       {
-        responseId,
-        repoURL,
+        responseId: normalizedResponseId,
+        repoURL: normalizedRepoUrl,
         token: (await token()) ?? "",
       },
       {
         onSuccess: (jobId) => {
-          throwSuccessToast(`Grading job queued successfully! Job ID: ${jobId}`);
+          throwSuccessToast(
+            `Grading job queued successfully! Job ID: ${jobId}`,
+          );
           onOpenChange(false);
         },
-        onError: (error: any) => {
+        onError: (error) => {
           throwErrorToast("Failed to submit grading job: " + error.message);
         },
       },
@@ -75,7 +80,8 @@ export default function SubmitGradingJobDialog({
         <DialogHeader>
           <DialogTitle>Submit Grading Job</DialogTitle>
           <DialogDescription>
-            Submit a grading job for an application response. This will queue the autograder to run tests.
+            Submit a grading job for an application response. This will queue
+            the autograder to run tests.
           </DialogDescription>
         </DialogHeader>
 
@@ -107,7 +113,7 @@ export default function SubmitGradingJobDialog({
           <Button
             type="submit"
             onClick={handleSubmit}
-            disabled={isPending || !responseId || !repoURL}
+            disabled={isPending || !responseId.trim() || !repoURL.trim()}
           >
             {isPending ? "Submitting..." : "Submit Job"}
           </Button>

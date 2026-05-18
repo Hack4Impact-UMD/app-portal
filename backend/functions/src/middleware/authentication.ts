@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { logger } from "firebase-functions";
 import * as admin from "firebase-admin";
 import { db } from "..";
-import { UserProfile, UserRole } from "../models/user";
+import { PermissionRole, UserProfile } from "../models/user";
 import { CollectionReference } from "firebase-admin/firestore";
 
 // from the code sample here: https://github.com/firebase/functions-samples/blob/main/Node-1st-gen/authorized-https-endpoint/functions/index.js
@@ -70,7 +70,7 @@ export async function isAuthenticated(
   }
 }
 
-export function hasRoles(roles: UserRole[]) {
+export function hasRoles(roles: PermissionRole[]) {
   return async (req: Request, res: Response, next: NextFunction) => {
     logger.info("Checking if user has roles:", roles);
     if (!req.token) {

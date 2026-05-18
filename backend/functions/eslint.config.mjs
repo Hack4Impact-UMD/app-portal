@@ -55,6 +55,7 @@ export default [
       "import/no-unresolved": 0,
       "object-curly-spacing": 0,
       eqeqeq: ["error", "always", { null: "ignore" }],
+      "@typescript-eslint/no-unsafe-enum-comparison": "error",
       "@typescript-eslint/consistent-type-assertions": [
         "error",
         {

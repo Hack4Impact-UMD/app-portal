@@ -2,25 +2,31 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 import { ApplicantRole, SectionResponseSchema } from "./appResponse";
 
-export type UserRole = "applicant" | "reviewer" | "board" | "super-reviewer";
+export enum PermissionRole {
+  Applicant = "applicant",
+  Reviewer = "reviewer",
+  Board = "board",
+  SuperReviewer = "super-reviewer",
+}
 
-export type UserProfile = {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  dateCreated: Timestamp;
-  activeApplications?: string[];
-  inactiveApplications?: string[];
-  isInternal?: boolean;
-  inactive?: boolean;
-};
-
-export const userRegisterFormSchema = z.object({
+export const UserProfileSchema = z.object({
+  id: z.string().nonempty(),
   email: z.email("Must provide a valid email"),
   firstName: z.string().nonempty("First name can't be empty"),
   lastName: z.string().nonempty("Last name can't be empty"),
+  role: z.enum(PermissionRole),
+  dateCreated: z.custom<Timestamp>((d) => d instanceof Timestamp),
+  activeApplications: z.array(z.string()).optional(),
+  inactiveApplications: z.array(z.string()).optional(),
+  isInternal: z.boolean().optional(),
+  inactive: z.boolean().optional(),
+});
+
+export const userRegisterFormSchema = UserProfileSchema.pick({
+  email: true,
+  firstName: true,
+  lastName: true,
+}).extend({
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -33,15 +39,16 @@ export const userRegisterFormSchema = z.object({
     ),
 });
 
-export const updateUserSchema = z.object({
-  email: z.email("Must provide a valid email"),
-  firstName: z.string().nonempty("First name can't be empty"),
-  lastName: z.string().nonempty("Last name can't be empty"),
+export const updateUserSchema = UserProfileSchema.pick({
+  email: true,
+  firstName: true,
+  lastName: true,
 });
 
-export const createInternalApplicantSchema = z.object({
-  firstName: z.string().nonempty("First name can't be empty"),
-  lastName: z.string().nonempty("Last name can't be empty"),
+export const createInternalApplicantSchema = UserProfileSchema.pick({
+  firstName: true,
+  lastName: true,
+}).extend({
   formId: z.string().nonempty("Form ID can't be empty"),
   rolesApplied: z
     .array(z.enum(ApplicantRole))
@@ -51,6 +58,7 @@ export const createInternalApplicantSchema = z.object({
     .nonempty("Must provide section responses"),
 });
 
+export type UserProfile = z.infer<typeof UserProfileSchema>;
 export type UserRegisterForm = z.infer<typeof userRegisterFormSchema>;
 export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type CreateInternalApplicant = z.infer<

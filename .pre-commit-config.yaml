@@ -12,3 +12,9 @@ repos:
         entry: npx --prefix backend/functions prettier --write --ignore-unknown
         language: system
         files: ^backend/functions/
+
+      - id: check-staged-diff
+        name: Check staged diff
+        entry: git diff --staged --check
+        language: system
+        pass_filenames: false

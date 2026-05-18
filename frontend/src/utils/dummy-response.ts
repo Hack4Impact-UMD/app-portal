@@ -88,6 +88,7 @@ export function generateSectionResponses(
 
     sectionResponses.push({
       sectionId: section.sectionId,
+      sectionName: section.sectionName,
       questions: questionResponses,
     });
   }

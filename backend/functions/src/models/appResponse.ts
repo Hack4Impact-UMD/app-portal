@@ -22,18 +22,6 @@ export enum QuestionType {
   RoleSelect = "role-select",
 }
 
-export interface QuestionResponse {
-  questionType: QuestionType;
-  applicationFormId: string;
-  questionId: string;
-  response: string | string[];
-}
-
-export interface SectionResponse {
-  sectionId: string;
-  questions: QuestionResponse[];
-}
-
 export enum ApplicationStatus {
   InProgress = "in-progress",
   Submitted = "submitted",
@@ -41,48 +29,6 @@ export enum ApplicationStatus {
   Interview = "interview",
   Decided = "decided",
 }
-export interface ApplicationResponse {
-  id: string;
-  userId: string;
-  applicationFormId: string;
-  rolesApplied: ApplicantRole[];
-  sectionResponses: SectionResponse[];
-  status: ApplicationStatus;
-  dateSubmitted: Timestamp;
-  decisionLetterId?: string;
-}
-
-export const appResponseFormSchema = z.object({
-  applicationFormId: z.string().nonempty("Cant have empty applicationFormId"),
-  id: z.string().nonempty("Cant have empty id"),
-  userId: z.string().nonempty("Cant have empty userId"),
-  rolesApplied: z
-    .array(z.enum(ApplicantRole))
-    .nonempty("Must submit at least one role"),
-  sectionResponses: z
-    .array(
-      z.object({
-        sectionId: z.string(),
-        forRoles: z.array(z.enum(ApplicantRole)).optional(),
-        questions: z.array(
-          z.object({
-            applicationFormId: z.string(),
-            questionId: z.string(),
-            questionType: z.enum(QuestionType),
-            response: z.string().or(z.array(z.string())).optional(),
-          }),
-        ),
-      }),
-    )
-    .nonempty("At least one section must be provided"),
-  status: z
-    .enum(ApplicationStatus)
-    .refine((v) => v === ApplicationStatus.InProgress, {
-      message: "Application status must be in progress to submit",
-    }),
-});
-
-export type AppResponseForm = z.infer<typeof appResponseFormSchema>;
 
 export const QuestionResponseSchema = z.object({
   questionType: z.enum(QuestionType),
@@ -91,18 +37,56 @@ export const QuestionResponseSchema = z.object({
   response: z.string().or(z.array(z.string())),
 });
 
+export type QuestionResponse = z.infer<typeof QuestionResponseSchema>;
+
 export const SectionResponseSchema = z.object({
   sectionId: z.string().nonempty(),
+  sectionName: z.string().nonempty(),
   questions: z.array(QuestionResponseSchema),
 });
 
+export type SectionResponse = z.infer<typeof SectionResponseSchema>;
+
 export const ApplicationResponseSchema = z.object({
-  id: z.string().nonempty(),
-  applicationFormId: z.string().nonempty(),
+  id: z.string().nonempty("Cannot have empty response ID"),
+  userId: z.string().nonempty("Cannot have empty user ID"),
+  applicationFormId: z
+    .string()
+    .nonempty("Cannot have empty application form ID"),
   rolesApplied: z.array(z.enum(ApplicantRole)),
-  sectionResponses: z.array(SectionResponseSchema),
+  sectionResponses: z
+    .array(SectionResponseSchema)
+    .nonempty("Must submit at least one section response"),
+  status: z.enum(ApplicationStatus),
+  dateSubmitted: z.custom<Timestamp>((d) => d instanceof Timestamp),
 });
 
-export type ApplicationResponseInput = z.infer<
-  typeof ApplicationResponseSchema
+export type ApplicationResponse = z.infer<typeof ApplicationResponseSchema>;
+
+export const ApplicationResponseSubmitRequestSchema =
+  ApplicationResponseSchema.omit({ dateSubmitted: true }).extend({
+    rolesApplied: z
+      .array(z.enum(ApplicantRole))
+      .nonempty("Must submit at least one role"),
+    status: z
+      .enum(ApplicationStatus)
+      .refine((v) => v === ApplicationStatus.InProgress, {
+        message: "Application status must be in progress to submit",
+      }),
+  });
+
+export type ApplicationResponseSubmitRequest = z.infer<
+  typeof ApplicationResponseSubmitRequestSchema
+>;
+
+export const ApplicationResponseSaveRequestSchema =
+  ApplicationResponseSchema.pick({
+    id: true,
+    applicationFormId: true,
+    rolesApplied: true,
+    sectionResponses: true,
+  });
+
+export type ApplicationResponseSaveRequest = z.infer<
+  typeof ApplicationResponseSaveRequestSchema
 >;

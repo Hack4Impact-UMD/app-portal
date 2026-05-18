@@ -11,6 +11,7 @@ import {
   DecisionLetterStatus,
 } from "../models/confirmation";
 import { validateSchema } from "../middleware/validation";
+import { PermissionRole } from "../models/user";
 
 const router = Router();
 const APPLICATION_STATUS_COLLECTION = "app-status";
@@ -99,7 +100,7 @@ router.post(
   "/decision",
   [
     isAuthenticated,
-    hasRoles(["applicant"]),
+    hasRoles([PermissionRole.Applicant]),
     validateSchema(DecisionLetterStatusSchema),
   ],
   async (req: Request, res: Response) => {
@@ -152,7 +153,7 @@ router.post(
 
       const internalStatus = statusDocs.docs[0].data();
 
-      if (internalStatus.status !== "accepted") {
+      if (internalStatus.status !== ReviewStatus.Accepted) {
         logger.warn(
           `User ${userId} attempted to confirm but was not accepted. Status ID: ${internalStatusId}.`,
         );

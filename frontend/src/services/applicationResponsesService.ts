@@ -15,6 +15,7 @@ import {
   ApplicationForm,
   ApplicationResponse,
   ApplicationStatus,
+  QuestionType,
   SectionResponse,
   ValidationError,
 } from "../types/types";
@@ -138,16 +139,17 @@ export async function fetchOrCreateApplicationResponse(
   }
   console.log("creating new response object!");
 
-  const sectionResponses: SectionResponse[] = form.sections.map(
+  const sectionResponses = form.sections.map(
     (section): SectionResponse => ({
       sectionId: section.sectionId,
+      sectionName: section.sectionName,
       questions: section.questions.map((question) => ({
         questionId: question.questionId,
         questionType: question.questionType,
         applicationFormId: form.id,
         response:
-          question.questionType === "multiple-select" ||
-          question.questionType === "role-select"
+          question.questionType === QuestionType.MultipleSelect ||
+          question.questionType === QuestionType.RoleSelect
             ? []
             : "",
       })),

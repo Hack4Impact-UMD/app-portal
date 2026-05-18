@@ -2,7 +2,6 @@ import express from "express";
 import authRouter from "./routes/auth";
 import statusRouter from "./routes/status";
 import applicationRouter from "./routes/application";
-import interviewRouter from "./routes/interview";
 import gradingRouter from "./routes/grading";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -30,7 +29,6 @@ app.use(appcheck);
 app.use("/auth", authRouter);
 app.use("/status", statusRouter);
 app.use("/application", applicationRouter);
-app.use("/interview", interviewRouter);
 app.use("/autograder", gradingRouter);
 
 app.get("/", (_, res) => {

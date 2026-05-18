@@ -27,6 +27,7 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
+      "@typescript-eslint/no-unsafe-enum-comparison": "error",
       eqeqeq: ["error", "always", { null: "ignore" }],
       "@typescript-eslint/consistent-type-assertions": [
         "error",

@@ -3,10 +3,11 @@ import { db } from "../index";
 import { validateSchema } from "../middleware/validation";
 import {
   ApplicationResponse,
-  ApplicationResponseInput,
-  ApplicationResponseSchema,
+  ApplicationResponseSaveRequest,
+  ApplicationResponseSaveRequestSchema,
+  ApplicationResponseSubmitRequest,
+  ApplicationResponseSubmitRequestSchema,
   ApplicationStatus,
-  appResponseFormSchema,
   QuestionResponse,
   QuestionType,
 } from "../models/appResponse";
@@ -14,14 +15,11 @@ import { CollectionReference, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { hasRoles, isAuthenticated } from "../middleware/authentication";
 import { ApplicationForm } from "../models/appForm";
-import {
-  PermissionRole,
-  RoleReviewRubric,
-  roleReviewRubricSchema,
-} from "../models/appReview";
+import { RoleReviewRubric, roleReviewRubricSchema } from "../models/appReview";
 import { InternalApplicationStatus, ReviewStatus } from "../models/appStatus";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
+import { PermissionRole } from "../models/user";
 // import * as admin from "firebase-admin"
 
 const router = Router();
@@ -45,7 +43,7 @@ type ValidationError = {
 };
 
 function validateResponses(
-  applicationResponse: ApplicationResponse,
+  applicationResponse: ApplicationResponseSubmitRequest,
   applicationForm: ApplicationForm,
 ): ValidationError[] {
   const errors: ValidationError[] = [];
@@ -53,14 +51,21 @@ function validateResponses(
   // fill formQuestions map
   const formQuestions = new Map<string, QuestionMetadata>(
     applicationForm.sections.flatMap((section) =>
-      section.questions.map((q) => [
-        q.questionId,
-        {
+      section.questions.map((q) => {
+        const metadata: QuestionMetadata = {
           optional: q.optional,
-          minimumWordCount: q.minimumWordCount,
-          maximumWordCount: q.maximumWordCount,
-        },
-      ]),
+        };
+
+        if (
+          q.questionType === QuestionType.ShortAnswer ||
+          q.questionType === QuestionType.LongAnswer
+        ) {
+          metadata.minimumWordCount = q.minimumWordCount;
+          metadata.maximumWordCount = q.maximumWordCount;
+        }
+
+        return [q.questionId, metadata];
+      }),
     ),
   );
 
@@ -173,12 +178,12 @@ router.post(
   "/submit",
   [
     isAuthenticated,
-    hasRoles(["applicant"]),
-    validateSchema(appResponseFormSchema),
+    hasRoles([PermissionRole.Applicant]),
+    validateSchema(ApplicationResponseSubmitRequestSchema),
   ],
   async (req: Request, res: Response) => {
     try {
-      const applicationResponse = req.body as ApplicationResponse;
+      const applicationResponse = req.body as ApplicationResponseSubmitRequest;
 
       logger.info(`${req.token?.email} is submitting an application!`);
 
@@ -207,7 +212,7 @@ router.post(
 
       // Check that the response is submitted before the due date specified by the application form
       const applicationFormDoc = await applicationFormCollection
-        .doc(applicationResponse.applicationFormId)
+        .doc(formattedApplicationDoc.applicationFormId)
         .get();
       const applicationFormDocData = applicationFormDoc.data();
 
@@ -243,9 +248,13 @@ router.post(
       }
 
       // Proceed with updating submission status
-      const newApp = {
-        ...applicationResponse,
-        status: "submitted",
+      const newApp: ApplicationResponse = {
+        id: formattedApplicationDoc.id,
+        userId: formattedApplicationDoc.userId,
+        applicationFormId: formattedApplicationDoc.applicationFormId,
+        rolesApplied: applicationResponse.rolesApplied,
+        sectionResponses: applicationResponse.sectionResponses,
+        status: ApplicationStatus.Submitted,
         dateSubmitted: Timestamp.now(),
       };
       await applicationResponseCollection
@@ -289,10 +298,10 @@ router.put(
   [
     isAuthenticated,
     hasRoles([PermissionRole.Applicant]),
-    validateSchema(ApplicationResponseSchema),
+    validateSchema(ApplicationResponseSaveRequestSchema),
   ],
   async (req: Request, res: Response) => {
-    const input = req.body as ApplicationResponseInput;
+    const input = req.body as ApplicationResponseSaveRequest;
     const respId = req.params.respId;
     logger.info("Received save request for response ID: ", respId);
 
@@ -354,7 +363,7 @@ router.put(
   },
 );
 
-// TEMPORARY ENDPOINT - Remove after form upload is complete
+// todo: this should be updated to test newer ApplicationForm fields
 router.post(
   "/forms",
   [isAuthenticated, hasRoles([PermissionRole.SuperReviewer])],
