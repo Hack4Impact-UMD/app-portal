@@ -4,27 +4,28 @@
 
 This repository contains the source code for the Hack4Impact-UMD Application Portal. The interface includes features for applicants to submit and view the status of their applications, and features to make reviewing applications more efficient for club members.
 
-In addition, the project is integrated with [Professor](https://github.com/Hack4Impact-UMD/professor), our autograder service for asynchronously testing engineering assessments in isolation. 
+In addition, the project is integrated with [Professor](https://github.com/Hack4Impact-UMD/professor), our autograder service.
 
 ## ✨ Tech Stack
+
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Package Manager**: [pnpm](https://pnpm.io/)
+- **Linter and Formatter**: [oxlint + oxfmt](https://oxc.rs/)
 
 ### Frontend
 
 - **Framework:** [React](https://reactjs.org/)
 - **Build Tool:** [Vite](https://vitejs.dev/)
-- **Language:** [TypeScript](https://www.typescriptlang.org/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components:** [shadcn/ui](https://ui.shadcn.com/), [Radix UI](https://www.radix-ui.com/)
 - **Data Fetching:** [TanStack Query](https://tanstack.com/query/latest)
 - **Routing:** [React Router](https://reactrouter.com/)
-- **Schema Validation:** [Zod](https://zod.dev/)
 
 ### Backend
 
 - **Runtime:** [Node.js](https://nodejs.org/)
 - **Framework:** [Express](https://expressjs.com/)
 - **Platform:** [Firebase](https://firebase.google.com/) (Cloud Functions, Firestore, Authentication, Storage)
-- **Language:** [TypeScript](https://www.typescriptlang.org/)
 - **Schema Validation:** [Zod](https://zod.dev/)
 - **Task Queue:** [Cloud Tasks](https://cloud.google.com/tasks)
 
@@ -63,56 +64,37 @@ backend/
 
 ## 🚀 Building and Running Locally
 
-### Frontend
-
-1.  Navigate to the `frontend` directory:
+1.  From the `app-portal` directory, install all dependencies with:
     ```bash
-    cd frontend
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Run the development server:
-    ```bash
-    npm run dev
+    pnpm install
     ```
 
-For more information on fetching data from the backend, see the [Data Fetching Guide](./DataFetching.md).
+2.  Build all workspaces:
+    ```bash
+    pnpm build
+    ```
+3.  Run the frontend server:
+    ```bash
+    pnpm --filter frontend dev
+    ```
 
-### Backend
+4.  Run the backend server:
+    ```bash
+    pnpm --filter functions serve
+    ```
 
-For instructions on setting up the Firebase emulators, see the [Firebase Emulator Setup Guide](./backend/README.md).
-
-1.  Navigate to the `backend/functions` directory:
-    ```bash
-    cd backend/functions
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Build the project:
-    ```bash
-    npm run build
-    ```
-4.  Run the Firebase emulators:
-    ```bash
-    npm run serve
-    ```
+Additional Guides:
+- See the [Data Fetching Guide](./DataFetching.md).
+- See the [Firebase Emulator Setup Guide](./backend/README.md).
 
 ### Formatting
 
-This repository includes pre-commit hooks that format the frontend and backend
-functions before each commit. Enable by running:
+This repository includes pre-commit hooks. Enable by running:
 
 ```bash
 pip install pre-commit
 pre-commit install
 ```
-
-The hooks run Prettier on matching **staged files** in `frontend` and `backend/functions`.
-To format everything, run `pre-commit run --all-files` (or `npm run format` inside each package).
 
 ## 🖼️ Screenshots
 
