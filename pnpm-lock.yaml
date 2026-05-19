@@ -192,9 +192,6 @@ importers:
       uuid:
         specifier: ^11.1.0
         version: 11.1.1
-      zod:
-        specifier: ^4.0.10
-        version: 4.4.3
     devDependencies:
       '@tailwindcss/typography':
         specifier: ^0.5.16
