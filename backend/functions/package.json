@@ -8,8 +8,8 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "lint": "oxlint .",
-    "lint:fix": "oxlint . --fix",
+    "lint": "oxlint src",
+    "lint:fix": "oxlint src --fix",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check ."
   },
