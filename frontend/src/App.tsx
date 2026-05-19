@@ -114,9 +114,7 @@ const RubricBuilderPage = lazy(
 );
 const SuperReviewerInterviewersDashboard = lazy(
   () =>
-    import(
-      "./pages/super-reviewer/dashboards/SuperReviewerInterviewersDashboard"
-    ),
+    import("./pages/super-reviewer/dashboards/SuperReviewerInterviewersDashboard"),
 );
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 

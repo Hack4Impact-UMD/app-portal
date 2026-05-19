@@ -61,7 +61,9 @@ const MESSAGES = [
 
 export default function Loading() {
   const [dots, setDots] = useState(1);
-  const [message] = useState(() => MESSAGES[Math.floor(Math.random() * MESSAGES.length)]);
+  const [message] = useState(
+    () => MESSAGES[Math.floor(Math.random() * MESSAGES.length)],
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -73,12 +75,11 @@ export default function Loading() {
 
   return (
     <div className="min-h-96 w-full p-4 grow flex gap-3 flex-col items-center justify-center">
-      <img
-        className="w-full max-w-56"
-        src="/terra.png"
-        alt="Terra Image"
-      />
-      <p className="text-center">{message}{".".repeat(dots)}</p>
+      <img className="w-full max-w-56" src="/terra.png" alt="Terra Image" />
+      <p className="text-center">
+        {message}
+        {".".repeat(dots)}
+      </p>
     </div>
   );
 }

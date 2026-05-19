@@ -5,7 +5,7 @@ import { getAppCheckToken } from "./appCheckService";
 export async function submitGradingJob(
   responseId: string,
   repoURL: string,
-  token: string
+  token: string,
 ): Promise<string> {
   const appCheckToken = await getAppCheckToken();
 
@@ -17,7 +17,7 @@ export async function submitGradingJob(
         Authorization: `Bearer ${token}`,
         "X-APPCHECK": appCheckToken,
       },
-    }
+    },
   );
 
   return response.data.jobId;
