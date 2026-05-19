@@ -17,8 +17,5 @@
     "lint:fix": "oxlint . --fix",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check ."
-  },
-  "dependencies": {
-    "zod": "catalog:"
   }
 }
