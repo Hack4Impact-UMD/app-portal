@@ -26,8 +26,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - run: echo "VITE_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
-      - run: pnpm --filter @app-portal/shared build
-      - run: pnpm --filter frontend build
+      - run: pnpm --filter frontend... build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
