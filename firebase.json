@@ -17,7 +17,7 @@
       "predeploy": [
         "pnpm install --frozen-lockfile",
         "pnpm --filter functions build",
-        "isolate",
+        "pnpm exec isolate",
         "pnpm --dir backend/functions/isolate install --frozen-lockfile"
       ]
     }
