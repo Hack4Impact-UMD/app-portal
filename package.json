@@ -15,6 +15,7 @@
     },
     "devDependencies": {
         "concurrently": "^9.2.1",
+        "isolate-package": "^1.33.0",
         "oxfmt": "^0.50.0",
         "oxlint": "^1.65.0",
         "oxlint-tsgolint": "^0.22.1",

@@ -8,3 +8,8 @@ export enum ApplicantRole {
   SocialMedia = "social-media-manager",
   OutreachCoord = "outreach-coordinator",
 }
+
+export type Foo = {
+  name: string
+};
+

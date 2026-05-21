@@ -3,6 +3,7 @@
     "module": "es2022",
     "esModuleInterop": true,
     "moduleResolution": "bundler",
+    "customConditions": ["source"],
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "rootDir": "src",
