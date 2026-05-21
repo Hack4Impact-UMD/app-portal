@@ -19,4 +19,9 @@ await esbuild.build({
     "uuid",
     "zod",
   ],
+  // @google-cloud/tasks uses import.meta.url internally; polyfill it for CJS output.
+  define: { "import.meta.url": "importMetaUrl" },
+  banner: {
+    js: 'const importMetaUrl = require("url").pathToFileURL(__filename).href;',
+  },
 });
