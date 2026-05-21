@@ -157,7 +157,7 @@ export async function getUserByEmail(email: string): Promise<UserProfile> {
 
   const results = await getDocs(q);
   if (!results.empty) {
-    return results.docs.at(0)?.data() as UserProfile;
+    return results.docs[0].data() as UserProfile;
   } else {
     throw new Error(`User with email ${email} does not exist!`);
   }

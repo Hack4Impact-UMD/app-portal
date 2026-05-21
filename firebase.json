@@ -5,7 +5,7 @@
   },
   "functions": [
     {
-      "source": "backend/functions",
+      "source": "backend/functions/isolate",
       "codebase": "default",
       "ignore": [
         "node_modules",
@@ -15,9 +15,10 @@
         "*.local"
       ],
       "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" install",
-        "npm --prefix \"$RESOURCE_DIR\" run lint",
-        "npm --prefix \"$RESOURCE_DIR\" run build"
+        "pnpm install --frozen-lockfile",
+        "pnpm --filter functions build",
+        "pnpm exec isolate",
+        "pnpm --dir backend/functions/isolate install --frozen-lockfile"
       ]
     }
   ],
@@ -50,7 +51,7 @@
   },
   "hosting": {
     "public": "frontend/dist",
-    "predeploy": "cd frontend && npm install && npm run build",
+    "predeploy": "pnpm install --frozen-lockfile && pnpm --filter frontend build",
     "ignore": [
       "firebase.json",
       "**/.*",

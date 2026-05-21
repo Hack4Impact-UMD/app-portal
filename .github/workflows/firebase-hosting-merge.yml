@@ -21,26 +21,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
 
-      - name: Cache npm dependencies for functions
-        uses: actions/cache@v4
-        with:
-          path: backend/functions/node_modules
-          key: ${{ runner.os }}-npm-functions-${{ hashFiles('backend/functions/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-functions-
-      
-      - name: Cache npm dependencies for frontend
-        uses: actions/cache@v4
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-npm-frontend-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-frontend-
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Install Firebase CLI
         run: npm i -g firebase-tools

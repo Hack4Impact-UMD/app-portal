@@ -31,8 +31,8 @@ router.get(
   "/:responseId/:role",
   [isAuthenticated],
   async (req: Request, res: Response) => {
-    const response = req.params.responseId;
-    const role = req.params.role;
+    const response = req.params.responseId as string;
+    const role = req.params.role as string;
 
     const responseDoc = (
       await db.collection(APPLICATION_RESPONSE_COLLECTION).doc(response).get()

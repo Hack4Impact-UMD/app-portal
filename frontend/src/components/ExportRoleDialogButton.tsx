@@ -32,7 +32,9 @@ export function ExportRoleDialogButton({
       const data = onExport(role);
 
       if (data.length === 0) {
-        throwErrorToast(`No ${displayApplicantRoleName(role)} applicants to export!`);
+        throwErrorToast(
+          `No ${displayApplicantRoleName(role)} applicants to export!`,
+        );
         return;
       }
 

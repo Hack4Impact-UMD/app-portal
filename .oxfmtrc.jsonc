@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "frontend/dist",
+    "backend/functions/lib",
+    "backend/emulator_data*",
+    "shared/dist",
+  ],
+}

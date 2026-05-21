@@ -29,7 +29,7 @@ export type QualifiedAppRow = {
   };
   assignments: InterviewAssignment[];
   averageScore: number | null;
-  individualScores: number[]; 
+  individualScores: number[];
   responseId: string;
   interviews: ApplicationInterviewData[];
   status?: InternalApplicationStatus;
@@ -140,15 +140,21 @@ export function flattenRows(
       if (interview && row.individualScores[i] !== undefined) {
         flat[`Interview ${n} - Overall Score`] = row.individualScores[i];
         scoreKeys.forEach((key) => {
-          flat[`Interview ${n} - ${key}`] = interview.interviewScores[key] ?? "";
+          flat[`Interview ${n} - ${key}`] =
+            interview.interviewScores[key] ?? "";
         });
         noteKeys.forEach((key) => {
-          flat[`Interview ${n} Notes - ${key}`] = interview.interviewerNotes[key] ?? "";
+          flat[`Interview ${n} Notes - ${key}`] =
+            interview.interviewerNotes[key] ?? "";
         });
       } else {
         flat[`Interview ${n} - Overall Score`] = "";
-        scoreKeys.forEach((key) => { flat[`Interview ${n} - ${key}`] = ""; });
-        noteKeys.forEach((key) => { flat[`Interview ${n} Notes - ${key}`] = ""; });
+        scoreKeys.forEach((key) => {
+          flat[`Interview ${n} - ${key}`] = "";
+        });
+        noteKeys.forEach((key) => {
+          flat[`Interview ${n} Notes - ${key}`] = "";
+        });
       }
     }
 
