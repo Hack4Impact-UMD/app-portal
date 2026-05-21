@@ -34,7 +34,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Firebase CLI
-        run: npm i -g firebase-tools
+        run: pnpm i -g firebase-tools
+
+      - name: Build All Packages
+        run: pnpm build
 
       - name: Create GAC File
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_H4I_APPLICATIONS }}' > $GOOGLE_APPLICATION_CREDENTIALS

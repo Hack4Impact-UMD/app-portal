@@ -16,7 +16,6 @@
       ],
       "predeploy": [
         "pnpm install --frozen-lockfile",
-        "pnpm --filter functions build",
         "pnpm exec isolate",
         "pnpm --dir backend/functions/isolate install --frozen-lockfile"
       ]
@@ -51,7 +50,6 @@
   },
   "hosting": {
     "public": "frontend/dist",
-    "predeploy": "pnpm install --frozen-lockfile && pnpm --filter frontend build",
     "ignore": [
       "firebase.json",
       "**/.*",
