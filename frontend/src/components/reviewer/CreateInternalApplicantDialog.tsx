@@ -1,4 +1,4 @@
-import { ApplicantRole } from "@app-portal/shared/types";
+import { ApplicantRole } from "@app-portal/shared/constants";
 import { Button } from "../ui/button";
 import {
   Dialog,

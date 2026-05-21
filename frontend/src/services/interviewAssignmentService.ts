@@ -1,4 +1,4 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { InterviewAssignment } from "@/types/types";
 import { getApplicationResponseById } from "./applicationResponsesService";
 import {

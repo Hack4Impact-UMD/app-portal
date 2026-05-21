@@ -1,7 +1,5 @@
-import type {
-  ApplicantRole,
-  ApplicationSection,
-} from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type { ApplicationSection } from "@app-portal/shared/types";
 import type { Timestamp } from "firebase/firestore";
 import type { ReviewStatus } from "./types";
 

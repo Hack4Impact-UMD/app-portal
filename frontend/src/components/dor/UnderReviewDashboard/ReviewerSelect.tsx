@@ -1,4 +1,4 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import Spinner from "@/components/Spinner";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import { Button } from "@/components/ui/button";

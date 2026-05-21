@@ -1,5 +1,5 @@
 import type { SectionResponse } from "@app-portal/shared/types";
-import { ApplicantRole } from "@app-portal/shared/types";
+import { ApplicantRole } from "@app-portal/shared/constants";
 import type { User, UserInfo } from "firebase/auth";
 import {
   sendEmailVerification,

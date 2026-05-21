@@ -1,4 +1,4 @@
-import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/types";
+import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
 import { useMemo, useState } from "react";
 import { Button } from "../../../components/ui/button";
 import type { ApplicationResponse } from "@/types/types";

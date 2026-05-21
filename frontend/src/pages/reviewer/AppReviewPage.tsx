@@ -1,4 +1,4 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import { useNavigate, useParams } from "react-router-dom";
 import Section from "@/components/form/Section";
 import { useApplicationForm } from "@/hooks/useApplicationForm";

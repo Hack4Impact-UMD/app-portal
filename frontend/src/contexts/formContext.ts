@@ -1,4 +1,4 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import { createContext } from "react";
 import type { ApplicationForm, ApplicationResponse } from "../types/types";
 

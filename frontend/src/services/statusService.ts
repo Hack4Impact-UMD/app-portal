@@ -1,4 +1,4 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import { API_URL, db } from "@/config/firebase";
 import type { InternalApplicationStatus } from "@/types/types";
 import { ReviewStatus } from "@/types/types";

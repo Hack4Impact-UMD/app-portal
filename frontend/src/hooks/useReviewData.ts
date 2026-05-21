@@ -1,4 +1,4 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ApplicationReviewData } from "../types/types";
 import {

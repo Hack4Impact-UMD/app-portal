@@ -2,7 +2,7 @@ import type {
   ApplicationQuestion,
   OptionQuestion,
 } from "@app-portal/shared/types";
-import { ApplicantRole, QuestionType } from "@app-portal/shared/types";
+import { ApplicantRole, QuestionType } from "@app-portal/shared/constants";
 import React, { memo, useCallback } from "react";
 
 import OneLineInput from "./OneLineInput";

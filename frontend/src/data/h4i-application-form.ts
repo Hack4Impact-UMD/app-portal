@@ -1,4 +1,4 @@
-import { ApplicantRole, QuestionType } from "@app-portal/shared/types";
+import { ApplicantRole, QuestionType } from "@app-portal/shared/constants";
 import type { ApplicationForm } from "@/types/formBuilderTypes";
 import { ReviewStatus } from "@/types/types";
 import { Timestamp } from "firebase/firestore";

@@ -1,4 +1,4 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getReviewDataForAssignment } from "@/services/reviewDataService";
 import { reviewCapable } from "@/services/reviewersService";

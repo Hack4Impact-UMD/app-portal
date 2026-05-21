@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { Timestamp } from "firebase-admin/firestore";
 import { ReviewStatus } from "./appStatus";
-import { ApplicationSectionSchema } from "@app-portal/shared/schemas";
-import { ApplicantRole } from "@app-portal/shared/types";
+import { ApplicationSectionSchema } from "@app-portal/shared/types";
+import { ApplicantRole } from "@app-portal/shared/constants";
 
 const RoleDecisionLetterSchema = z.object({
   [ApplicantRole.Bootcamp]: z.string(),

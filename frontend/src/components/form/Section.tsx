@@ -1,5 +1,5 @@
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
-  ApplicantRole,
   ApplicationSection,
   QuestionResponse,
 } from "@app-portal/shared/types";

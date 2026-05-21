@@ -1,4 +1,5 @@
-import type { ApplicantRole, RoleReviewRubric } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type { RoleReviewRubric } from "@app-portal/shared/types";
 import { API_URL, db } from "@/config/firebase";
 import type { ApplicationForm } from "@/types/types";
 import axios from "axios";

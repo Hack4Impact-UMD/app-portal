@@ -1,4 +1,4 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import { useApplicationForm } from "@/hooks/useApplicationForm";
 import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
 import type { ApplicationResponse } from "@/types/types";

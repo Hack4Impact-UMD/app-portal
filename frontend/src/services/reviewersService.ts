@@ -1,4 +1,4 @@
-import { ApplicantRole } from "@app-portal/shared/types";
+import { ApplicantRole } from "@app-portal/shared/constants";
 import { db } from "@/config/firebase";
 import type { ReviewCapableUser, UserProfile } from "@/types/types";
 import { PermissionRole } from "@/types/types";

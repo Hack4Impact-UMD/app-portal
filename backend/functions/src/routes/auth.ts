@@ -28,7 +28,7 @@ import type { InternalApplicationStatus } from "../models/appStatus";
 import { ReviewStatus } from "../models/appStatus";
 import type { ApplicationForm } from "../models/appForm";
 import { v4 as uuidv4 } from "uuid";
-import { ApplicationStatus } from "@app-portal/shared/types";
+import { ApplicationStatus } from "@app-portal/shared/constants";
 
 /* eslint new-cap: 0 */
 const router = Router();

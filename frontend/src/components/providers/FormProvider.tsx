@@ -1,5 +1,6 @@
-import type { ApplicantRole, QuestionResponse } from "@app-portal/shared/types";
-import { ApplicationStatus, QuestionType } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type { QuestionResponse } from "@app-portal/shared/types";
+import { ApplicationStatus, QuestionType } from "@app-portal/shared/constants";
 import { Navigate, Outlet, useParams } from "react-router-dom";
 import { FormContext } from "../../contexts/formContext";
 import { useMyApplicationResponseAndForm } from "../../hooks/useApplicationResponses";

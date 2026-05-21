@@ -1,7 +1,5 @@
-import type {
-  ApplicantRole,
-  ApplicationResponseBase,
-} from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type { ApplicationResponseBase } from "@app-portal/shared/types";
 import type { Timestamp } from "firebase/firestore";
 
 export * from "./formBuilderTypes";

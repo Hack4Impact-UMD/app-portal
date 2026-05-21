@@ -1,4 +1,4 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationStatusById } from "@/services/statusService";
 import type {

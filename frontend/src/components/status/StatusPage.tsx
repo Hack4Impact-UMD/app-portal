@@ -1,4 +1,4 @@
-import { ApplicantRole } from "@app-portal/shared/types";
+import { ApplicantRole } from "@app-portal/shared/constants";
 import { Fragment, useMemo, useState } from "react";
 import Timeline from "./Timeline.tsx";
 import type { ApplicationResponse } from "../../types/types.ts";

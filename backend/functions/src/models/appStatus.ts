@@ -1,4 +1,4 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 
 export enum ReviewStatus {
   NotReviewed = "not-reviewed",

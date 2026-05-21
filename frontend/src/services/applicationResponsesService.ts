@@ -1,5 +1,5 @@
 import type { SectionResponse } from "@app-portal/shared/types";
-import { ApplicationStatus, QuestionType } from "@app-portal/shared/types";
+import { ApplicationStatus, QuestionType } from "@app-portal/shared/constants";
 import {
   setDoc,
   Timestamp,

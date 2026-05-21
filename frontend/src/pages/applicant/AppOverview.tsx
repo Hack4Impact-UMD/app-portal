@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useMyApplicationResponses } from "@/hooks/useApplicationResponses";
 import FormMarkdown from "@/components/form/FormMarkdown";
 import { Timestamp } from "firebase/firestore";
-import { ApplicationStatus } from "@app-portal/shared/types";
+import { ApplicationStatus } from "@app-portal/shared/constants";
 
 const AppOverview: React.FC = () => {
   const {

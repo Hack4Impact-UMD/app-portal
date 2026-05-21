@@ -1,4 +1,4 @@
-import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/types";
+import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
 import type {
   ApplicationReviewData,
   AppReviewAssignment,

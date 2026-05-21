@@ -1,5 +1,5 @@
 import type { RoleReviewRubric } from "@app-portal/shared/types";
-import { ApplicantRole } from "@app-portal/shared/types";
+import { ApplicantRole } from "@app-portal/shared/constants";
 import { useState, useEffect, useCallback } from "react";
 import {
   ResizableHandle,

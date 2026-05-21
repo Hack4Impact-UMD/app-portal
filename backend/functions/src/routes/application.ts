@@ -1,3 +1,4 @@
+import { ApplicationStatus, QuestionType } from "@app-portal/shared/constants";
 import type { Request, Response } from "express";
 import { Router } from "express";
 import { db } from "../index";
@@ -21,12 +22,11 @@ import { ReviewStatus } from "../models/appStatus";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { PermissionRole } from "../models/user";
-import { ApplicationStatus, QuestionType } from "@app-portal/shared/types";
 import type {
   QuestionResponse,
   RoleReviewRubric,
 } from "@app-portal/shared/types";
-import { RoleReviewRubricSchema } from "@app-portal/shared/schemas";
+import { RoleReviewRubricSchema } from "@app-portal/shared/types";
 // import * as admin from "firebase-admin"
 
 const router = Router();

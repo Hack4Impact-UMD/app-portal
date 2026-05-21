@@ -1,4 +1,4 @@
-import { ApplicantRole } from "@app-portal/shared/types";
+import { ApplicantRole } from "@app-portal/shared/constants";
 import { useAuth } from "@/hooks/useAuth";
 import type { DecisionLetterStatus } from "@/types/types";
 import { ReviewStatus } from "@/types/types";

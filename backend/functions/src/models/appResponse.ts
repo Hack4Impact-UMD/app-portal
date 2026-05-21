@@ -1,5 +1,5 @@
-import { ApplicationResponseBaseSchema } from "@app-portal/shared/schemas";
-import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/types";
+import { ApplicationResponseBaseSchema } from "@app-portal/shared/types";
+import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 

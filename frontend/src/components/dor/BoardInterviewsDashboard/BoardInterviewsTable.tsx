@@ -1,4 +1,4 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
