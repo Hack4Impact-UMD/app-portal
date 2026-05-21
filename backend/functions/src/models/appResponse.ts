@@ -3,6 +3,8 @@ import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/types";
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
+// ⚠️ do not edit this type!!!
+// edit the ApplicationResponseBaseSchema instead!!!
 export const ApplicationResponseSchema = ApplicationResponseBaseSchema.extend({
   dateSubmitted: z.custom<Timestamp>((d) => d instanceof Timestamp),
 });

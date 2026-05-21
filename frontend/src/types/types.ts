@@ -87,6 +87,8 @@ export type AppReviewAssignment = {
 
 export type Assignment = AppReviewAssignment | InterviewAssignment;
 
+// ⚠️ do not edit this type!!!
+// edit the ApplicationResponseBaseSchema instead!!!
 export interface ApplicationResponse extends ApplicationResponseBase {
   dateSubmitted: Timestamp;
 }
