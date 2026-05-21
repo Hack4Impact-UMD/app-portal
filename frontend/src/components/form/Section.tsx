@@ -1,9 +1,10 @@
 import type {
   ApplicantRole,
   ApplicationSection,
+  QuestionResponse,
 } from "@app-portal/shared/types";
 import React, { memo, useMemo, useCallback } from "react";
-import type { QuestionResponse, ValidationError } from "../../types/types";
+import type { ValidationError } from "../../types/types";
 import FormMarkdown from "./FormMarkdown";
 import QuestionItem from "./QuestionItem";
 

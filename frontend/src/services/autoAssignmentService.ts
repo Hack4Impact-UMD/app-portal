@@ -1,10 +1,9 @@
-import { ApplicantRole } from "@app-portal/shared/types";
+import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/types";
 import type {
   ApplicationReviewData,
   AppReviewAssignment,
   ReviewCapableUser,
 } from "@/types/types";
-import { ApplicationStatus } from "@/types/types";
 import {
   getReviewAssignmentsForForm,
   REVIEW_ASSIGNMENT_COLLECTION,

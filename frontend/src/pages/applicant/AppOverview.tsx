@@ -4,9 +4,9 @@ import Loading from "../../components/Loading";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useMyApplicationResponses } from "@/hooks/useApplicationResponses";
-import { ApplicationStatus } from "@/types/types";
 import FormMarkdown from "@/components/form/FormMarkdown";
 import { Timestamp } from "firebase/firestore";
+import { ApplicationStatus } from "@app-portal/shared/types";
 
 const AppOverview: React.FC = () => {
   const {

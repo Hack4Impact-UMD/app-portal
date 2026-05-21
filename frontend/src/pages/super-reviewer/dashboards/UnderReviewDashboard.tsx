@@ -1,8 +1,7 @@
-import { ApplicantRole } from "@app-portal/shared/types";
+import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/types";
 import { useMemo, useState } from "react";
 import { Button } from "../../../components/ui/button";
 import type { ApplicationResponse } from "@/types/types";
-import { ApplicationStatus } from "@/types/types";
 import {
   applicantRoleColor,
   applicantRoleDarkColor,

@@ -1,29 +1,34 @@
-import { Router, Request, Response } from "express";
+import type { Request, Response } from "express";
+import { Router } from "express";
 import { db } from "../index";
 import { validateSchema } from "../middleware/validation";
-import {
+import type {
   UserProfile,
   UserRegisterForm,
-  userRegisterFormSchema,
-  updateUserSchema,
   CreateInternalApplicant,
-  createInternalApplicantSchema,
-  PermissionRole,
   UpdateUser,
 } from "../models/user";
 import {
+  userRegisterFormSchema,
+  updateUserSchema,
+  createInternalApplicantSchema,
+  PermissionRole,
+} from "../models/user";
+import type {
   CollectionReference,
   DocumentReference,
-  Timestamp,
 } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import * as admin from "firebase-admin";
 import { isAuthenticated } from "../middleware/authentication";
 import { FirebaseAuthError } from "firebase-admin/auth";
-import { ApplicationResponse, ApplicationStatus } from "../models/appResponse";
-import { InternalApplicationStatus, ReviewStatus } from "../models/appStatus";
-import { ApplicationForm } from "../models/appForm";
+import type { ApplicationResponse } from "../models/appResponse";
+import type { InternalApplicationStatus } from "../models/appStatus";
+import { ReviewStatus } from "../models/appStatus";
+import type { ApplicationForm } from "../models/appForm";
 import { v4 as uuidv4 } from "uuid";
+import { ApplicationStatus } from "@app-portal/shared/types";
 
 /* eslint new-cap: 0 */
 const router = Router();

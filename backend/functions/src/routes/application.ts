@@ -6,12 +6,10 @@ import type {
   ApplicationResponse,
   ApplicationResponseSaveRequest,
   ApplicationResponseSubmitRequest,
-  QuestionResponse,
 } from "../models/appResponse";
 import {
   ApplicationResponseSaveRequestSchema,
   ApplicationResponseSubmitRequestSchema,
-  ApplicationStatus,
 } from "../models/appResponse";
 import type { CollectionReference } from "firebase-admin/firestore";
 import { Timestamp } from "firebase-admin/firestore";
@@ -23,8 +21,11 @@ import { ReviewStatus } from "../models/appStatus";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { PermissionRole } from "../models/user";
-import { QuestionType } from "@app-portal/shared/types";
-import type { RoleReviewRubric } from "@app-portal/shared/types";
+import { ApplicationStatus, QuestionType } from "@app-portal/shared/types";
+import type {
+  QuestionResponse,
+  RoleReviewRubric,
+} from "@app-portal/shared/types";
 import { RoleReviewRubricSchema } from "@app-portal/shared/schemas";
 // import * as admin from "firebase-admin"
 

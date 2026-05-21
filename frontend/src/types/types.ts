@@ -1,4 +1,7 @@
-import type { ApplicantRole, QuestionType } from "@app-portal/shared/types";
+import type {
+  ApplicantRole,
+  ApplicationResponseBase,
+} from "@app-portal/shared/types";
 import type { Timestamp } from "firebase/firestore";
 
 export * from "./formBuilderTypes";
@@ -8,14 +11,6 @@ export enum PermissionRole {
   Reviewer = "reviewer",
   Board = "board",
   Applicant = "applicant",
-}
-
-export enum ApplicationStatus {
-  InProgress = "in-progress",
-  Submitted = "submitted",
-  UnderReview = "in-review",
-  Interview = "interview",
-  Decided = "decided",
 }
 
 export enum ReviewStatus {
@@ -92,15 +87,8 @@ export type AppReviewAssignment = {
 
 export type Assignment = AppReviewAssignment | InterviewAssignment;
 
-// stores the actual user submitted application responses
-export interface ApplicationResponse {
-  id: string;
-  userId: string;
-  applicationFormId: string;
-  rolesApplied: ApplicantRole[];
-  sectionResponses: SectionResponse[];
-  status: ApplicationStatus;
-  dateSubmitted: Timestamp; // if not submitted, this will be the Timestamp of the last save
+export interface ApplicationResponse extends ApplicationResponseBase {
+  dateSubmitted: Timestamp;
 }
 
 // One of these per review. Reviews tie together an application, role, and reviewer.
@@ -145,19 +133,6 @@ export interface ApplicationInterviewData {
   interviewerNotes: Record<string, string>;
   forRole: ApplicantRole;
   submitted: boolean;
-}
-
-export interface SectionResponse {
-  sectionId: string;
-  sectionName: string;
-  questions: QuestionResponse[];
-}
-
-export interface QuestionResponse {
-  questionType: QuestionType;
-  applicationFormId: string;
-  questionId: string;
-  response: string | string[];
 }
 
 export type ValidationError = {

@@ -1,12 +1,11 @@
-import type { ApplicantRole } from "@app-portal/shared/types";
-import { QuestionType } from "@app-portal/shared/types";
+import type { ApplicantRole, QuestionResponse } from "@app-portal/shared/types";
+import { ApplicationStatus, QuestionType } from "@app-portal/shared/types";
 import { Navigate, Outlet, useParams } from "react-router-dom";
 import { FormContext } from "../../contexts/formContext";
 import { useMyApplicationResponseAndForm } from "../../hooks/useApplicationResponses";
 import Loading from "../Loading";
 import { useEffect, useMemo, useState, useCallback } from "react";
-import type { ApplicationResponse, QuestionResponse } from "../../types/types";
-import { ApplicationStatus } from "../../types/types";
+import type { ApplicationResponse } from "../../types/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { saveApplicationResponse } from "../../services/applicationResponsesService";
 import { useAuth } from "../../hooks/useAuth";

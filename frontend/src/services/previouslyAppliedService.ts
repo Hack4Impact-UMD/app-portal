@@ -1,4 +1,4 @@
-import { ApplicationStatus } from "@/types/types";
+import { ApplicationStatus } from "@app-portal/shared/types";
 import { getApplicationResponseAndSemester } from "./applicationResponseAndSemesterService";
 
 /***

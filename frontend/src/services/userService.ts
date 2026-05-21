@@ -1,3 +1,4 @@
+import type { SectionResponse } from "@app-portal/shared/types";
 import { ApplicantRole } from "@app-portal/shared/types";
 import type { User, UserInfo } from "firebase/auth";
 import {
@@ -21,7 +22,6 @@ import type {
   ApplicationResponse,
   BoardUserProfile,
   ReviewerUserProfile,
-  SectionResponse,
   UserProfile,
 } from "../types/types";
 import { PermissionRole } from "../types/types";
