@@ -1,18 +1,22 @@
 {
   "compilerOptions": {
-    "module": "es2022",
+    "module": "esnext",
     "esModuleInterop": true,
     "moduleResolution": "bundler",
-    "customConditions": ["source"],
+    "customConditions": [
+      "source"
+    ],
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "rootDir": "src",
     "outDir": "lib",
+    "rootDir": "src",
     "sourceMap": true,
-    "skipLibCheck": true,
     "strict": true,
-    "target": "es2017"
+    "target": "es2017",
+    "skipLibCheck": true
   },
   "compileOnSave": true,
-  "include": ["./src"]
+  "include": [
+    "./src"
+  ]
 }

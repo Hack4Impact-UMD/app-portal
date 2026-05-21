@@ -26,4 +26,4 @@ export const db = admin.firestore();
 
 // uploadMockData()
 
-exports.api = onRequest({ region: process.env.GCP_REGION || "us-east4" }, app);
+export const api = onRequest({ region: process.env.GCP_REGION || "us-east4" }, app);
