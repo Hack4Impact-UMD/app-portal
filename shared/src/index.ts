@@ -10,6 +10,5 @@ export enum ApplicantRole {
 }
 
 export type Foo = {
-  name: string
+  name: string;
 };
-
