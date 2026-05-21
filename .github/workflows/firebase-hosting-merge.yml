@@ -36,14 +36,14 @@ jobs:
       - name: Install Firebase CLI
         run: pnpm i -g firebase-tools
 
-      - name: Build All Packages
-        run: pnpm build
-
       - name: Create GAC File
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_H4I_APPLICATIONS }}' > $GOOGLE_APPLICATION_CREDENTIALS
 
       - name: Write build commit hash to env
         run: echo "VITE_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Build All Packages
+        run: pnpm build
 
       - name: Deploy to Firebase
         run: firebase deploy
