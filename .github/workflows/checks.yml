@@ -21,7 +21,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint:all
+        run: pnpm lint
 
   typecheck:
     name: Typecheck
@@ -63,4 +63,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Format check
-        run: pnpm format:check:all
+        run: pnpm format:check
