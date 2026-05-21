@@ -2,6 +2,8 @@ packages:
   - 'frontend'
   - 'backend/functions'
   - 'shared'
+catalog:
+  zod: 4.4.3
 allowBuilds:
   '@firebase/util': true
   esbuild: true

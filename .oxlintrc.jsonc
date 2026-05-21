@@ -109,12 +109,12 @@
         "null": "ignore",
       },
     ],
-    // "no-duplicate-imports": [
-    //   "error",
-    //   {
-    //     "allowSeparateTypeImports": true,
-    //   },
-    // ],
+    "no-duplicate-imports": [
+      "error",
+      {
+        "allowSeparateTypeImports": true,
+      },
+    ],
     "typescript/no-unsafe-enum-comparison": "error",
     "typescript/consistent-type-assertions": [
       "error",
@@ -123,13 +123,13 @@
         "objectLiteralTypeAssertions": "never",
       },
     ],
-    // "typescript/consistent-type-imports": [
-    //   "error",
-    //   {
-    //     "prefer": "type-imports",
-    //     "fixStyle": "separate-type-imports",
-    //   },
-    // ],
+    "typescript/consistent-type-imports": [
+      "error",
+      {
+        "prefer": "type-imports",
+        "fixStyle": "separate-type-imports",
+      },
+    ],
   },
   "overrides": [
     {
