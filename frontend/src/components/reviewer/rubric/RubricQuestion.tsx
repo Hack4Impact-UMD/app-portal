@@ -1,5 +1,4 @@
 import FormMarkdown from "@/components/form/FormMarkdown";
-import { ReviewRubricQuestion } from "@/types/types";
 import { RubricScoreButton } from "./RubricScoreButton";
 import { memo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { ReviewRubricQuestion } from "@app-portal/shared/types";
 
 type RubricQuestionProps = {
   question: ReviewRubricQuestion;

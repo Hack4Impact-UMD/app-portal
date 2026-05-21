@@ -1,23 +1,21 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { useCallback, useMemo, useState } from "react";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
 import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
-import {
-  ApplicantRole,
-  ApplicationResponse,
-  ReviewStatus,
-  ReviewCapableUser,
-} from "@/types/types";
+import type { ApplicationResponse, ReviewCapableUser } from "@/types/types";
+import { ReviewStatus } from "@/types/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
   getPaginationRowModel,
-  ColumnDef,
 } from "@tanstack/react-table";
 import RolePill from "@/components/role-pill/RolePill";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { QualifiedAppRow, flattenRows, useRows } from "./useRows";
+import type { QualifiedAppRow } from "./useRows";
+import { flattenRows, useRows } from "./useRows";
 import SortableHeader from "@/components/tables/SortableHeader";
 import { updateApplicationStatus } from "@/services/statusService";
 import {

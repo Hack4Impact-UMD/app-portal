@@ -1,3 +1,4 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { useNavigate, useParams } from "react-router-dom";
 import Section from "@/components/form/Section";
 import { useApplicationForm } from "@/hooks/useApplicationForm";
@@ -5,7 +6,7 @@ import Loading from "@/components/Loading";
 import { useApplicationResponse } from "@/hooks/useApplicationResponses";
 import Spinner from "@/components/Spinner";
 import { useApplicant } from "@/hooks/useApplicants";
-import { ApplicantRole, ApplicationForm } from "@/types/formBuilderTypes";
+import type { ApplicationForm } from "@/types/formBuilderTypes";
 import { displayApplicantRoleName } from "@/utils/display";
 import { Button } from "@/components/ui/button";
 import RoleRubric from "@/components/reviewer/rubric/RoleRubric";
@@ -39,7 +40,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { ApplicationInterviewData, PermissionRole } from "@/types/types";
+import type { ApplicationInterviewData } from "@/types/types";
+import { PermissionRole } from "@/types/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useUser } from "@/hooks/useUsers";
 import {

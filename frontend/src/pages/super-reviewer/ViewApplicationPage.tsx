@@ -5,7 +5,7 @@ import Spinner from "@/components/Spinner";
 import { useApplicant } from "@/hooks/useApplicants";
 import { useApplicationForm } from "@/hooks/useApplicationForm";
 import { useApplicationResponse } from "@/hooks/useApplicationResponses";
-import { ApplicationForm, ApplicationResponse } from "@/types/types";
+import type { ApplicationForm, ApplicationResponse } from "@/types/types";
 import { useParams } from "react-router-dom";
 
 type UserHeaderProps = {

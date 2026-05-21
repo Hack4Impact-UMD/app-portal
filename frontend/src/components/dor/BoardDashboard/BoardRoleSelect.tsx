@@ -1,3 +1,4 @@
+import { ApplicantRole } from "@app-portal/shared/types";
 import Spinner from "@/components/Spinner";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useBoardRoles } from "@/hooks/useBoardMembers";
-import { ApplicantRole } from "@/types/types";
+
 import {
   applicantRoleColor,
   applicantRoleDarkColor,

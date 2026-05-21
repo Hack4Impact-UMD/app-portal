@@ -1,25 +1,9 @@
-import { Timestamp } from "firebase/firestore";
-import { ReviewStatus } from "./types";
-
-export enum ApplicantRole {
-  Bootcamp = "bootcamp",
-  Engineer = "engineer",
-  Designer = "designer",
-  Product = "product",
-  // Sourcing = "sourcing",
-  TechLead = "tech-lead",
-  SocialMedia = "social-media-manager",
-  OutreachCoord = "outreach-coordinator",
-}
-
-export enum QuestionType {
-  ShortAnswer = "short-answer",
-  LongAnswer = "long-answer",
-  MultipleChoice = "multiple-choice",
-  MultipleSelect = "multiple-select",
-  FileUpload = "file-upload",
-  RoleSelect = "role-select",
-}
+import type {
+  ApplicantRole,
+  ApplicationSection,
+} from "@app-portal/shared/types";
+import type { Timestamp } from "firebase/firestore";
+import type { ReviewStatus } from "./types";
 
 // stores data about the content of the application forms
 export interface ApplicationForm {
@@ -52,48 +36,3 @@ export interface ApplicationForm {
     };
   };
 }
-
-export interface ApplicationSection {
-  sectionId: string; //no spaces, alphanumeric, unique (used as a route param)
-  sectionName: string;
-  description?: string;
-  forRoles?: ApplicantRole[]; // some sections are role specific
-  questions: ApplicationQuestion[];
-  hideFromReviewers?: boolean;
-}
-
-export interface IApplicationQuestion {
-  questionId: string;
-  questionType: QuestionType;
-  optional: boolean;
-  questionText: string;
-  secondaryText?: string;
-}
-
-export interface TextQuestion extends IApplicationQuestion {
-  questionType: QuestionType.ShortAnswer | QuestionType.LongAnswer;
-  placeholderText: string;
-  maximumWordCount?: number;
-  minimumWordCount?: number;
-}
-
-export interface OptionQuestion extends IApplicationQuestion {
-  questionType: QuestionType.MultipleChoice | QuestionType.MultipleSelect;
-  questionOptions: string[];
-}
-
-export interface FileUploadQuestion extends IApplicationQuestion {
-  questionType: QuestionType.FileUpload;
-  fileId: string;
-}
-
-export interface RoleSelectQuestion extends IApplicationQuestion {
-  questionType: QuestionType.RoleSelect;
-}
-
-//helps with automatic type inference based on the questionType field
-export type ApplicationQuestion =
-  | TextQuestion
-  | OptionQuestion
-  | FileUploadQuestion
-  | RoleSelectQuestion;

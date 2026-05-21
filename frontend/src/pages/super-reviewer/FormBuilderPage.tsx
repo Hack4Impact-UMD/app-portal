@@ -1,3 +1,4 @@
+import type { ApplicationSection } from "@app-portal/shared/types";
 import { useState, useEffect, useCallback, Fragment } from "react";
 import {
   ResizableHandle,
@@ -9,7 +10,7 @@ import { h4iApplicationForm } from "@/data/h4i-application-form";
 import CodeEditor from "@/components/form/CodeEditor";
 import Section from "@/components/form/Section";
 import FormMarkdown from "@/components/form/FormMarkdown";
-import { ApplicationForm, ApplicationSection } from "@/types/formBuilderTypes";
+import type { ApplicationForm } from "@/types/formBuilderTypes";
 import {
   useUploadApplicationForm,
   useApplicationForm,

@@ -1,10 +1,10 @@
-import {
-  ApplicantRole,
+import type { ApplicantRole } from "@app-portal/shared/types";
+import type {
   ApplicationInterviewData,
   InterviewAssignment,
 } from "@/types/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
@@ -13,7 +13,8 @@ import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
-import { InterviewAssignmentRow, useRows } from "./useRows";
+import type { InterviewAssignmentRow } from "./useRows";
+import { useRows } from "./useRows";
 import { createInterviewData } from "@/services/interviewDataService";
 import SortableHeader from "@/components/tables/SortableHeader";
 import { useNavigate } from "react-router-dom";

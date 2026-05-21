@@ -1,7 +1,7 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { reviewingFor } from "@/services/reviewersService";
-import {
+import type {
   AppReviewAssignment,
-  ApplicantRole,
   ApplicationReviewData,
   ReviewCapableUser,
 } from "@/types/types";

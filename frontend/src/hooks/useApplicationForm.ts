@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ApplicationForm } from "../types/types";
+import type { ApplicationForm } from "../types/types";
 import {
   getActiveForm,
   getAllForms,

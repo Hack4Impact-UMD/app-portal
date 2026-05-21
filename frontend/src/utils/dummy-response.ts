@@ -1,11 +1,10 @@
-import {
+import type {
   ApplicantRole,
   ApplicationQuestion,
   ApplicationSection,
-  QuestionResponse,
-  QuestionType,
-  SectionResponse,
-} from "@/types/types";
+} from "@app-portal/shared/types";
+import { QuestionType } from "@app-portal/shared/types";
+import type { QuestionResponse, SectionResponse } from "@/types/types";
 
 // generates dummy question and section responses for use in internal applications
 

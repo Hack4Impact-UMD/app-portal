@@ -1,10 +1,10 @@
-import React, { memo, useCallback } from "react";
-import {
-  QuestionType,
-  OptionQuestion,
-  ApplicantRole,
+import type {
   ApplicationQuestion,
-} from "../../types/types";
+  OptionQuestion,
+} from "@app-portal/shared/types";
+import { ApplicantRole, QuestionType } from "@app-portal/shared/types";
+import React, { memo, useCallback } from "react";
+
 import OneLineInput from "./OneLineInput";
 import LongFormInput from "./LongFormInput";
 import ChoiceGroup from "./ChoiceGroup";

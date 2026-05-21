@@ -1,13 +1,13 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getInterviewDataForAssignment } from "@/services/interviewDataService";
 import { getUserById } from "@/services/userService";
-import {
-  ApplicantRole,
+import type {
   ApplicantUserProfile,
   ApplicationInterviewData,
   InterviewAssignment,
-  PermissionRole,
 } from "@/types/types";
+import { PermissionRole } from "@/types/types";
 import { calculateInterviewScore } from "@/utils/scores";
 import { useQuery } from "@tanstack/react-query";
 

@@ -1,9 +1,10 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import {
   getAllReviewers,
   getReviewersForRole,
   getRolePreferencesForReviewer,
 } from "@/services/reviewersService";
-import { ApplicantRole } from "@/types/types";
+
 import { useQuery } from "@tanstack/react-query";
 
 export function useAllReviewers() {

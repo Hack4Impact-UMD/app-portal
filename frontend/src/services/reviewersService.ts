@@ -1,10 +1,7 @@
+import { ApplicantRole } from "@app-portal/shared/types";
 import { db } from "@/config/firebase";
-import {
-  ApplicantRole,
-  PermissionRole,
-  ReviewCapableUser,
-  UserProfile,
-} from "@/types/types";
+import type { ReviewCapableUser, UserProfile } from "@/types/types";
+import { PermissionRole } from "@/types/types";
 import { and, collection, getDocs, or, query, where } from "firebase/firestore";
 import { getUserById } from "./userService";
 

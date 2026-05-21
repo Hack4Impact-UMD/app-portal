@@ -1,5 +1,5 @@
-import { Timestamp } from "firebase/firestore";
-import { ApplicantRole, QuestionType } from "./formBuilderTypes";
+import type { ApplicantRole, QuestionType } from "@app-portal/shared/types";
+import type { Timestamp } from "firebase/firestore";
 
 export * from "./formBuilderTypes";
 
@@ -164,23 +164,6 @@ export type ValidationError = {
   sectionId: string;
   questionId: string;
   message: string;
-};
-
-export type RoleReviewRubric = {
-  id: string;
-  formId: string;
-  roles: ApplicantRole[];
-  rubricQuestions: ReviewRubricQuestion[];
-  detailLink?: string;
-  commentsDescription?: string;
-};
-
-export type ReviewRubricQuestion = {
-  scoreKey: string;
-  prompt: string;
-  description?: string;
-  maxValue?: number; // assume 4
-  minValue?: number; // assume 0
 };
 
 export type CsvRow = Record<

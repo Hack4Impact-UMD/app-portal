@@ -1,11 +1,11 @@
-import {
+import type { ApplicantRole } from "@app-portal/shared/types";
+import type {
   AppReviewAssignment,
-  ApplicantRole,
   ApplicationReviewData,
   ReviewCapableUser,
 } from "@/types/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
@@ -21,7 +21,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "../../ui/dropdown-menu";
-import { ReviewerRow, flattenRows, useRows } from "./useRows";
+import type { ReviewerRow } from "./useRows";
+import { flattenRows, useRows } from "./useRows";
 import { RoleSelect } from "./RoleSelect";
 import { getReviewerById, reviewingFor } from "@/services/reviewersService";
 import { setReviewCapableUserRolePreferences } from "@/services/userService";

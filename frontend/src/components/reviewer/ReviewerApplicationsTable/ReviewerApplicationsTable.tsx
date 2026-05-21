@@ -1,11 +1,8 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicationReviewData, AppReviewAssignment } from "@/types/types";
+import { ReviewStatus } from "@/types/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ApplicantRole,
-  ApplicationReviewData,
-  AppReviewAssignment,
-  ReviewStatus,
-} from "@/types/types";
-import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
@@ -17,7 +14,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
-import { AssignmentRow, useRows } from "./useRows";
+import type { AssignmentRow } from "./useRows";
+import { useRows } from "./useRows";
 import SortableHeader from "@/components/tables/SortableHeader";
 import {
   Tooltip,

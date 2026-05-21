@@ -1,11 +1,9 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { useApplicationForm } from "@/hooks/useApplicationForm";
 import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
-import {
-  ApplicantRole,
-  ApplicationResponse,
-  ReviewStatus,
-} from "@/types/types";
-import { Timestamp } from "firebase/firestore";
+import type { ApplicationResponse } from "@/types/types";
+import { ReviewStatus } from "@/types/types";
+import type { Timestamp } from "firebase/firestore";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import ApplicantRolePill from "../role-pill/RolePill";

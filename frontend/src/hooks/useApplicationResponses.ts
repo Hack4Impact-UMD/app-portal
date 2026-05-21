@@ -7,7 +7,7 @@ import {
   getApplicationResponses,
   getAssignedApplicationResponsesByFormId,
 } from "../services/applicationResponsesService";
-import { ApplicationForm, ApplicationResponse } from "../types/types";
+import type { ApplicationForm, ApplicationResponse } from "../types/types";
 import { getApplicationForm } from "../services/applicationFormsService";
 import { reviewCapable } from "@/services/reviewersService";
 

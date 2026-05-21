@@ -1,9 +1,7 @@
+import { ApplicantRole } from "@app-portal/shared/types";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  ApplicantRole,
-  ReviewStatus,
-  DecisionLetterStatus,
-} from "@/types/types";
+import type { DecisionLetterStatus } from "@/types/types";
+import { ReviewStatus } from "@/types/types";
 import { useParams } from "react-router-dom";
 import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";

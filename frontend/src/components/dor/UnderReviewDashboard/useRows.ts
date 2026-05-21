@@ -1,3 +1,4 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getPreviouslyAppliedCount } from "@/services/previouslyAppliedService";
@@ -5,9 +6,8 @@ import { getReviewAssignmentsForApplication } from "@/services/reviewAssignmentS
 import { getReviewDataForResponseRole } from "@/services/reviewDataService";
 import { getApplicationStatusForResponseRole } from "@/services/statusService";
 import { getUserById } from "@/services/userService";
-import {
+import type {
   AppReviewAssignment,
-  ApplicantRole,
   ApplicationResponse,
   ApplicationReviewData,
   InternalApplicationStatus,
@@ -16,7 +16,7 @@ import {
 } from "@/types/types";
 import { calculateReviewScore } from "@/utils/scores";
 import { useQuery } from "@tanstack/react-query";
-import { Timestamp } from "firebase/firestore";
+import type { Timestamp } from "firebase/firestore";
 
 export type ApplicationRow = {
   index: number;

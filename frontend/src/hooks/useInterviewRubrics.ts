@@ -1,10 +1,10 @@
+import type { ApplicantRole, RoleReviewRubric } from "@app-portal/shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getRoleInterviewRubricsForForm,
   getRoleInterviewRubricsForFormRole,
   uploadInterviewRubrics as uploadInterviewRubricsService,
 } from "@/services/interviewRubricService";
-import { ApplicantRole, RoleReviewRubric } from "@/types/types";
 
 export const useUploadInterviewRubrics = () => {
   const queryClient = useQueryClient();

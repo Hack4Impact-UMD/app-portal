@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { ApplicantRole } from "./appResponse";
+import { ApplicantRole } from "../types";
 
-export const reviewRubricQuestionSchema = z
+export const ReviewRubricQuestionSchema = z
   .object({
     scoreKey: z.string().min(1),
     prompt: z.string().min(1),
@@ -17,12 +17,12 @@ export const reviewRubricQuestionSchema = z
     { message: "maxValue must be >= minValue" },
   );
 
-export const roleReviewRubricSchema = z
+export const RoleReviewRubricSchema = z
   .object({
     id: z.string().min(1),
     formId: z.string().min(1),
     roles: z.array(z.enum(ApplicantRole)),
-    rubricQuestions: z.array(reviewRubricQuestionSchema).min(1),
+    rubricQuestions: z.array(ReviewRubricQuestionSchema).min(1),
     detailLink: z.url().optional(),
     commentsDescription: z.string().optional(),
   })
@@ -39,6 +39,3 @@ export const roleReviewRubricSchema = z
       seen.add(q.scoreKey);
     }
   });
-
-export type RoleReviewRubric = z.infer<typeof roleReviewRubricSchema>;
-export type ReviewRubricQuestion = z.infer<typeof reviewRubricQuestionSchema>;

@@ -1,4 +1,4 @@
-import { ApplicantRole } from "@/types/types";
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
 import { getApplicationStatus } from "@/services/statusService";

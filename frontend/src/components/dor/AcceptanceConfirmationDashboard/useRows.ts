@@ -1,7 +1,7 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationStatusById } from "@/services/statusService";
-import {
-  ApplicantRole,
+import type {
   DecisionLetterStatus,
   InternalApplicationStatus,
 } from "@/types/types";

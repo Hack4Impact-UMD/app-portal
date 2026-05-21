@@ -1,17 +1,20 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ApplicationResponse } from "@/types/types";
+import { ReviewStatus } from "@/types/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ApplicantRole,
-  ApplicationResponse,
-  ReviewStatus,
-} from "@/types/types";
-import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { useCallback, useMemo, useState } from "react";
 import { DataTable } from "../../DataTable";
 import { Button } from "../../ui/button";
-import { ClipboardIcon, AlertTriangle, UserCheckIcon } from "lucide-react";
+import {
+  ClipboardIcon,
+  AlertTriangle,
+  UserCheckIcon,
+  EllipsisVertical,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { throwSuccessToast } from "../../toasts/SuccessToast";
 import { throwErrorToast } from "../../toasts/ErrorToast";
@@ -24,11 +27,8 @@ import {
   DropdownMenuTrigger,
 } from "../../ui/dropdown-menu";
 import SortableHeader from "../../tables/SortableHeader";
-import {
-  ApplicationRow,
-  flattenRows,
-  useRows,
-} from "../../dor/UnderReviewDashboard/useRows";
+import type { ApplicationRow } from "../../dor/UnderReviewDashboard/useRows";
+import { flattenRows, useRows } from "../../dor/UnderReviewDashboard/useRows";
 import { displayTimestamp } from "@/utils/dates";
 import {
   Tooltip,
@@ -44,7 +44,6 @@ import {
 } from "@/components/ui/select";
 import { displayReviewStatus } from "@/utils/display";
 import { throwWarningToast } from "@/components/toasts/WarningToast";
-import { EllipsisVertical } from "lucide-react";
 import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
 
 type BoardApplicationsTableProps = {

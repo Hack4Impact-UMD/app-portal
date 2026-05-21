@@ -1,3 +1,4 @@
+import { ApplicantRole } from "@app-portal/shared/types";
 import { useCallback, useState } from "react";
 import { Button } from "./ui/button";
 import { Download } from "lucide-react";
@@ -9,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { ApplicantRole, CsvRow } from "@/types/types";
+import type { CsvRow } from "@/types/types";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { throwErrorToast } from "./toasts/ErrorToast";
 import { displayApplicantRoleName } from "@/utils/display";

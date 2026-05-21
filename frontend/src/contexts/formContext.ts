@@ -1,9 +1,6 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { createContext } from "react";
-import {
-  ApplicantRole,
-  ApplicationForm,
-  ApplicationResponse,
-} from "../types/types";
+import type { ApplicationForm, ApplicationResponse } from "../types/types";
 
 export type FormProviderContext = {
   response?: ApplicationResponse;

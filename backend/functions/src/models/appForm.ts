@@ -1,54 +1,8 @@
 import { z } from "zod";
-import { ApplicantRole, QuestionType } from "./appResponse";
 import { Timestamp } from "firebase-admin/firestore";
 import { ReviewStatus } from "./appStatus";
-
-const ApplicationQuestionBaseSchema = z.object({
-  questionId: z.string().nonempty(),
-  optional: z.boolean(),
-  questionText: z.string(),
-  secondaryText: z.string().optional(),
-});
-
-const TextQuestionSchema = ApplicationQuestionBaseSchema.extend({
-  questionType: z.enum([QuestionType.ShortAnswer, QuestionType.LongAnswer]),
-  placeholderText: z.string(),
-  minimumWordCount: z.number().optional(),
-  maximumWordCount: z.number().optional(),
-});
-
-const OptionQuestionSchema = ApplicationQuestionBaseSchema.extend({
-  questionType: z.enum([
-    QuestionType.MultipleChoice,
-    QuestionType.MultipleSelect,
-  ]),
-  questionOptions: z.array(z.string()),
-});
-
-const FileUploadQuestionSchema = ApplicationQuestionBaseSchema.extend({
-  questionType: z.literal(QuestionType.FileUpload),
-  fileId: z.string(),
-});
-
-const RoleSelectQuestionSchema = ApplicationQuestionBaseSchema.extend({
-  questionType: z.literal(QuestionType.RoleSelect),
-});
-
-export const ApplicationQuestionSchema = z.discriminatedUnion("questionType", [
-  TextQuestionSchema,
-  OptionQuestionSchema,
-  FileUploadQuestionSchema,
-  RoleSelectQuestionSchema,
-]);
-
-export const ApplicationSectionSchema = z.object({
-  sectionId: z.string().nonempty(),
-  sectionName: z.string().nonempty(),
-  description: z.string().optional(),
-  forRoles: z.array(z.enum(ApplicantRole)).optional(),
-  questions: z.array(ApplicationQuestionSchema),
-  hideFromReviewers: z.boolean().optional(),
-});
+import { ApplicationSectionSchema } from "@app-portal/shared/schemas";
+import { ApplicantRole } from "@app-portal/shared/types";
 
 const RoleDecisionLetterSchema = z.object({
   [ApplicantRole.Bootcamp]: z.string(),
@@ -80,6 +34,4 @@ export const ApplicationFormSchema = z.object({
   interviewScoreWeights: ScoreWeightsSchema,
 });
 
-export type ApplicationSection = z.infer<typeof ApplicationSectionSchema>;
 export type ApplicationForm = z.infer<typeof ApplicationFormSchema>;
-export type ApplicationQuestion = z.infer<typeof ApplicationQuestionSchema>;

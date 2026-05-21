@@ -1,3 +1,4 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { useNavigate, useParams } from "react-router-dom";
 import Section from "@/components/form/Section";
 import { useApplicationForm } from "@/hooks/useApplicationForm";
@@ -6,7 +7,7 @@ import { useApplicationResponse } from "@/hooks/useApplicationResponses";
 import { useReviewData, useUpdateReviewData } from "@/hooks/useReviewData";
 import Spinner from "@/components/Spinner";
 import { useApplicant } from "@/hooks/useApplicants";
-import { ApplicantRole, ApplicationForm } from "@/types/formBuilderTypes";
+import type { ApplicationForm } from "@/types/formBuilderTypes";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
 import { Button } from "@/components/ui/button";
 import { useRubricsForFormRole } from "@/hooks/useRubrics";
@@ -30,7 +31,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { ApplicationReviewData, PermissionRole } from "@/types/types";
+import type { ApplicationReviewData } from "@/types/types";
+import { PermissionRole } from "@/types/types";
 import { CheckIcon, CircleAlertIcon, UserCheckIcon } from "lucide-react";
 import {
   Tooltip,

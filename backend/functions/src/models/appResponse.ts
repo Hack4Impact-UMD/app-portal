@@ -1,26 +1,6 @@
+import { ApplicantRole, QuestionType } from "@app-portal/shared/types";
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
-
-// specific application
-export enum ApplicantRole {
-  Bootcamp = "bootcamp",
-  Engineer = "engineer",
-  Designer = "designer",
-  Product = "product",
-  // Sourcing = "sourcing",
-  TechLead = "tech-lead",
-  SocialMedia = "social-media-manager",
-  OutreachCoord = "outreach-coordinator",
-}
-
-export enum QuestionType {
-  ShortAnswer = "short-answer",
-  LongAnswer = "long-answer",
-  MultipleChoice = "multiple-choice",
-  MultipleSelect = "multiple-select",
-  FileUpload = "file-upload",
-  RoleSelect = "role-select",
-}
 
 export enum ApplicationStatus {
   InProgress = "in-progress",

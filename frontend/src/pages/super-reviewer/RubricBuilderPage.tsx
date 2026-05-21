@@ -1,3 +1,5 @@
+import type { RoleReviewRubric } from "@app-portal/shared/types";
+import { ApplicantRole } from "@app-portal/shared/types";
 import { useState, useEffect, useCallback } from "react";
 import {
   ResizableHandle,
@@ -6,7 +8,6 @@ import {
 } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import CodeEditor from "@/components/form/CodeEditor";
-import { ApplicantRole, RoleReviewRubric } from "@/types/types";
 import { useApplicationForm } from "@/hooks/useApplicationForm";
 import { useAuth } from "@/hooks/useAuth";
 import Loading from "@/components/Loading";
@@ -23,10 +24,8 @@ import { AlertTriangleIcon } from "lucide-react";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
-import {
-  validateRubricScoreKeys,
-  RubricValidationWarnings,
-} from "@/services/rubricService";
+import type { RubricValidationWarnings } from "@/services/rubricService";
+import { validateRubricScoreKeys } from "@/services/rubricService";
 
 function ValidationWarningDisplay({
   warnings,

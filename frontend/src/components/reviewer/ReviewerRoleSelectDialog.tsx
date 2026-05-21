@@ -1,3 +1,4 @@
+import { ApplicantRole } from "@app-portal/shared/types";
 import { useAuth } from "@/hooks/useAuth";
 import {
   AlertDialog,
@@ -9,7 +10,7 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
-import { ApplicantRole } from "@/types/types";
+
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
 import { useMemo, useState } from "react";
 

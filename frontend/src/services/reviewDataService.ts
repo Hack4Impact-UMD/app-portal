@@ -1,3 +1,4 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import {
   collection,
   doc,
@@ -8,8 +9,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import {
-  ApplicantRole,
+import type {
   ApplicationReviewData,
   AppReviewAssignment,
 } from "../types/types";

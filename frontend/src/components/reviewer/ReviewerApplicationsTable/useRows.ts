@@ -1,16 +1,13 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { getApplicantById } from "@/services/applicantService";
 import { getReviewDataForAssignment } from "@/services/reviewDataService";
-import {
-  ApplicantRole,
-  ApplicationReviewData,
-  AppReviewAssignment,
-} from "@/types/types";
+import type { ApplicationReviewData, AppReviewAssignment } from "@/types/types";
 import { calculateReviewScore } from "@/utils/scores";
 import { useQuery } from "@tanstack/react-query";
 import { getPreviouslyAppliedCount } from "@/services/previouslyAppliedService";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getApplicationResponseById } from "@/services/applicationResponsesService";
-import { Timestamp } from "firebase/firestore";
+import type { Timestamp } from "firebase/firestore";
 
 export type AssignmentRow = {
   index: number;

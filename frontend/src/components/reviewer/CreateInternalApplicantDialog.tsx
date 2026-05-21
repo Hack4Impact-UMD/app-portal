@@ -1,3 +1,4 @@
+import { ApplicantRole } from "@app-portal/shared/types";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -11,7 +12,7 @@ import {
 } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ApplicantRole } from "@/types/types";
+
 import { displayApplicantRoleName } from "@/utils/display";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

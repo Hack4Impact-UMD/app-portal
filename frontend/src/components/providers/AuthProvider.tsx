@@ -1,4 +1,6 @@
-import { ReactNode, useEffect, useState } from "react";
+import type { ApplicantRole } from "@app-portal/shared/types";
+import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import {
   getUserById,
   loginUser,
@@ -6,7 +8,8 @@ import {
   onAuthStateChange,
   setReviewCapableUserRolePreferences,
 } from "../../services/userService";
-import { ApplicantRole, PermissionRole, UserProfile } from "../../types/types";
+import type { UserProfile } from "../../types/types";
+import { PermissionRole } from "../../types/types";
 import { auth } from "../../config/firebase";
 import { AuthContext } from "../../contexts/authContext";
 import ReviewerRoleSelectDialog from "../reviewer/ReviewerRoleSelectDialog";

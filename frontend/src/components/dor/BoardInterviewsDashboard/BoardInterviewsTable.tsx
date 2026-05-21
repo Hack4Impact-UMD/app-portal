@@ -1,11 +1,17 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
-import { ApplicantRole, ApplicationResponse } from "@/types/types";
+import type {
+  ApplicationResponse,
+  ApplicationInterviewData,
+  InterviewAssignment,
+  ReviewCapableUser,
+} from "@/types/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
   getPaginationRowModel,
-  ColumnDef,
 } from "@tanstack/react-table";
 import RolePill from "@/components/role-pill/RolePill";
 import {
@@ -15,9 +21,8 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import type { InterviewAssignment, ReviewCapableUser } from "@/types/types";
-import { ApplicationInterviewData } from "@/types/types";
-import { QualifiedAppRow, useRows } from "../QualifiedDashboard/useRows";
+import type { QualifiedAppRow } from "../QualifiedDashboard/useRows";
+import { useRows } from "../QualifiedDashboard/useRows";
 import SortableHeader from "@/components/tables/SortableHeader";
 import { Clipboard, EllipsisVertical, AlertTriangle } from "lucide-react";
 import {

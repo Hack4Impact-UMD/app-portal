@@ -1,6 +1,7 @@
-import { ApplicantRole, BoardUserProfile } from "@/types/types";
+import type { ApplicantRole } from "@app-portal/shared/types";
+import type { BoardUserProfile } from "@/types/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
@@ -14,7 +15,8 @@ import { setBoardApplicantRoles } from "@/services/userService";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import SortableHeader from "@/components/tables/SortableHeader";
-import { useRows, BoardRow } from "./useRows";
+import type { BoardRow } from "./useRows";
+import { useRows } from "./useRows";
 
 type BoardMembersTableProps = {
   boardMembers: BoardUserProfile[];

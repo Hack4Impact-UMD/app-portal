@@ -1,4 +1,5 @@
-import { ApplicantRole, BoardUserProfile } from "@/types/types";
+import type { ApplicantRole } from "@app-portal/shared/types";
+import type { BoardUserProfile } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 
 export type BoardRow = {

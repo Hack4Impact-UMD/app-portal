@@ -1,3 +1,4 @@
+import { QuestionType } from "@app-portal/shared/types";
 import {
   setDoc,
   Timestamp,
@@ -11,14 +12,13 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { API_URL, db } from "../config/firebase";
-import {
+import type {
   ApplicationForm,
   ApplicationResponse,
-  ApplicationStatus,
-  QuestionType,
   SectionResponse,
   ValidationError,
 } from "../types/types";
+import { ApplicationStatus } from "../types/types";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { getReviewAssignments } from "./reviewAssignmentService";

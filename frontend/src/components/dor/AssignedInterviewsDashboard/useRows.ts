@@ -1,9 +1,9 @@
+import type { ApplicantRole } from "@app-portal/shared/types";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getInterviewDataForAssignment } from "@/services/interviewDataService";
 import { reviewCapable } from "@/services/reviewersService";
 import { getUserById } from "@/services/userService";
-import {
-  ApplicantRole,
+import type {
   ApplicationInterviewData,
   InterviewAssignment,
   ReviewCapableUser,

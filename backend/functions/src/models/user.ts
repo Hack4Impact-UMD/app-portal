@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
-import { ApplicantRole, SectionResponseSchema } from "./appResponse";
+import { SectionResponseSchema } from "./appResponse";
+import { ApplicantRole } from "@app-portal/shared/types";
 
 export enum PermissionRole {
   Applicant = "applicant",

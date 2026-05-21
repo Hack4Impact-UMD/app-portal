@@ -1,9 +1,8 @@
-import {
+import type { ApplicantRole, RoleReviewRubric } from "@app-portal/shared/types";
+import type {
   ApplicationInterviewData,
-  ApplicantRole,
   ApplicationForm,
   ApplicationReviewData,
-  RoleReviewRubric,
 } from "@/types/types";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
 import RubricQuestion from "./RubricQuestion";

@@ -1,25 +1,31 @@
-import { Router, Request, Response } from "express";
+import type { Request, Response } from "express";
+import { Router } from "express";
 import { db } from "../index";
 import { validateSchema } from "../middleware/validation";
-import {
+import type {
   ApplicationResponse,
   ApplicationResponseSaveRequest,
-  ApplicationResponseSaveRequestSchema,
   ApplicationResponseSubmitRequest,
+  QuestionResponse,
+} from "../models/appResponse";
+import {
+  ApplicationResponseSaveRequestSchema,
   ApplicationResponseSubmitRequestSchema,
   ApplicationStatus,
-  QuestionResponse,
-  QuestionType,
 } from "../models/appResponse";
-import { CollectionReference, Timestamp } from "firebase-admin/firestore";
+import type { CollectionReference } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { hasRoles, isAuthenticated } from "../middleware/authentication";
-import { ApplicationForm } from "../models/appForm";
-import { RoleReviewRubric, roleReviewRubricSchema } from "../models/appReview";
-import { InternalApplicationStatus, ReviewStatus } from "../models/appStatus";
+import type { ApplicationForm } from "../models/appForm";
+import type { InternalApplicationStatus } from "../models/appStatus";
+import { ReviewStatus } from "../models/appStatus";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { PermissionRole } from "../models/user";
+import { QuestionType } from "@app-portal/shared/types";
+import type { RoleReviewRubric } from "@app-portal/shared/types";
+import { RoleReviewRubricSchema } from "@app-portal/shared/schemas";
 // import * as admin from "firebase-admin"
 
 const router = Router();
@@ -458,7 +464,7 @@ router.post(
   [
     isAuthenticated,
     hasRoles([PermissionRole.SuperReviewer]),
-    validateSchema(z.array(roleReviewRubricSchema)),
+    validateSchema(z.array(RoleReviewRubricSchema)),
   ],
   async (req: Request, res: Response) => {
     try {
@@ -532,7 +538,7 @@ router.post(
   [
     isAuthenticated,
     hasRoles([PermissionRole.SuperReviewer]),
-    validateSchema(z.array(roleReviewRubricSchema)),
+    validateSchema(z.array(RoleReviewRubricSchema)),
   ],
   async (req: Request, res: Response) => {
     try {

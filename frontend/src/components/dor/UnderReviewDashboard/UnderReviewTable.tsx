@@ -1,13 +1,13 @@
-import {
-  ApplicantRole,
+import type { ApplicantRole } from "@app-portal/shared/types";
+import type {
   ApplicationResponse,
   AppReviewAssignment,
   InternalApplicationStatus,
   ReviewCapableUser,
-  ReviewStatus,
 } from "@/types/types";
+import { ReviewStatus } from "@/types/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
@@ -40,7 +40,8 @@ import {
   DropdownMenuTrigger,
 } from "../../ui/dropdown-menu";
 import SortableHeader from "../../tables/SortableHeader";
-import { ApplicationRow, flattenRows, useRows } from "./useRows";
+import type { ApplicationRow } from "./useRows";
+import { flattenRows, useRows } from "./useRows";
 import { ReviewerSelect } from "./ReviewerSelect";
 import { displayTimestamp } from "@/utils/dates";
 import {
