@@ -15,7 +15,6 @@
         "*.local"
       ],
       "predeploy": [
-        "pnpm install --frozen-lockfile",
         "pnpm exec isolate",
         "pnpm --dir backend/functions/isolate install --frozen-lockfile"
       ]

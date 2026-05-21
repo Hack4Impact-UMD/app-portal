@@ -2,7 +2,7 @@
   "name": "functions",
   "version": "0.1.0",
   "files": [
-    "dist"
+    "lib"
   ],
   "scripts": {
     "build": "tsc",
