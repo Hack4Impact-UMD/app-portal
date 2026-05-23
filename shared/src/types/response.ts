@@ -29,8 +29,34 @@ export const ApplicationResponseBaseSchema = z.object({
   status: z.enum(ApplicationStatus),
 });
 
+export const ApplicationResponseSubmitRequestSchema =
+  ApplicationResponseBaseSchema.extend({
+    rolesApplied: z
+      .array(z.enum(ApplicantRole))
+      .nonempty("Must submit at least one role"),
+    status: z
+      .enum(ApplicationStatus)
+      .refine((v) => v === ApplicationStatus.InProgress, {
+        message: "Application status must be in progress to submit",
+      }),
+  });
+
+export const ApplicationResponseSaveRequestSchema =
+  ApplicationResponseBaseSchema.pick({
+    id: true,
+    applicationFormId: true,
+    rolesApplied: true,
+    sectionResponses: true,
+  });
+
 export type QuestionResponse = z.infer<typeof QuestionResponseSchema>;
 export type SectionResponse = z.infer<typeof SectionResponseSchema>;
 export type ApplicationResponseBase = z.infer<
   typeof ApplicationResponseBaseSchema
+>;
+export type ApplicationResponseSubmitRequest = z.infer<
+  typeof ApplicationResponseSubmitRequestSchema
+>;
+export type ApplicationResponseSaveRequest = z.infer<
+  typeof ApplicationResponseSaveRequestSchema
 >;

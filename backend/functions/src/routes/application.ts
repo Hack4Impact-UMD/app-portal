@@ -3,15 +3,7 @@ import type { Request, Response } from "express";
 import { Router } from "express";
 import { db } from "../index";
 import { validateSchema } from "../middleware/validation";
-import type {
-  ApplicationResponse,
-  ApplicationResponseSaveRequest,
-  ApplicationResponseSubmitRequest,
-} from "../models/appResponse";
-import {
-  ApplicationResponseSaveRequestSchema,
-  ApplicationResponseSubmitRequestSchema,
-} from "../models/appResponse";
+import type { ApplicationResponse } from "../models/appResponse";
 import type { CollectionReference } from "firebase-admin/firestore";
 import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
@@ -23,10 +15,16 @@ import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { PermissionRole } from "../models/user";
 import type {
+  ApplicationResponseSaveRequest,
+  ApplicationResponseSubmitRequest,
   QuestionResponse,
   RoleReviewRubric,
 } from "@app-portal/shared/types";
-import { RoleReviewRubricSchema } from "@app-portal/shared/types";
+import {
+  ApplicationResponseSaveRequestSchema,
+  ApplicationResponseSubmitRequestSchema,
+  RoleReviewRubricSchema,
+} from "@app-portal/shared/types";
 // import * as admin from "firebase-admin"
 
 const router = Router();
