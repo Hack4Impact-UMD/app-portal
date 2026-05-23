@@ -1,6 +1,9 @@
-import { ApplicationInterviewData, InterviewAssignment } from "@/types/types";
+import type {
+  InterviewAssignment,
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
@@ -9,7 +12,8 @@ import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
-import { AssignedAppRow, useRows } from "./useRows";
+import type { AssignedAppRow } from "./useRows";
+import { useRows } from "./useRows";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import SortableHeader from "@/components/tables/SortableHeader";
 

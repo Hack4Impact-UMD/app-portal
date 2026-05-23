@@ -22,6 +22,7 @@ import type {
   InternalApplicationStatus,
   QuestionResponse,
   RoleReviewRubric,
+  ValidationError,
 } from "@app-portal/shared/types";
 import {
   ApplicationResponseSaveRequestSchema,
@@ -43,12 +44,6 @@ interface QuestionMetadata {
   minimumWordCount?: number;
   maximumWordCount?: number;
 }
-
-type ValidationError = {
-  sectionId: string;
-  questionId: string;
-  message: string;
-};
 
 function validateResponses(
   applicationResponse: ApplicationResponseSubmitRequest,

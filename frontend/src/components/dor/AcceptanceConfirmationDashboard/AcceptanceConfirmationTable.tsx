@@ -1,13 +1,12 @@
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { ClipboardIcon, EllipsisVertical } from "lucide-react";
 
-import { DecisionLetterStatus } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/DataTable";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
@@ -25,10 +24,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useRows, DecisionRow } from "./useRows";
+import type { DecisionRow } from "./useRows";
+import { useRows } from "./useRows";
+import type { DecisionConfirmation } from "@app-portal/shared/types";
 
 type AcceptanceConfirmationTableProps = {
-  confirmations: DecisionLetterStatus[];
+  confirmations: DecisionConfirmation[];
   search: string;
   rowCount?: number;
   decisionFilter: "all" | "accepted" | "denied";

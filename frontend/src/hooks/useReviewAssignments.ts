@@ -1,9 +1,10 @@
+import type { AppReviewAssignment } from "@app-portal/shared/types";
 import {
   getReviewAssignments,
   getReviewAssignmentsForApplication,
   getReviewAssignmentsForForm,
 } from "@/services/reviewAssignmentService";
-import { AppReviewAssignment } from "@/types/types";
+
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
 

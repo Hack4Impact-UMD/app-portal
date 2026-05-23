@@ -1,6 +1,7 @@
+import type { ApplicationReviewData } from "@app-portal/shared/types";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ApplicationReviewData } from "../types/types";
+
 import {
   getReviewDataById,
   getReviewDataForApplicant,
@@ -9,7 +10,7 @@ import {
   getReviewDataForForm,
   getReviewDataForReviewer,
   updateReviewData,
-} from "../services/reviewDataService";
+} from "@/services/reviewDataService";
 import { useAuth } from "./useAuth";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 

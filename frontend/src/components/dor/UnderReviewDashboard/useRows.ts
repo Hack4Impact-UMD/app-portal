@@ -1,5 +1,9 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import type { InternalApplicationStatus } from "@app-portal/shared/types";
+import type {
+  AppReviewAssignment,
+  ApplicationReviewData,
+  InternalApplicationStatus,
+} from "@app-portal/shared/types";
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getPreviouslyAppliedCount } from "@/services/previouslyAppliedService";
@@ -8,9 +12,7 @@ import { getReviewDataForResponseRole } from "@/services/reviewDataService";
 import { getApplicationStatusForResponseRole } from "@/services/statusService";
 import { getUserById } from "@/services/userService";
 import type {
-  AppReviewAssignment,
   ApplicationResponse,
-  ApplicationReviewData,
   ReviewCapableUser,
   CsvRow,
 } from "@/types/types";

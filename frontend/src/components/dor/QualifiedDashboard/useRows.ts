@@ -1,5 +1,9 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import type { InternalApplicationStatus } from "@app-portal/shared/types";
+import type {
+  ApplicationInterviewData,
+  InterviewAssignment,
+  InternalApplicationStatus,
+} from "@app-portal/shared/types";
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getInterviewAssignmentsForApplication } from "@/services/interviewAssignmentService";
@@ -8,9 +12,7 @@ import { reviewCapable } from "@/services/reviewersService";
 import { getApplicationStatusForResponseRole } from "@/services/statusService";
 import { getUserById } from "@/services/userService";
 import type {
-  ApplicationInterviewData,
   ApplicationResponse,
-  InterviewAssignment,
   ReviewCapableUser,
   CsvRow,
 } from "@/types/types";

@@ -1,6 +1,6 @@
 import OneLineInput from "@/components/form/OneLineInput";
-import { throwSuccessToast } from "../components/toasts/SuccessToast";
-import { throwErrorToast } from "../components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { updateUser } from "@/services/userService";

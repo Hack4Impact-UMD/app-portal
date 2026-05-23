@@ -1,20 +1,19 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useMyApplicationResponseAndForm } from "../../hooks/useApplicationResponses";
-import Loading from "../../components/Loading";
-import Section from "../../components/form/Section";
-import { Button } from "../../components/ui/button";
-import { useAuth } from "../../hooks/useAuth";
-import {
-  ApplicationSubmitResponse,
-  submitApplicationResponse,
-} from "../../services/applicationResponsesService";
+import { useMyApplicationResponseAndForm } from "@/hooks/useApplicationResponses";
+import Loading from "@/components/Loading";
+import Section from "@/components/form/Section";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import type { ApplicationSubmitResponse } from "@/services/applicationResponsesService";
+import { submitApplicationResponse } from "@/services/applicationResponsesService";
 import { useMutation } from "@tanstack/react-query";
-import { ApplicationResponse, ValidationError } from "../../types/types";
+import type { ApplicationResponse } from "@/types/types";
 import { AxiosError } from "axios";
 import { useState } from "react";
-import { throwErrorToast } from "../../components/toasts/ErrorToast";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Timestamp } from "firebase/firestore";
 import { EditIcon } from "lucide-react";
+import type { ValidationError } from "@app-portal/shared/types";
 
 export default function AppSubmitPage() {
   const { formId } = useParams();

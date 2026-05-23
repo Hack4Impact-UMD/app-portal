@@ -1,6 +1,7 @@
+import type { InterviewAssignment } from "@app-portal/shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
-import { InterviewAssignment } from "@/types/types";
+
 import {
   getInterviewAssignments,
   getInterviewAssignmentsForApplication,

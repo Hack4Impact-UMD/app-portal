@@ -1,8 +1,8 @@
 import type {
-  ApplicationInterviewData,
   InterviewAssignment,
-  ReviewCapableUser,
-} from "@/types/types";
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
+import type { ReviewCapableUser } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 
 export type InterviewerRow = {

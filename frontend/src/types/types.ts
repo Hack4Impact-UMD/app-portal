@@ -53,74 +53,11 @@ export interface SuperReviewerUserProfile extends IUserProfile {
   role: PermissionRole.SuperReviewer;
 }
 
-export type InterviewAssignment = {
-  id: string;
-  assignmentType: "interview";
-  formId: string; // what form is this review for
-  interviewerId: string;
-  applicantId: string; // the applicant that was assigned for review
-  applicationResponseId: string; // the submitted application that was assigned for review
-  forRole: ApplicantRole;
-};
-
-export type AppReviewAssignment = {
-  id: string;
-  assignmentType: "review";
-  formId: string; // what form is this review for
-  reviewerId: string;
-  applicantId: string; // the applicant that was assigned for review
-  applicationResponseId: string; // the submitted application that was assigned for review
-  forRole: ApplicantRole;
-};
-
-export type Assignment = AppReviewAssignment | InterviewAssignment;
-
 // ⚠️ do not edit this type!!!
 // edit the ApplicationResponseBaseSchema instead!!!
 export interface ApplicationResponse extends ApplicationResponseBase {
   dateSubmitted: Timestamp;
 }
-
-// One of these per review. Reviews tie together an application, role, and reviewer.
-export interface ApplicationReviewData {
-  id: string;
-  reviewerId: string;
-  applicationFormId: string;
-  applicationResponseId: string;
-  applicantId: string;
-  applicantScores: Record<string, number>;
-  reviewerNotes: Record<string, string>; // reviewStatus: ReviewStatus;
-  forRole: ApplicantRole; // what role is this review for
-  submitted: boolean;
-}
-
-// status for after applicant gets acceptance letter
-// TODO this should be renamed to either "acceptance confirmation" or "decision confirmation"
-export type DecisionLetterStatus = {
-  status: "accepted" | "denied";
-  userId: string;
-  formId: string;
-  responseId: string;
-  internalStatusId: string;
-};
-
-export interface ApplicationInterviewData {
-  id: string;
-  interviewerId: string; // user id for the interviewer
-  applicationFormId: string;
-  applicationResponseId: string;
-  applicantId: string;
-  interviewScores: Record<string, number>;
-  interviewerNotes: Record<string, string>;
-  forRole: ApplicantRole;
-  submitted: boolean;
-}
-
-export type ValidationError = {
-  sectionId: string;
-  questionId: string;
-  message: string;
-};
 
 export type CsvRow = Record<
   string,

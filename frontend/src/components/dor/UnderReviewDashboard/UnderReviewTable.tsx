@@ -1,19 +1,18 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { ReviewStatus } from "@app-portal/shared/constants";
-import type { InternalApplicationStatus } from "@app-portal/shared/types";
 import type {
-  ApplicationResponse,
   AppReviewAssignment,
-  ReviewCapableUser,
-} from "@/types/types";
+  InternalApplicationStatus,
+} from "@app-portal/shared/types";
+import type { ApplicationResponse, ReviewCapableUser } from "@/types/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { useCallback, useMemo, useState } from "react";
-import { DataTable } from "../../DataTable";
-import { Button } from "../../ui/button";
+import { DataTable } from "@/components/DataTable";
+import { Button } from "@/components/ui/button";
 import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getReviewDataForAssignment } from "@/services/reviewDataService";
@@ -28,9 +27,9 @@ import {
   UserCheckIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { throwSuccessToast } from "../../toasts/SuccessToast";
-import { throwErrorToast } from "../../toasts/ErrorToast";
-import ApplicantRolePill from "../../role-pill/RolePill";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import ApplicantRolePill from "@/components/role-pill/RolePill";
 import { updateApplicationStatus } from "@/services/statusService";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -38,8 +37,8 @@ import {
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
-import SortableHeader from "../../tables/SortableHeader";
+} from "@/components/ui/dropdown-menu";
+import SortableHeader from "@/components/tables/SortableHeader";
 import type { ApplicationRow } from "./useRows";
 import { flattenRows, useRows } from "./useRows";
 import { ReviewerSelect } from "./ReviewerSelect";

@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript"],
+  "plugins": ["typescript", "import"],
   "categories": {
     "correctness": "off",
   },
@@ -140,6 +140,7 @@
         "es2020": true,
       },
       "rules": {
+        "import/no-relative-parent-imports": "error",
         "react/rules-of-hooks": "error",
         "react/exhaustive-deps": "warn",
         "react/only-export-components": [
@@ -152,7 +153,6 @@
     },
     {
       "files": ["backend/functions/**/*.{js,ts}"],
-      "plugins": ["import"],
       "env": {
         "node": true,
       },

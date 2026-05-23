@@ -1,4 +1,7 @@
-import type { SectionResponse } from "@app-portal/shared/types";
+import type {
+  SectionResponse,
+  ValidationError,
+} from "@app-portal/shared/types";
 import { ApplicationStatus, QuestionType } from "@app-portal/shared/constants";
 import {
   setDoc,
@@ -12,12 +15,8 @@ import {
   where,
   getDoc,
 } from "firebase/firestore";
-import { API_URL, db } from "../config/firebase";
-import type {
-  ApplicationForm,
-  ApplicationResponse,
-  ValidationError,
-} from "../types/types";
+import { API_URL, db } from "@/config/firebase";
+import type { ApplicationForm, ApplicationResponse } from "@/types/types";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { getReviewAssignments } from "./reviewAssignmentService";

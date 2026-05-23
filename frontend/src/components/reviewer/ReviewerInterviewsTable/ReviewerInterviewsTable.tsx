@@ -1,8 +1,9 @@
-import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
-  ApplicationInterviewData,
   InterviewAssignment,
-} from "@/types/types";
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,

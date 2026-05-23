@@ -1,12 +1,12 @@
+import type {
+  InterviewAssignment,
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getInterviewDataForAssignment } from "@/services/interviewDataService";
-import type {
-  ApplicantUserProfile,
-  ApplicationInterviewData,
-  InterviewAssignment,
-} from "@/types/types";
+import type { ApplicantUserProfile } from "@/types/types";
 import { calculateInterviewScore } from "@/utils/scores";
 import { useQuery } from "@tanstack/react-query";
 

@@ -1,13 +1,43 @@
 import { z } from "zod";
-import { ApplicantRole, ReviewStatus } from "../constants";
+import { ApplicantRole } from "../constants";
 
-export const InternalApplicationStatusSchema = z.object({
+export const AssignmentBaseSchema = z.object({
   id: z.string().min(1),
   formId: z.string().min(1),
-  role: z.enum(ApplicantRole),
-  responseId: z.string().min(1),
-  status: z.enum(ReviewStatus),
-  isQualified: z.boolean(),
+  applicantId: z.string().min(1),
+  applicationResponseId: z.string().min(1),
+  forRole: z.enum(ApplicantRole),
+});
+
+export const ReviewAssignmentSchema = AssignmentBaseSchema.extend({
+  assignmentType: z.literal("review"),
+  reviewerId: z.string().min(1),
+});
+
+export const InterviewAssignmentSchema = AssignmentBaseSchema.extend({
+  assignmentType: z.literal("interview"),
+  interviewerId: z.string().min(1),
+});
+
+export const ReviewDataBaseSchema = z.object({
+  id: z.string().nonempty(),
+  applicationFormId: z.string().nonempty(),
+  applicationResponseId: z.string().nonempty(),
+  applicantId: z.string().nonempty(),
+  forRole: z.enum(ApplicantRole),
+  submitted: z.boolean(),
+});
+
+export const ApplicationReviewDataSchema = ReviewDataBaseSchema.extend({
+  reviewerId: z.string().nonempty(),
+  applicantScores: z.record(z.string().nonempty(), z.number().min(0)),
+  reviewerNotes: z.record(z.string().nonempty(), z.string()),
+});
+
+export const ApplicationInterviewDataSchema = ReviewDataBaseSchema.extend({
+  interviewerId: z.string().nonempty(),
+  interviewScores: z.record(z.string().nonempty(), z.number().min(0)),
+  interviewerNotes: z.record(z.string().nonempty(), z.string()),
 });
 
 export const ReviewRubricQuestionSchema = z
@@ -49,8 +79,11 @@ export const RoleReviewRubricSchema = z
     }
   });
 
-export type InternalApplicationStatus = z.infer<
-  typeof InternalApplicationStatusSchema
+export type AppReviewAssignment = z.infer<typeof ReviewAssignmentSchema>;
+export type InterviewAssignment = z.infer<typeof InterviewAssignmentSchema>;
+export type ApplicationReviewData = z.infer<typeof ApplicationReviewDataSchema>;
+export type ApplicationInterviewData = z.infer<
+  typeof ApplicationInterviewDataSchema
 >;
 export type RoleReviewRubric = z.infer<typeof RoleReviewRubricSchema>;
 export type ReviewRubricQuestion = z.infer<typeof ReviewRubricQuestionSchema>;

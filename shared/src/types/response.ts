@@ -49,6 +49,12 @@ export const ApplicationResponseSaveRequestSchema =
     sectionResponses: true,
   });
 
+export const ValidationErrorSchema = z.object({
+  sectionId: z.string().min(1),
+  questionId: z.string().min(1),
+  message: z.string().min(1),
+});
+
 export type QuestionResponse = z.infer<typeof QuestionResponseSchema>;
 export type SectionResponse = z.infer<typeof SectionResponseSchema>;
 export type ApplicationResponseBase = z.infer<
@@ -60,3 +66,4 @@ export type ApplicationResponseSubmitRequest = z.infer<
 export type ApplicationResponseSaveRequest = z.infer<
   typeof ApplicationResponseSaveRequestSchema
 >;
+export type ValidationError = z.infer<typeof ValidationErrorSchema>;

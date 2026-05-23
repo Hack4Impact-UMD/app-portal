@@ -1,3 +1,4 @@
+import type { ApplicationReviewData } from "@app-portal/shared/types";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { useNavigate, useParams } from "react-router-dom";
 import Section from "@/components/form/Section";
@@ -31,7 +32,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import type { ApplicationReviewData } from "@/types/types";
+
 import { PermissionRole } from "@/types/types";
 import { CheckIcon, CircleAlertIcon, UserCheckIcon } from "lucide-react";
 import {

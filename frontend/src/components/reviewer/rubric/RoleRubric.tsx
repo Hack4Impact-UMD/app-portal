@@ -1,10 +1,10 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import type { RoleReviewRubric } from "@app-portal/shared/types";
 import type {
   ApplicationInterviewData,
-  ApplicationForm,
   ApplicationReviewData,
-} from "@/types/types";
+  RoleReviewRubric,
+} from "@app-portal/shared/types";
+import type { ApplicationForm } from "@/types/types";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
 import RubricQuestion from "./RubricQuestion";
 import FormMarkdown from "@/components/form/FormMarkdown";

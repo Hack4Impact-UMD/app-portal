@@ -1,12 +1,12 @@
+import type {
+  AppReviewAssignment,
+  ApplicationReviewData,
+} from "@app-portal/shared/types";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getReviewDataForAssignment } from "@/services/reviewDataService";
 import { getUserById } from "@/services/userService";
-import type {
-  ApplicantUserProfile,
-  ApplicationReviewData,
-  AppReviewAssignment,
-} from "@/types/types";
+import type { ApplicantUserProfile } from "@/types/types";
 import { PermissionRole } from "@/types/types";
 import { calculateReviewScore } from "@/utils/scores";
 import { useQuery } from "@tanstack/react-query";

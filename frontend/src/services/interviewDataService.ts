@@ -1,3 +1,7 @@
+import type {
+  InterviewAssignment,
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import {
   collection,
@@ -9,11 +13,8 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import type {
-  ApplicationInterviewData,
-  InterviewAssignment,
-} from "../types/types";
-import { db } from "../config/firebase";
+
+import { db } from "@/config/firebase";
 import { v4 as uuidv4 } from "uuid";
 
 export const INTERVIEW_DATA_COLLECTION = "interview-data";

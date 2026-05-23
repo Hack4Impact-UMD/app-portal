@@ -4,14 +4,14 @@ import { hasRoles, isAuthenticated } from "../middleware/authentication";
 import { db } from "..";
 import type { CollectionReference } from "firebase-admin/firestore";
 import { ReviewStatus } from "@app-portal/shared/constants";
-import type { InternalApplicationStatus } from "@app-portal/shared/types";
+import { DecisionConfirmationSchema } from "@app-portal/shared/types";
+import type {
+  DecisionConfirmation,
+  InternalApplicationStatus,
+} from "@app-portal/shared/types";
 import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
 import { logger } from "firebase-functions";
-import {
-  DecisionLetterStatusSchema,
-  type DecisionLetterStatus,
-} from "../models/confirmation";
 import { validateSchema } from "../middleware/validation";
 import { PermissionRole } from "../models/user";
 
@@ -103,7 +103,7 @@ router.post(
   [
     isAuthenticated,
     hasRoles([PermissionRole.Applicant]),
-    validateSchema(DecisionLetterStatusSchema),
+    validateSchema(DecisionConfirmationSchema),
   ],
   async (req: Request, res: Response) => {
     try {
@@ -111,9 +111,9 @@ router.post(
 
       const decisionStatusCollection = db.collection(
         DECISION_STATUS_COLLECTION,
-      ) as CollectionReference<DecisionLetterStatus>;
+      ) as CollectionReference<DecisionConfirmation>;
 
-      const input = req.body as DecisionLetterStatus;
+      const input = req.body as DecisionConfirmation;
       const { responseId, userId, internalStatusId } = input;
       const uid = req.token!.uid;
 

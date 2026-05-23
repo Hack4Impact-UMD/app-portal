@@ -2,9 +2,9 @@ import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
   ApplicationSection,
   QuestionResponse,
+  ValidationError,
 } from "@app-portal/shared/types";
 import React, { memo, useMemo, useCallback } from "react";
-import type { ValidationError } from "../../types/types";
 import FormMarkdown from "./FormMarkdown";
 import QuestionItem from "./QuestionItem";
 

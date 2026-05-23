@@ -1,16 +1,16 @@
-import {
-  ApplicationInterviewData,
+import type {
   InterviewAssignment,
-  ReviewCapableUser,
-} from "@/types/types";
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
+import type { ReviewCapableUser } from "@/types/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { DataTable } from "../../DataTable";
-import { Button } from "../../ui/button";
+import { DataTable } from "@/components/DataTable";
+import { Button } from "@/components/ui/button";
 import { EllipsisVertical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -18,8 +18,9 @@ import {
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
-import { InterviewerRow, flattenRows, useRows } from "./useRows";
+} from "@/components/ui/dropdown-menu";
+import type { InterviewerRow } from "./useRows";
+import { flattenRows, useRows } from "./useRows";
 // import { RoleSelect } from "./RoleSelect";
 import { ExportButton } from "@/components/ExportButton";
 import SortableHeader from "@/components/tables/SortableHeader";

@@ -1,9 +1,9 @@
-import { throwWarningToast } from "@/components/toasts/WarningToast";
-import {
-  ApplicationForm,
-  ApplicationInterviewData,
+import type {
   ApplicationReviewData,
-} from "@/types/types";
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
+import { throwWarningToast } from "@/components/toasts/WarningToast";
+import type { ApplicationForm } from "@/types/types";
 
 export function calculateReviewScore(
   review: ApplicationReviewData,

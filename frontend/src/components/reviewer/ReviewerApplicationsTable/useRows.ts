@@ -1,7 +1,11 @@
+import type {
+  AppReviewAssignment,
+  ApplicationReviewData,
+} from "@app-portal/shared/types";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { getApplicantById } from "@/services/applicantService";
 import { getReviewDataForAssignment } from "@/services/reviewDataService";
-import type { ApplicationReviewData, AppReviewAssignment } from "@/types/types";
+
 import { calculateReviewScore } from "@/utils/scores";
 import { useQuery } from "@tanstack/react-query";
 import { getPreviouslyAppliedCount } from "@/services/previouslyAppliedService";

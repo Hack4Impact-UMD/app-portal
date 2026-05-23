@@ -1,3 +1,7 @@
+import type {
+  InterviewAssignment,
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import Spinner from "@/components/Spinner";
@@ -17,11 +21,7 @@ import {
 } from "@/components/ui/command";
 import { useReviewersForRole } from "@/hooks/useReviewers";
 import { getInterviewAssignmentsForApplication } from "@/services/interviewAssignmentService";
-import type {
-  ApplicationInterviewData,
-  InterviewAssignment,
-  ReviewCapableUser,
-} from "@/types/types";
+import type { ReviewCapableUser } from "@/types/types";
 import { PermissionRole } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";

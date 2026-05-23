@@ -1,13 +1,12 @@
+import type {
+  InterviewAssignment,
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
-import type {
-  ApplicationResponse,
-  ApplicationInterviewData,
-  InterviewAssignment,
-  ReviewCapableUser,
-} from "@/types/types";
+import type { ApplicationResponse, ReviewCapableUser } from "@/types/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
@@ -21,8 +20,8 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import type { QualifiedAppRow } from "../QualifiedDashboard/useRows";
-import { useRows } from "../QualifiedDashboard/useRows";
+import type { QualifiedAppRow } from "@/components/dor/QualifiedDashboard/useRows";
+import { useRows } from "@/components/dor/QualifiedDashboard/useRows";
 import SortableHeader from "@/components/tables/SortableHeader";
 import { Clipboard, EllipsisVertical, AlertTriangle } from "lucide-react";
 import {
@@ -36,7 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { InterviewerSelect } from "./InterviewerSelect";
 

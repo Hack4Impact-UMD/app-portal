@@ -1,21 +1,21 @@
 import { ApplicantRole, ReviewStatus } from "@app-portal/shared/constants";
 import { useAuth } from "@/hooks/useAuth";
-import type { DecisionLetterStatus } from "@/types/types";
 import { useParams } from "react-router-dom";
 import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
-import FormMarkdown from "../form/FormMarkdown";
+import FormMarkdown from "@/components/form/FormMarkdown";
 import ErrorPage from "@/pages/ErrorPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import { useApplicationFormForResponseId } from "@/hooks/useApplicationForm";
 import ConfettiExplosion from "react-confetti-explosion";
-import Loading from "../Loading";
+import Loading from "@/components/Loading";
 import { createDecisionConfirmation } from "@/services/decisionConfirmationService";
-import { throwSuccessToast } from "../toasts/SuccessToast";
-import { throwErrorToast } from "../toasts/ErrorToast";
-import { Button } from "../ui/button";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { Button } from "@/components/ui/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useDecisionConfirmationForResponse } from "@/hooks/useDecisionConfirmation";
+import type { DecisionConfirmation } from "@app-portal/shared/types";
 
 const allowedStatuses: Set<string> = new Set([
   ReviewStatus.Accepted,
@@ -56,7 +56,7 @@ function DecisionPage() {
         throw new Error("Missing required data to confirm decision");
       }
 
-      const decisionLetterStatus: DecisionLetterStatus = {
+      const decisionConfirmation: DecisionConfirmation = {
         status,
         userId: user?.id,
         formId: form?.id,
@@ -65,7 +65,7 @@ function DecisionPage() {
       };
 
       return createDecisionConfirmation(
-        decisionLetterStatus,
+        decisionConfirmation,
         (await token()) ?? "",
       );
     },
