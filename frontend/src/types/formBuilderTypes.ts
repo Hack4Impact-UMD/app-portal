@@ -1,7 +1,6 @@
-import type { ApplicantRole } from "@app-portal/shared/constants";
+import type { ApplicantRole, ReviewStatus } from "@app-portal/shared/constants";
 import type { ApplicationSection } from "@app-portal/shared/types";
 import type { Timestamp } from "firebase/firestore";
-import type { ReviewStatus } from "./types";
 
 // stores data about the content of the application forms
 export interface ApplicationForm {

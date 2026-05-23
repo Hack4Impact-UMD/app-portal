@@ -1,4 +1,8 @@
-import { ApplicationStatus, QuestionType } from "@app-portal/shared/constants";
+import {
+  ApplicationStatus,
+  QuestionType,
+  ReviewStatus,
+} from "@app-portal/shared/constants";
 import type { Request, Response } from "express";
 import { Router } from "express";
 import { db } from "../index";
@@ -9,14 +13,13 @@ import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { hasRoles, isAuthenticated } from "../middleware/authentication";
 import type { ApplicationForm } from "../models/appForm";
-import type { InternalApplicationStatus } from "../models/appStatus";
-import { ReviewStatus } from "../models/appStatus";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { PermissionRole } from "../models/user";
 import type {
   ApplicationResponseSaveRequest,
   ApplicationResponseSubmitRequest,
+  InternalApplicationStatus,
   QuestionResponse,
   RoleReviewRubric,
 } from "@app-portal/shared/types";

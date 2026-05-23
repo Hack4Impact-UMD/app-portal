@@ -11,16 +11,6 @@ export enum PermissionRole {
   Applicant = "applicant",
 }
 
-export enum ReviewStatus {
-  NotReviewed = "not-reviewed",
-  UnderReview = "under-review",
-  Reviewed = "reviewed",
-  Interview = "interview",
-  Accepted = "accepted",
-  Denied = "denied",
-  Waitlisted = "waitlist",
-}
-
 export type UserProfile =
   | ApplicantUserProfile
   | ReviewerUserProfile
@@ -103,15 +93,6 @@ export interface ApplicationReviewData {
   forRole: ApplicantRole; // what role is this review for
   submitted: boolean;
 }
-
-export type InternalApplicationStatus = {
-  id: string;
-  formId: string;
-  role: ApplicantRole;
-  responseId: string;
-  status: ReviewStatus;
-  isQualified: boolean;
-};
 
 // status for after applicant gets acceptance letter
 // TODO this should be renamed to either "acceptance confirmation" or "decision confirmation"

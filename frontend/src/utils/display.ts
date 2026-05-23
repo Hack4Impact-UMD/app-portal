@@ -1,5 +1,5 @@
+import type { ReviewStatus } from "@app-portal/shared/constants";
 import { ApplicantRole } from "@app-portal/shared/constants";
-import type { ReviewStatus } from "@/types/types";
 import { PermissionRole } from "@/types/types";
 
 export function displayUserRoleName(role: PermissionRole) {

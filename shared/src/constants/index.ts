@@ -25,3 +25,13 @@ export enum ApplicationStatus {
   Interview = "interview",
   Decided = "decided",
 }
+
+export enum ReviewStatus {
+  NotReviewed = "not-reviewed",
+  UnderReview = "under-review",
+  Reviewed = "reviewed",
+  Interview = "interview",
+  Accepted = "accepted",
+  Denied = "denied",
+  Waitlisted = "waitlist",
+}

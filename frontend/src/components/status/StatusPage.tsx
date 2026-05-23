@@ -1,8 +1,7 @@
-import { ApplicantRole } from "@app-portal/shared/constants";
+import { ApplicantRole, ReviewStatus } from "@app-portal/shared/constants";
 import { Fragment, useMemo, useState } from "react";
 import Timeline from "./Timeline.tsx";
 import type { ApplicationResponse } from "../../types/types.ts";
-import { ReviewStatus } from "../../types/types.ts";
 import { useApplicationResponsesAndSemesters } from "../../hooks/useApplicationResponseAndSemesters.ts";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth.ts";

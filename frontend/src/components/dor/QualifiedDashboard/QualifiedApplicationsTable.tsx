@@ -1,10 +1,10 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
+import { ReviewStatus } from "@app-portal/shared/constants";
 import { useCallback, useMemo, useState } from "react";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
 import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
 import type { ApplicationResponse, ReviewCapableUser } from "@/types/types";
-import { ReviewStatus } from "@/types/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,

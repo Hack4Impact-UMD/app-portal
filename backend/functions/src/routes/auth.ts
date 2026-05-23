@@ -24,11 +24,10 @@ import * as admin from "firebase-admin";
 import { isAuthenticated } from "../middleware/authentication";
 import { FirebaseAuthError } from "firebase-admin/auth";
 import type { ApplicationResponse } from "../models/appResponse";
-import type { InternalApplicationStatus } from "../models/appStatus";
-import { ReviewStatus } from "../models/appStatus";
 import type { ApplicationForm } from "../models/appForm";
 import { v4 as uuidv4 } from "uuid";
-import { ApplicationStatus } from "@app-portal/shared/constants";
+import { ApplicationStatus, ReviewStatus } from "@app-portal/shared/constants";
+import type { InternalApplicationStatus } from "@app-portal/shared/types";
 
 /* eslint new-cap: 0 */
 const router = Router();

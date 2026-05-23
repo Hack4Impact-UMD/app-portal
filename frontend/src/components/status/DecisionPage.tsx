@@ -1,7 +1,6 @@
-import { ApplicantRole } from "@app-portal/shared/constants";
+import { ApplicantRole, ReviewStatus } from "@app-portal/shared/constants";
 import { useAuth } from "@/hooks/useAuth";
 import type { DecisionLetterStatus } from "@/types/types";
-import { ReviewStatus } from "@/types/types";
 import { useParams } from "react-router-dom";
 import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";

@@ -1,5 +1,14 @@
 import { z } from "zod";
-import { ApplicantRole } from "../constants";
+import { ApplicantRole, ReviewStatus } from "../constants";
+
+export const InternalApplicationStatusSchema = z.object({
+  id: z.string().min(1),
+  formId: z.string().min(1),
+  role: z.enum(ApplicantRole),
+  responseId: z.string().min(1),
+  status: z.enum(ReviewStatus),
+  isQualified: z.boolean(),
+});
 
 export const ReviewRubricQuestionSchema = z
   .object({
@@ -40,5 +49,8 @@ export const RoleReviewRubricSchema = z
     }
   });
 
+export type InternalApplicationStatus = z.infer<
+  typeof InternalApplicationStatusSchema
+>;
 export type RoleReviewRubric = z.infer<typeof RoleReviewRubricSchema>;
 export type ReviewRubricQuestion = z.infer<typeof ReviewRubricQuestionSchema>;

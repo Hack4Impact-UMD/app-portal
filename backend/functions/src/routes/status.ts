@@ -1,14 +1,16 @@
-import { Request, Response, Router } from "express";
+import type { Request, Response } from "express";
+import { Router } from "express";
 import { hasRoles, isAuthenticated } from "../middleware/authentication";
 import { db } from "..";
-import { CollectionReference } from "firebase-admin/firestore";
-import { InternalApplicationStatus, ReviewStatus } from "../models/appStatus";
-import { ApplicationForm } from "../models/appForm";
-import { ApplicationResponse } from "../models/appResponse";
+import type { CollectionReference } from "firebase-admin/firestore";
+import { ReviewStatus } from "@app-portal/shared/constants";
+import type { InternalApplicationStatus } from "@app-portal/shared/types";
+import type { ApplicationForm } from "../models/appForm";
+import type { ApplicationResponse } from "../models/appResponse";
 import { logger } from "firebase-functions";
 import {
   DecisionLetterStatusSchema,
-  DecisionLetterStatus,
+  type DecisionLetterStatus,
 } from "../models/confirmation";
 import { validateSchema } from "../middleware/validation";
 import { PermissionRole } from "../models/user";

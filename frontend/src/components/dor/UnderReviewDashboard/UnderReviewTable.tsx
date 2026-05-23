@@ -1,11 +1,11 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
+import { ReviewStatus } from "@app-portal/shared/constants";
+import type { InternalApplicationStatus } from "@app-portal/shared/types";
 import type {
   ApplicationResponse,
   AppReviewAssignment,
-  InternalApplicationStatus,
   ReviewCapableUser,
 } from "@/types/types";
-import { ReviewStatus } from "@/types/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,

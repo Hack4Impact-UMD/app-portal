@@ -1,6 +1,9 @@
-import { ApplicantRole, QuestionType } from "@app-portal/shared/constants";
+import {
+  ApplicantRole,
+  QuestionType,
+  ReviewStatus,
+} from "@app-portal/shared/constants";
 import type { ApplicationForm } from "@/types/formBuilderTypes";
-import { ReviewStatus } from "@/types/types";
 import { Timestamp } from "firebase/firestore";
 
 const FORM_ID = "h4i-fall-2025-form-final";

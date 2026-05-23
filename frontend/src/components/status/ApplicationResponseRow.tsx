@@ -1,8 +1,8 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
+import { ReviewStatus } from "@app-portal/shared/constants";
 import { useApplicationForm } from "@/hooks/useApplicationForm";
 import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
 import type { ApplicationResponse } from "@/types/types";
-import { ReviewStatus } from "@/types/types";
 import type { Timestamp } from "firebase/firestore";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";

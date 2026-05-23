@@ -1,10 +1,8 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
+import type { InternalApplicationStatus } from "@app-portal/shared/types";
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationStatusById } from "@/services/statusService";
-import type {
-  DecisionLetterStatus,
-  InternalApplicationStatus,
-} from "@/types/types";
+import type { DecisionLetterStatus } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 
 export type DecisionRow = {

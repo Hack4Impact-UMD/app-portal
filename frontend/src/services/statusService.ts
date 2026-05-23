@@ -1,7 +1,7 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
+import { ReviewStatus } from "@app-portal/shared/constants";
+import type { InternalApplicationStatus } from "@app-portal/shared/types";
 import { API_URL, db } from "@/config/firebase";
-import type { InternalApplicationStatus } from "@/types/types";
-import { ReviewStatus } from "@/types/types";
 import axios from "axios";
 import type { CollectionReference } from "firebase/firestore";
 import {
