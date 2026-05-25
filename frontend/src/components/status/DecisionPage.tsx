@@ -1,21 +1,22 @@
 import { ApplicantRole, ReviewStatus } from "@app-portal/shared/constants";
-import { useAuth } from "@/hooks/useAuth";
+import type { DecisionConfirmation } from "@app-portal/shared/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import ConfettiExplosion from "react-confetti-explosion";
 import { useParams } from "react-router-dom";
-import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
-import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
+
 import FormMarkdown from "@/components/form/FormMarkdown";
+import Loading from "@/components/Loading";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { Button } from "@/components/ui/button";
+import { useApplicationFormForResponseId } from "@/hooks/useApplicationForm";
+import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
+import { useAuth } from "@/hooks/useAuth";
+import { useDecisionConfirmationForResponse } from "@/hooks/useDecisionConfirmation";
 import ErrorPage from "@/pages/ErrorPage";
 import NotFoundPage from "@/pages/NotFoundPage";
-import { useApplicationFormForResponseId } from "@/hooks/useApplicationForm";
-import ConfettiExplosion from "react-confetti-explosion";
-import Loading from "@/components/Loading";
 import { createDecisionConfirmation } from "@/services/decisionConfirmationService";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { Button } from "@/components/ui/button";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useDecisionConfirmationForResponse } from "@/hooks/useDecisionConfirmation";
-import type { DecisionConfirmation } from "@app-portal/shared/types";
+import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
 
 const allowedStatuses: Set<string> = new Set([
   ReviewStatus.Accepted,

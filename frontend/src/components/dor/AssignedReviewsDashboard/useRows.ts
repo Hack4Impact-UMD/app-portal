@@ -1,15 +1,16 @@
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
 } from "@app-portal/shared/types";
-import type { ApplicantRole } from "@app-portal/shared/constants";
+import { useQuery } from "@tanstack/react-query";
+
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getReviewDataForAssignment } from "@/services/reviewDataService";
 import { reviewCapable } from "@/services/reviewersService";
 import { getUserById } from "@/services/userService";
 import type { ReviewCapableUser } from "@/types/types";
 import { calculateReviewScore } from "@/utils/scores";
-import { useQuery } from "@tanstack/react-query";
 
 export type AssignedAppRow = {
   index: number;

@@ -1,3 +1,5 @@
+import { useParams } from "react-router-dom";
+
 import Section from "@/components/form/Section";
 import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
@@ -6,7 +8,6 @@ import { useApplicant } from "@/hooks/useApplicants";
 import { useApplicationForm } from "@/hooks/useApplicationForm";
 import { useApplicationResponse } from "@/hooks/useApplicationResponses";
 import type { ApplicationForm, ApplicationResponse } from "@/types/types";
-import { useParams } from "react-router-dom";
 
 type UserHeaderProps = {
   applicantId: string;

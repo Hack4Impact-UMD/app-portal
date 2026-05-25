@@ -3,9 +3,10 @@ import type {
   DecisionConfirmation,
   InternalApplicationStatus,
 } from "@app-portal/shared/types";
+import { useQuery } from "@tanstack/react-query";
+
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationStatusById } from "@/services/statusService";
-import { useQuery } from "@tanstack/react-query";
 
 export type DecisionRow = {
   index: number;

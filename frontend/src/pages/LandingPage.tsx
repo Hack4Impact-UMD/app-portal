@@ -1,3 +1,7 @@
+import { Github, Instagram, Linkedin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,9 +11,6 @@ import {
   loggedOutMessages,
   pickWeightedMessage,
 } from "@/utils/welcomeMessages";
-import { Github, Instagram, Linkedin } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 
 export default function LandingPage() {
   const navigate = useNavigate();

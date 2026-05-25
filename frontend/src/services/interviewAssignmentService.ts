@@ -1,7 +1,5 @@
-import type { InterviewAssignment } from "@app-portal/shared/types";
 import type { ApplicantRole } from "@app-portal/shared/constants";
-
-import { getApplicationResponseById } from "./applicationResponsesService";
+import type { InterviewAssignment } from "@app-portal/shared/types";
 import {
   and,
   collection,
@@ -13,8 +11,11 @@ import {
   setDoc,
   where,
 } from "firebase/firestore";
-import { db } from "@/config/firebase";
 import { v4 as uuidv4 } from "uuid";
+
+import { db } from "@/config/firebase";
+
+import { getApplicationResponseById } from "./applicationResponsesService";
 
 export const INTERVIEW_ASSIGNMENT_COLLECTION = "interview-assignments";
 

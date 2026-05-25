@@ -1,11 +1,12 @@
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
 } from "@app-portal/shared/types";
-import type { ApplicantRole } from "@app-portal/shared/constants";
+import { useQuery } from "@tanstack/react-query";
+
 import { reviewingFor } from "@/services/reviewersService";
 import type { ReviewCapableUser } from "@/types/types";
-import { useQuery } from "@tanstack/react-query";
 
 export type ReviewerRow = {
   index: number;

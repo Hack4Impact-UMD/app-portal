@@ -1,32 +1,33 @@
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import { ReviewStatus } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
 } from "@app-portal/shared/types";
-import type { ApplicantRole } from "@app-portal/shared/constants";
-import { ReviewStatus } from "@app-portal/shared/constants";
-
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { useCallback, useMemo, useState } from "react";
-import { DataTable } from "@/components/DataTable";
-import { Button } from "@/components/ui/button";
-import { createReviewData } from "@/services/reviewDataService";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { getApplicationForm } from "@/services/applicationFormsService";
+
+import { DataTable } from "@/components/DataTable";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
-import type { AssignmentRow } from "./useRows";
-import { useRows } from "./useRows";
 import SortableHeader from "@/components/tables/SortableHeader";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/useAuth";
+import { getApplicationForm } from "@/services/applicationFormsService";
+import { createReviewData } from "@/services/reviewDataService";
 import { displayTimestamp } from "@/utils/dates";
+
+import type { AssignmentRow } from "./useRows";
+import { useRows } from "./useRows";
 
 type ReviewerApplicationsTableProps = {
   assignments: AppReviewAssignment[];

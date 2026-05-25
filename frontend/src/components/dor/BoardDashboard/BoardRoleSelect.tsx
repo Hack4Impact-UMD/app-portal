@@ -1,6 +1,8 @@
 import { ApplicantRole } from "@app-portal/shared/constants";
-import Spinner from "@/components/Spinner";
+import { useState } from "react";
+
 import ApplicantRolePill from "@/components/role-pill/RolePill";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -16,13 +18,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useBoardRoles } from "@/hooks/useBoardMembers";
-
 import {
   applicantRoleColor,
   applicantRoleDarkColor,
   displayApplicantRoleName,
 } from "@/utils/display";
-import { useState } from "react";
 
 type BoardRoleSelectProps = {
   onAdd: (role: ApplicantRole, boardId: string) => void;

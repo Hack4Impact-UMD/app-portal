@@ -1,21 +1,22 @@
+import { ApplicantRole, QuestionType } from "@app-portal/shared/constants";
 import type {
   ApplicationQuestion,
   OptionQuestion,
 } from "@app-portal/shared/types";
-import { ApplicantRole, QuestionType } from "@app-portal/shared/constants";
 import React, { memo, useCallback } from "react";
 
-import OneLineInput from "./OneLineInput";
-import LongFormInput from "./LongFormInput";
-import ChoiceGroup from "./ChoiceGroup";
-import MultiSelectGroup from "./MultiSelectGroup";
-import FileUpload from "./FileUpload";
 import {
   applicantRoleColor,
   applicantRoleDarkColor,
   displayApplicantRoleName,
   displayApplicantRoleNameNoEmoji,
 } from "@/utils/display";
+
+import ChoiceGroup from "./ChoiceGroup";
+import FileUpload from "./FileUpload";
+import LongFormInput from "./LongFormInput";
+import MultiSelectGroup from "./MultiSelectGroup";
+import OneLineInput from "./OneLineInput";
 
 interface QuestionItemProps {
   question: ApplicationQuestion;

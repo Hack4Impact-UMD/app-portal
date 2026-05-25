@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { ApplicantRole } from "../constants";
 
 export const AssignmentBaseSchema = z.object({

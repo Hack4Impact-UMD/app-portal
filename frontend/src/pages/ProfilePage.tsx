@@ -1,18 +1,19 @@
-import OneLineInput from "@/components/form/OneLineInput";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
-import { updateUser } from "@/services/userService";
-import { validEmail } from "@/utils/verification";
 import {
   getAuth,
   sendPasswordResetEmail,
   verifyBeforeUpdateEmail,
 } from "firebase/auth";
 import { useEffect, useRef, useState } from "react";
+
+import OneLineInput from "@/components/form/OneLineInput";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { throwWarningToast } from "@/components/toasts/WarningToast";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { updateUser } from "@/services/userService";
 import { displayUserRoleName } from "@/utils/display";
+import { validEmail } from "@/utils/verification";
 
 export default function ProfilePage() {
   const [user, setUser] = useState(useAuth().user);

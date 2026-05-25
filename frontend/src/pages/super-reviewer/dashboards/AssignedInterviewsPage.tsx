@@ -1,3 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+
 import { AssignedInterviewsTable } from "@/components/dor/AssignedInterviewsDashboard";
 import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
@@ -7,9 +11,6 @@ import { useInterviewAssignmentsForResponse } from "@/hooks/useInterviewAssignme
 import { useInterviewDataForResponse } from "@/hooks/useInterviewData";
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationResponseById } from "@/services/applicationResponsesService";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
 
 function useApplicantForResponse(responseId: string) {
   return useQuery({

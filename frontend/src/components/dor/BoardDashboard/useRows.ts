@@ -1,6 +1,7 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import type { BoardUserProfile } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
+
+import type { BoardUserProfile } from "@/types/types";
 
 export type BoardRow = {
   index: number;

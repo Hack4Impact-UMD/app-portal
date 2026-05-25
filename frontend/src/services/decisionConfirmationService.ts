@@ -1,9 +1,11 @@
-import { API_URL, db } from "@/config/firebase";
+import type { DecisionConfirmation } from "@app-portal/shared/types";
 import axios from "axios";
-import { getAppCheckToken } from "./appCheckService";
 import type { CollectionReference } from "firebase/firestore";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import type { DecisionConfirmation } from "@app-portal/shared/types";
+
+import { API_URL, db } from "@/config/firebase";
+
+import { getAppCheckToken } from "./appCheckService";
 
 const CONFIRMATION_COLLECTION = "decision-status";
 

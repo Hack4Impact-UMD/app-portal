@@ -1,30 +1,31 @@
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
   InterviewAssignment,
   ApplicationInterviewData,
 } from "@app-portal/shared/types";
-import type { ApplicantRole } from "@app-portal/shared/constants";
-
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
+import { UserCheckIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { DataTable } from "@/components/DataTable";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
-import ApplicantRolePill from "@/components/role-pill/RolePill";
-import type { InterviewAssignmentRow } from "./useRows";
-import { useRows } from "./useRows";
-import { createInterviewData } from "@/services/interviewDataService";
-import SortableHeader from "@/components/tables/SortableHeader";
 import { useNavigate } from "react-router-dom";
+
+import { DataTable } from "@/components/DataTable";
+import ApplicantRolePill from "@/components/role-pill/RolePill";
+import SortableHeader from "@/components/tables/SortableHeader";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { UserCheckIcon } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { createInterviewData } from "@/services/interviewDataService";
+
+import type { InterviewAssignmentRow } from "./useRows";
+import { useRows } from "./useRows";
 
 type ReviewerApplicationsTableProps = {
   assignments: InterviewAssignment[];

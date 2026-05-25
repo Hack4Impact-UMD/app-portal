@@ -1,5 +1,5 @@
-import type { RoleReviewRubric } from "@app-portal/shared/types";
 import { ApplicantRole } from "@app-portal/shared/constants";
+import type { RoleReviewRubric } from "@app-portal/shared/types";
 
 // const formId = "h4i-spring-2026-form-final";
 

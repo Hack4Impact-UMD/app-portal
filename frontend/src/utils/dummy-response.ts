@@ -1,11 +1,11 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
+import { QuestionType } from "@app-portal/shared/constants";
 import type {
   ApplicationQuestion,
   ApplicationSection,
   QuestionResponse,
   SectionResponse,
 } from "@app-portal/shared/types";
-import { QuestionType } from "@app-portal/shared/constants";
 
 // generates dummy question and section responses for use in internal applications
 

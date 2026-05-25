@@ -1,31 +1,32 @@
-import type { RoleReviewRubric } from "@app-portal/shared/types";
 import { ApplicantRole } from "@app-portal/shared/constants";
+import type { RoleReviewRubric } from "@app-portal/shared/types";
+import { AlertTriangleIcon } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
+
+import CodeEditor from "@/components/form/CodeEditor";
+import Loading from "@/components/Loading";
+import RoleRubric from "@/components/reviewer/rubric/RoleRubric";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { Button } from "@/components/ui/button";
-import CodeEditor from "@/components/form/CodeEditor";
-import { useApplicationForm } from "@/hooks/useApplicationForm";
-import { useAuth } from "@/hooks/useAuth";
-import Loading from "@/components/Loading";
-import { useParams } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useRubricsForForm, useUploadRubrics } from "@/hooks/useRubrics";
+import { useApplicationForm } from "@/hooks/useApplicationForm";
+import { useAuth } from "@/hooks/useAuth";
 import {
   useInterviewRubricsForForm,
   useUploadInterviewRubrics,
 } from "@/hooks/useInterviewRubrics";
-import RoleRubric from "@/components/reviewer/rubric/RoleRubric";
-import { AlertTriangleIcon } from "lucide-react";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
+import { useRubricsForForm, useUploadRubrics } from "@/hooks/useRubrics";
 import type { RubricValidationWarnings } from "@/services/rubricService";
 import { validateRubricScoreKeys } from "@/services/rubricService";
+import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
 
 function ValidationWarningDisplay({
   warnings,

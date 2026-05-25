@@ -1,7 +1,8 @@
+import { Outlet, useParams } from "react-router-dom";
+
 import DashboardShellLink from "@/components/reviewer/DashboardShellLink";
 import { Input } from "@/components/ui/input";
 import useSearch from "@/hooks/useSearch";
-import { Outlet, useParams } from "react-router-dom";
 
 export default function ReviewerDashboardShell() {
   const { search, setSearch } = useSearch();

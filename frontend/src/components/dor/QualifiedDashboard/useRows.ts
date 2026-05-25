@@ -4,6 +4,9 @@ import type {
   InterviewAssignment,
   InternalApplicationStatus,
 } from "@app-portal/shared/types";
+import { useQuery } from "@tanstack/react-query";
+import type { Timestamp } from "firebase/firestore";
+
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getInterviewAssignmentsForApplication } from "@/services/interviewAssignmentService";
@@ -17,8 +20,6 @@ import type {
   CsvRow,
 } from "@/types/types";
 import { calculateInterviewScore } from "@/utils/scores";
-import { useQuery } from "@tanstack/react-query";
-import type { Timestamp } from "firebase/firestore";
 
 export type QualifiedAppRow = {
   index: number;

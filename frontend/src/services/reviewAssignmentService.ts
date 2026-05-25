@@ -1,7 +1,5 @@
-import type { AppReviewAssignment } from "@app-portal/shared/types";
 import type { ApplicantRole } from "@app-portal/shared/constants";
-
-import { getApplicationResponseById } from "./applicationResponsesService";
+import type { AppReviewAssignment } from "@app-portal/shared/types";
 import {
   and,
   collection,
@@ -14,8 +12,11 @@ import {
   where,
   writeBatch,
 } from "firebase/firestore";
-import { db } from "@/config/firebase";
 import { v4 as uuidv4 } from "uuid";
+
+import { db } from "@/config/firebase";
+
+import { getApplicationResponseById } from "./applicationResponsesService";
 
 export const REVIEW_ASSIGNMENT_COLLECTION = "review-assignments";
 

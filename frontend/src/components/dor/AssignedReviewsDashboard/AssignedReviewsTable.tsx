@@ -8,15 +8,17 @@ import {
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { DataTable } from "@/components/DataTable";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { getApplicationForm } from "@/services/applicationFormsService";
+
+import { DataTable } from "@/components/DataTable";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
+import SortableHeader from "@/components/tables/SortableHeader";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { Button } from "@/components/ui/button";
+import { getApplicationForm } from "@/services/applicationFormsService";
+
 import type { AssignedAppRow } from "./useRows";
 import { useRows } from "./useRows";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import SortableHeader from "@/components/tables/SortableHeader";
 
 type AssignedReviewsTableProps = {
   assignments: AppReviewAssignment[];

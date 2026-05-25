@@ -4,6 +4,9 @@ import type {
   ApplicationReviewData,
   InternalApplicationStatus,
 } from "@app-portal/shared/types";
+import { useQuery } from "@tanstack/react-query";
+import type { Timestamp } from "firebase/firestore";
+
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getPreviouslyAppliedCount } from "@/services/previouslyAppliedService";
@@ -17,8 +20,6 @@ import type {
   CsvRow,
 } from "@/types/types";
 import { calculateReviewScore } from "@/utils/scores";
-import { useQuery } from "@tanstack/react-query";
-import type { Timestamp } from "firebase/firestore";
 
 export type ApplicationRow = {
   index: number;

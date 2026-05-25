@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { ApplicantRole, ApplicationStatus, QuestionType } from "../constants";
 
 export const QuestionResponseSchema = z.object({

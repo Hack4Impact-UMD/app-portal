@@ -1,14 +1,15 @@
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
   InterviewAssignment,
   ApplicationInterviewData,
 } from "@app-portal/shared/types";
-import type { ApplicantRole } from "@app-portal/shared/constants";
+import { useQuery } from "@tanstack/react-query";
+
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getInterviewDataForAssignment } from "@/services/interviewDataService";
 import type { ApplicantUserProfile } from "@/types/types";
 import { calculateInterviewScore } from "@/utils/scores";
-import { useQuery } from "@tanstack/react-query";
 
 export type InterviewAssignmentRow = {
   index: number;

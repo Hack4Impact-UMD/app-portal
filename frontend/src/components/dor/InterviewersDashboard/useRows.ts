@@ -2,8 +2,9 @@ import type {
   InterviewAssignment,
   ApplicationInterviewData,
 } from "@app-portal/shared/types";
-import type { ReviewCapableUser } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
+
+import type { ReviewCapableUser } from "@/types/types";
 
 export type InterviewerRow = {
   index: number;

@@ -1,21 +1,23 @@
 import {
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
-import { Button } from "./ui/button";
-import {
   CheckIcon,
   ClipboardIcon,
   ExternalLink,
   GitPullRequestIcon,
   MailIcon,
 } from "lucide-react";
-import { throwErrorToast } from "./toasts/ErrorToast";
 import { useRef, useState } from "react";
-import { useRemoteCommit } from "@/hooks/useUpdateCheck";
 import ConfettiExplosion from "react-confetti-explosion";
+
+import { useRemoteCommit } from "@/hooks/useUpdateCheck";
+
+import { throwErrorToast } from "./toasts/ErrorToast";
+import { Button } from "./ui/button";
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 
 export default function AboutDialog() {
   const commit = import.meta.env.DEV

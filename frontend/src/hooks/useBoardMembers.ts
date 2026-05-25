@@ -1,10 +1,11 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
+import { useQuery } from "@tanstack/react-query";
+
 import {
   getAllBoardMembers,
   getApplicantRolesForBoardMember,
 } from "@/services/boardService";
 import type { BoardUserProfile } from "@/types/types";
-import { useQuery } from "@tanstack/react-query";
 
 export function useAllBoardMembers() {
   return useQuery<BoardUserProfile[]>({

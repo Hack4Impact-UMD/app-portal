@@ -1,21 +1,8 @@
+import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
 } from "@app-portal/shared/types";
-import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
-import type { ReviewCapableUser } from "@/types/types";
-import {
-  getReviewAssignmentsForForm,
-  REVIEW_ASSIGNMENT_COLLECTION,
-} from "./reviewAssignmentService";
-import { getAllReviewers } from "./reviewersService";
-import { getAllApplicationResponsesByFormId } from "./applicationResponsesService";
-import { getUserById } from "./userService";
-import { v4 as uuidv4 } from "uuid";
-import {
-  getReviewDataForForm,
-  REVIEW_DATA_COLLECTION,
-} from "./reviewDataService";
 import {
   collection,
   doc,
@@ -25,7 +12,22 @@ import {
   where,
   writeBatch,
 } from "firebase/firestore";
+import { v4 as uuidv4 } from "uuid";
+
 import { db } from "@/config/firebase";
+import type { ReviewCapableUser } from "@/types/types";
+
+import { getAllApplicationResponsesByFormId } from "./applicationResponsesService";
+import {
+  getReviewAssignmentsForForm,
+  REVIEW_ASSIGNMENT_COLLECTION,
+} from "./reviewAssignmentService";
+import {
+  getReviewDataForForm,
+  REVIEW_DATA_COLLECTION,
+} from "./reviewDataService";
+import { getAllReviewers } from "./reviewersService";
+import { getUserById } from "./userService";
 
 export type AutoAssignmentPlanItem = {
   applicantName: string;

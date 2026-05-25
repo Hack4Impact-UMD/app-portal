@@ -1,35 +1,37 @@
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
 } from "@app-portal/shared/types";
-import type { ApplicantRole } from "@app-portal/shared/constants";
-import type { ReviewCapableUser } from "@/types/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
-import { DataTable } from "@/components/DataTable";
-import { Button } from "@/components/ui/button";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EllipsisVertical } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { DataTable } from "@/components/DataTable";
+import { ExportButton } from "@/components/ExportButton";
+import SortableHeader from "@/components/tables/SortableHeader";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { ReviewerRow } from "./useRows";
-import { flattenRows, useRows } from "./useRows";
-import { RoleSelect } from "./RoleSelect";
 import { getReviewerById, reviewingFor } from "@/services/reviewersService";
 import { setReviewCapableUserRolePreferences } from "@/services/userService";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { ExportButton } from "@/components/ExportButton";
-import SortableHeader from "@/components/tables/SortableHeader";
+import type { ReviewCapableUser } from "@/types/types";
+
+import { RoleSelect } from "./RoleSelect";
+import type { ReviewerRow } from "./useRows";
+import { flattenRows, useRows } from "./useRows";
 
 type ReviewersTableProps = {
   reviewers: ReviewCapableUser[];

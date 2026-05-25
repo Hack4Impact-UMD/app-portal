@@ -1,7 +1,8 @@
-import type { ApplicationReviewData } from "@app-portal/shared/types";
 import type { ApplicantRole } from "@app-portal/shared/constants";
+import type { ApplicationReviewData } from "@app-portal/shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import {
   getReviewDataById,
   getReviewDataForApplicant,
@@ -11,8 +12,8 @@ import {
   getReviewDataForReviewer,
   updateReviewData,
 } from "@/services/reviewDataService";
+
 import { useAuth } from "./useAuth";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
 
 export function useReviewData(reviewDataId: string) {
   return useQuery<ApplicationReviewData>({

@@ -1,4 +1,8 @@
 import { useState } from "react";
+
+import FormSelect from "@/components/admin/FormSelect";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,13 +13,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import FormSelect from "@/components/admin/FormSelect";
-import { useUploadRubrics } from "@/hooks/useRubrics";
-import { useAuth } from "@/hooks/useAuth";
-import { APPLICATION_RUBRICS } from "@/data/rubrics";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Label } from "@/components/ui/label";
+import { APPLICATION_RUBRICS } from "@/data/rubrics";
+import { useAuth } from "@/hooks/useAuth";
+import { useUploadRubrics } from "@/hooks/useRubrics";
 
 export default function UploadReviewRubricDialog() {
   const [open, setOpen] = useState(false);

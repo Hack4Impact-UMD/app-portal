@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { ApplicantRole, ReviewStatus } from "../constants";
 
 export const InternalApplicationStatusSchema = z.object({

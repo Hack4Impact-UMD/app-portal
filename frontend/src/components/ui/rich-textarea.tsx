@@ -1,10 +1,11 @@
+import CharacterCount from "@tiptap/extension-character-count";
+import Placeholder from "@tiptap/extension-placeholder";
+import Underline from "@tiptap/extension-underline";
+import { Markdown } from "@tiptap/markdown";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import Placeholder from "@tiptap/extension-placeholder";
-import CharacterCount from "@tiptap/extension-character-count";
-import { Markdown } from "@tiptap/markdown";
 import { useEffect } from "react";
+
 import { cn } from "@/lib/utils";
 
 interface RichTextareaProps {
