@@ -3,7 +3,17 @@ import {
   ReviewStatus,
   PermissionRole,
 } from "@app-portal/shared/constants";
-import type { InternalApplicationStatus } from "@app-portal/shared/types";
+import type {
+  CreateInternalApplicant,
+  UpdateUser,
+  UserRegisterForm,
+  InternalApplicationStatus,
+} from "@app-portal/shared/types";
+import {
+  createInternalApplicantSchema,
+  updateUserSchema,
+  userRegisterFormSchema,
+} from "@app-portal/shared/types";
 import type { Request, Response } from "express";
 import { Router } from "express";
 import * as admin from "firebase-admin";
@@ -21,17 +31,7 @@ import { isAuthenticated } from "../middleware/authentication";
 import { validateSchema } from "../middleware/validation";
 import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
-import type {
-  UserProfile,
-  UserRegisterForm,
-  CreateInternalApplicant,
-  UpdateUser,
-} from "../models/user";
-import {
-  userRegisterFormSchema,
-  updateUserSchema,
-  createInternalApplicantSchema,
-} from "../models/user";
+import type { UserProfile } from "../models/user";
 
 /* eslint new-cap: 0 */
 const router = Router();

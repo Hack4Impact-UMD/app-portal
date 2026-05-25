@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { ApplicantRole, QuestionType } from "../constants";
+
+import { ApplicantRole, QuestionType, ReviewStatus } from "../constants";
 
 export const ApplicationQuestionBaseSchema = z.object({
   questionId: z.string().nonempty(),
@@ -48,9 +49,38 @@ export const ApplicationSectionSchema = z.object({
   hideFromReviewers: z.boolean().optional(),
 });
 
+const RoleDecisionLetterSchema = z.object({
+  [ApplicantRole.Bootcamp]: z.string(),
+  team: z.string(),
+});
+
+const DecisionLetterSchema = z.object({
+  [ReviewStatus.Accepted]: RoleDecisionLetterSchema,
+  [ReviewStatus.Waitlisted]: RoleDecisionLetterSchema,
+  [ReviewStatus.Denied]: z.string(),
+});
+
+export const ScoreWeightsSchema = z.record(
+  z.enum(ApplicantRole),
+  z.record(z.string(), z.number().min(0).max(4)),
+);
+
+export const ApplicationFormBaseSchema = z.object({
+  id: z.string().nonempty(),
+  isActive: z.boolean(),
+  semester: z.string(),
+  description: z.string(),
+  sections: z.array(ApplicationSectionSchema),
+  decisionsReleased: z.boolean().default(false),
+  disabledRoles: z.array(z.enum(ApplicantRole)).optional(),
+  decisionLetter: DecisionLetterSchema.optional(),
+  scoreWeights: ScoreWeightsSchema,
+  interviewScoreWeights: ScoreWeightsSchema,
+});
 export type TextQuestion = z.infer<typeof TextQuestionSchema>;
 export type OptionQuestion = z.infer<typeof OptionQuestionSchema>;
 export type FileUploadQuestion = z.infer<typeof FileUploadQuestionSchema>;
 export type RoleSelectQuestion = z.infer<typeof RoleSelectQuestionSchema>;
 export type ApplicationQuestion = z.infer<typeof ApplicationQuestionSchema>;
 export type ApplicationSection = z.infer<typeof ApplicationSectionSchema>;
+export type ApplicationFormBase = z.infer<typeof ApplicationFormBaseSchema>;

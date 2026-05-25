@@ -51,7 +51,7 @@ import {
 } from "@/hooks/useInterviewData";
 import { useInterviewRubricsForFormRole } from "@/hooks/useInterviewRubrics";
 import { useUser } from "@/hooks/useUsers";
-import type { ApplicationForm } from "@/types/formBuilderTypes";
+import type { ApplicationForm } from "@/types/types";
 import { displayApplicantRoleName } from "@/utils/display";
 import { calculateInterviewScore } from "@/utils/scores";
 

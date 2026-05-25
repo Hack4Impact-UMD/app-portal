@@ -48,7 +48,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useReviewData, useUpdateReviewData } from "@/hooks/useReviewData";
 import { useRubricsForFormRole } from "@/hooks/useRubrics";
 import { useUser } from "@/hooks/useUsers";
-import type { ApplicationForm } from "@/types/formBuilderTypes";
+import type { ApplicationForm } from "@/types/types";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
 import { calculateReviewScore } from "@/utils/scores";
 
