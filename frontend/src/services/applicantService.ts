@@ -1,7 +1,9 @@
+import { PermissionRole } from "@app-portal/shared/constants";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../config/firebase";
-import type { ApplicantUserProfile } from "../types/types";
-import { PermissionRole } from "../types/types";
+
+import { db } from "@/config/firebase";
+import type { ApplicantUserProfile } from "@/types/types";
+
 import { getUserByEmail, getUserById, USER_COLLECTION } from "./userService";
 
 export async function getAllApplicants(): Promise<ApplicantUserProfile[]> {

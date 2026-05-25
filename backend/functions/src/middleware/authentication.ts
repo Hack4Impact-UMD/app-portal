@@ -1,9 +1,11 @@
-import { Request, Response, NextFunction } from "express";
-import { logger } from "firebase-functions";
+import type { PermissionRole } from "@app-portal/shared/constants";
+import type { Request, Response, NextFunction } from "express";
 import * as admin from "firebase-admin";
+import type { CollectionReference } from "firebase-admin/firestore";
+import { logger } from "firebase-functions";
+
 import { db } from "..";
-import { PermissionRole, UserProfile } from "../models/user";
-import { CollectionReference } from "firebase-admin/firestore";
+import type { UserProfile } from "../models/user";
 
 // from the code sample here: https://github.com/firebase/functions-samples/blob/main/Node-1st-gen/authorized-https-endpoint/functions/index.js
 // NOTE: When a request is successfully authenticated, this middleware will set the `req.token` property

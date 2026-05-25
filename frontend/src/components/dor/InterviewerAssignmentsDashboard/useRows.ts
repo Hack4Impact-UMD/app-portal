@@ -1,15 +1,16 @@
+import { PermissionRole } from "@app-portal/shared/constants";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
   InterviewAssignment,
   ApplicationInterviewData,
 } from "@app-portal/shared/types";
-import type { ApplicantRole } from "@app-portal/shared/constants";
+import { useQuery } from "@tanstack/react-query";
+
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getInterviewDataForAssignment } from "@/services/interviewDataService";
 import { getUserById } from "@/services/userService";
 import type { ApplicantUserProfile } from "@/types/types";
-import { PermissionRole } from "@/types/types";
 import { calculateInterviewScore } from "@/utils/scores";
-import { useQuery } from "@tanstack/react-query";
 
 export type AssignedInterviewRow = {
   index: number;

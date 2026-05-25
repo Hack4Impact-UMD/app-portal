@@ -1,20 +1,16 @@
-import type { ApplicationReviewData } from "@app-portal/shared/types";
+import { PermissionRole } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import { useNavigate, useParams } from "react-router-dom";
-import Section from "@/components/form/Section";
-import { useApplicationForm } from "@/hooks/useApplicationForm";
-import Loading from "@/components/Loading";
-import { useApplicationResponse } from "@/hooks/useApplicationResponses";
-import { useReviewData, useUpdateReviewData } from "@/hooks/useReviewData";
-import Spinner from "@/components/Spinner";
-import { useApplicant } from "@/hooks/useApplicants";
-import type { ApplicationForm } from "@/types/formBuilderTypes";
-import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
-import { Button } from "@/components/ui/button";
-import { useRubricsForFormRole } from "@/hooks/useRubrics";
-import RoleRubric from "@/components/reviewer/rubric/RoleRubric";
+import type { ApplicationReviewData } from "@app-portal/shared/types";
+import { CheckIcon, CircleAlertIcon, UserCheckIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import Section from "@/components/form/Section";
+import Loading from "@/components/Loading";
+import RoleRubric from "@/components/reviewer/rubric/RoleRubric";
+import Spinner from "@/components/Spinner";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,22 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
-
-import { PermissionRole } from "@/types/types";
-import { CheckIcon, CircleAlertIcon, UserCheckIcon } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useAuth } from "@/hooks/useAuth";
-import { useUser } from "@/hooks/useUsers";
+import { Button } from "@/components/ui/button";
 import {
   CommandDialog,
   CommandEmpty,
@@ -50,6 +31,25 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useApplicant } from "@/hooks/useApplicants";
+import { useApplicationForm } from "@/hooks/useApplicationForm";
+import { useApplicationResponse } from "@/hooks/useApplicationResponses";
+import { useAuth } from "@/hooks/useAuth";
+import { useReviewData, useUpdateReviewData } from "@/hooks/useReviewData";
+import { useRubricsForFormRole } from "@/hooks/useRubrics";
+import { useUser } from "@/hooks/useUsers";
+import type { ApplicationForm } from "@/types/formBuilderTypes";
+import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
 import { calculateReviewScore } from "@/utils/scores";
 
 type UserHeaderProps = {

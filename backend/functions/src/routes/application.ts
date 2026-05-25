@@ -2,20 +2,8 @@ import {
   ApplicationStatus,
   QuestionType,
   ReviewStatus,
+  PermissionRole,
 } from "@app-portal/shared/constants";
-import type { Request, Response } from "express";
-import { Router } from "express";
-import { db } from "../index";
-import { validateSchema } from "../middleware/validation";
-import type { ApplicationResponse } from "../models/appResponse";
-import type { CollectionReference } from "firebase-admin/firestore";
-import { Timestamp } from "firebase-admin/firestore";
-import { logger } from "firebase-functions";
-import { hasRoles, isAuthenticated } from "../middleware/authentication";
-import type { ApplicationForm } from "../models/appForm";
-import { v4 as uuidv4 } from "uuid";
-import { z } from "zod";
-import { PermissionRole } from "../models/user";
 import type {
   ApplicationResponseSaveRequest,
   ApplicationResponseSubmitRequest,
@@ -29,6 +17,19 @@ import {
   ApplicationResponseSubmitRequestSchema,
   RoleReviewRubricSchema,
 } from "@app-portal/shared/types";
+import type { Request, Response } from "express";
+import { Router } from "express";
+import type { CollectionReference } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
+import { logger } from "firebase-functions";
+import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
+
+import { db } from "../index";
+import { hasRoles, isAuthenticated } from "../middleware/authentication";
+import { validateSchema } from "../middleware/validation";
+import type { ApplicationForm } from "../models/appForm";
+import type { ApplicationResponse } from "../models/appResponse";
 // import * as admin from "firebase-admin"
 
 const router = Router();

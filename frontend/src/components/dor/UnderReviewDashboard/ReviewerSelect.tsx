@@ -1,10 +1,15 @@
+import { PermissionRole } from "@app-portal/shared/constants";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
 } from "@app-portal/shared/types";
-import type { ApplicantRole } from "@app-portal/shared/constants";
-import Spinner from "@/components/Spinner";
+import { useQueries } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+
 import ApplicantRolePill from "@/components/role-pill/RolePill";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -23,10 +28,6 @@ import { useReviewersForRole } from "@/hooks/useReviewers";
 import { getReviewAssignments } from "@/services/reviewAssignmentService";
 import { reviewingFor } from "@/services/reviewersService";
 import type { ReviewCapableUser } from "@/types/types";
-import { PermissionRole } from "@/types/types";
-import { useQueries } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
 
 type ReviewerSelectProps = {
   onAdd: (reviewer: ReviewCapableUser) => void;

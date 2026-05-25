@@ -1,17 +1,10 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { ReviewCapableUser } from "@/types/types";
-import { useAllReviewers } from "@/hooks/useReviewers";
-import Spinner from "@/components/Spinner";
+import { PermissionRole } from "@app-portal/shared/constants";
+import { XIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { reviewingFor } from "@/services/reviewersService";
+
+import ApplicantRolePill from "@/components/role-pill/RolePill";
+import Spinner from "@/components/Spinner";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -20,9 +13,17 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import ApplicantRolePill from "@/components/role-pill/RolePill";
-import { PermissionRole } from "@/types/types";
-import { XIcon } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useAllReviewers } from "@/hooks/useReviewers";
+import { reviewingFor } from "@/services/reviewersService";
+import type { ReviewCapableUser } from "@/types/types";
 
 type ExemptReviewersDialogProps = {
   open: boolean;

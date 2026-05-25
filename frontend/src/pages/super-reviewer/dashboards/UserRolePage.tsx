@@ -1,14 +1,16 @@
+import type { PermissionRole } from "@app-portal/shared/constants";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import UserTable from "@/components/admin/UserTable";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import Loading from "@/components/Loading";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { useUsers } from "@/hooks/useUsers";
 import {
   deleteUsers,
   updateUserActiveStatus,
   updateUserRoles,
 } from "@/services/userService";
-import { PermissionRole, UserProfile } from "@/types/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { UserProfile } from "@/types/types";
 
 export default function UserRolePage() {
   const { data: users, isPending, error } = useUsers();

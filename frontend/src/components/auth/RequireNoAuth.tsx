@@ -1,8 +1,9 @@
-import { ReactNode } from "react";
+import type { PermissionRole } from "@app-portal/shared/constants";
+import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { PermissionRole } from "../../types/types";
-import Loading from "../Loading";
+
+import Loading from "@/components/Loading";
+import { useAuth } from "@/hooks/useAuth";
 
 interface RequireNoAuthProps {
   children: ReactNode;

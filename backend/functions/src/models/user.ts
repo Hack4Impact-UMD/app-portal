@@ -1,14 +1,7 @@
+import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
+import { SectionResponseSchema } from "@app-portal/shared/types";
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
-import { ApplicantRole } from "@app-portal/shared/constants";
-import { SectionResponseSchema } from "@app-portal/shared/types";
-
-export enum PermissionRole {
-  Applicant = "applicant",
-  Reviewer = "reviewer",
-  Board = "board",
-  SuperReviewer = "super-reviewer",
-}
 
 export const UserProfileSchema = z.object({
   id: z.string().nonempty(),

@@ -8,4 +8,5 @@
     "backend/emulator_data*",
     "shared/dist",
   ],
+  "sortImports": true
 }

@@ -1,13 +1,12 @@
+import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
 import type { SectionResponse } from "@app-portal/shared/types";
-import { ApplicantRole } from "@app-portal/shared/constants";
+import axios, { AxiosError } from "axios";
 import type { User, UserInfo } from "firebase/auth";
 import {
   sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { API_URL, auth, db } from "../config/firebase";
-import axios, { AxiosError } from "axios";
 import {
   collection,
   doc,
@@ -18,16 +17,18 @@ import {
   where,
   writeBatch,
 } from "firebase/firestore";
+
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { API_URL, auth, db } from "@/config/firebase";
+import { clearQueryCache } from "@/config/query";
 import type {
   ApplicationResponse,
   BoardUserProfile,
   ReviewerUserProfile,
   UserProfile,
-} from "../types/types";
-import { PermissionRole } from "../types/types";
-import { throwErrorToast } from "../components/toasts/ErrorToast";
-import { clearQueryCache } from "@/config/query";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+} from "@/types/types";
+
 import { getAppCheckToken } from "./appCheckService";
 
 export const USER_COLLECTION = "users";

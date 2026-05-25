@@ -1,15 +1,11 @@
-import type { ApplicantRole } from "@app-portal/shared/constants";
+import type {
+  ApplicantRole,
+  PermissionRole,
+} from "@app-portal/shared/constants";
 import type { ApplicationResponseBase } from "@app-portal/shared/types";
 import type { Timestamp } from "firebase/firestore";
 
 export * from "./formBuilderTypes";
-
-export enum PermissionRole {
-  SuperReviewer = "super-reviewer",
-  Reviewer = "reviewer",
-  Board = "board",
-  Applicant = "applicant",
-}
 
 export type UserProfile =
   | ApplicantUserProfile

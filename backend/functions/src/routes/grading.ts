@@ -1,4 +1,11 @@
-import { Router, Response, Request } from "express";
+import { PermissionRole } from "@app-portal/shared/constants";
+import type { Response, Request } from "express";
+import { Router } from "express";
+import type { CollectionReference } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
+import { logger } from "firebase-functions";
+import { v4 as uuidv4 } from "uuid";
+
 import { db } from "../index";
 import {
   isAuthenticated,
@@ -6,18 +13,13 @@ import {
   getUserById,
 } from "../middleware/authentication";
 import { validateSchema } from "../middleware/validation";
-import { v4 as uuidv4 } from "uuid";
-import { CollectionReference, Timestamp } from "firebase-admin/firestore";
-import { logger } from "firebase-functions";
-import { publishGradingTask } from "../utils/cloudTasks";
-import {
-  submitGradingJobSchema,
-  GradingJobStatus,
+import type { ApplicationResponse } from "../models/appResponse";
+import type {
   GradingJobPublic,
   GradingJobDataInternal,
 } from "../types/grading";
-import { ApplicationResponse } from "../models/appResponse";
-import { PermissionRole } from "../models/user";
+import { submitGradingJobSchema, GradingJobStatus } from "../types/grading";
+import { publishGradingTask } from "../utils/cloudTasks";
 
 const router = Router();
 

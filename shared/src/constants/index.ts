@@ -1,3 +1,10 @@
+export enum PermissionRole {
+  SuperReviewer = "super-reviewer",
+  Reviewer = "reviewer",
+  Board = "board",
+  Applicant = "applicant",
+}
+
 export enum ApplicantRole {
   Bootcamp = "bootcamp",
   Engineer = "engineer",

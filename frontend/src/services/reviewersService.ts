@@ -1,8 +1,9 @@
-import { ApplicantRole } from "@app-portal/shared/constants";
+import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
+import { and, collection, getDocs, or, query, where } from "firebase/firestore";
+
 import { db } from "@/config/firebase";
 import type { ReviewCapableUser, UserProfile } from "@/types/types";
-import { PermissionRole } from "@/types/types";
-import { and, collection, getDocs, or, query, where } from "firebase/firestore";
+
 import { getUserById } from "./userService";
 
 const USERS_COLLECTION = "users";
