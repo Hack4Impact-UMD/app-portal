@@ -1,5 +1,6 @@
 import { ApplicantRole } from "@app-portal/shared/constants";
-import { useAuth } from "@/hooks/useAuth";
+import { useMemo, useState } from "react";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,11 +9,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../ui/alert-dialog";
-import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
-
+} from "@/components/ui/alert-dialog";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useAuth } from "@/hooks/useAuth";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
-import { useMemo, useState } from "react";
 
 type ReviewerRoleSelectDialogProps = {
   open: boolean;

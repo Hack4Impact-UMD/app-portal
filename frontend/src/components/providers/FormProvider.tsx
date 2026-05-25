@@ -1,19 +1,20 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import type { QuestionResponse } from "@app-portal/shared/types";
 import { ApplicationStatus, QuestionType } from "@app-portal/shared/constants";
-import { Navigate, Outlet, useParams } from "react-router-dom";
-import { FormContext } from "../../contexts/formContext";
-import { useMyApplicationResponseAndForm } from "../../hooks/useApplicationResponses";
-import Loading from "../Loading";
-import { useEffect, useMemo, useState, useCallback } from "react";
-import type { ApplicationResponse } from "../../types/types";
+import type { QuestionResponse } from "@app-portal/shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { saveApplicationResponse } from "../../services/applicationResponsesService";
-import { useAuth } from "../../hooks/useAuth";
 import { Timestamp } from "firebase/firestore";
-import { throwErrorToast } from "../toasts/ErrorToast";
-import { Button } from "../ui/button";
-import Spinner from "../Spinner";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { Navigate, Outlet, useParams } from "react-router-dom";
+
+import Loading from "@/components/Loading";
+import Spinner from "@/components/Spinner";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { Button } from "@/components/ui/button";
+import { FormContext } from "@/contexts/formContext";
+import { useMyApplicationResponseAndForm } from "@/hooks/useApplicationResponses";
+import { useAuth } from "@/hooks/useAuth";
+import { saveApplicationResponse } from "@/services/applicationResponsesService";
+import type { ApplicationResponse } from "@/types/types";
 
 export default function FormProvider() {
   const queryClient = useQueryClient();

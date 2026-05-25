@@ -1,30 +1,11 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { ReviewStatus } from "@app-portal/shared/constants";
-import { useCallback, useMemo, useState } from "react";
-import { DataTable } from "@/components/DataTable";
-import { Button } from "@/components/ui/button";
-import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
-import type { ApplicationResponse, ReviewCapableUser } from "@/types/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
-import RolePill from "@/components/role-pill/RolePill";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import type { QualifiedAppRow } from "./useRows";
-import { flattenRows, useRows } from "./useRows";
-import SortableHeader from "@/components/tables/SortableHeader";
-import { updateApplicationStatus } from "@/services/statusService";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   CircleAlertIcon,
   Clipboard,
@@ -33,21 +14,42 @@ import {
   ClipboardIcon,
   UserCheckIcon,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { displayTimestamp } from "@/utils/dates";
+import { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { DataTable } from "@/components/DataTable";
+import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
+import RolePill from "@/components/role-pill/RolePill";
+import SortableHeader from "@/components/tables/SortableHeader";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { throwWarningToast } from "@/components/toasts/WarningToast";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
-import { useNavigate } from "react-router-dom";
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { updateApplicationStatus } from "@/services/statusService";
+import type { ApplicationResponse, ReviewCapableUser } from "@/types/types";
+import { displayTimestamp } from "@/utils/dates";
 import { displayReviewStatus } from "@/utils/display";
-import { throwWarningToast } from "@/components/toasts/WarningToast";
+
+import type { QualifiedAppRow } from "./useRows";
+import { flattenRows, useRows } from "./useRows";
 
 function StatusSelect({
   currentStatus,

@@ -1,15 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "./useAuth";
+
+import { getApplicationForm } from "@/services/applicationFormsService";
 import {
   fetchOrCreateApplicationResponse,
   getAllApplicationResponsesByFormId,
   getApplicationResponseById,
   getApplicationResponses,
   getAssignedApplicationResponsesByFormId,
-} from "../services/applicationResponsesService";
-import type { ApplicationForm, ApplicationResponse } from "../types/types";
-import { getApplicationForm } from "../services/applicationFormsService";
+} from "@/services/applicationResponsesService";
 import { reviewCapable } from "@/services/reviewersService";
+import type { ApplicationForm, ApplicationResponse } from "@/types/types";
+
+import { useAuth } from "./useAuth";
 
 //gets the current user's application responses
 export function useMyApplicationResponses() {

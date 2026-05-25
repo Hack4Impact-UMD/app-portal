@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ApplicationForm } from "../types/types";
+
 import {
   getActiveForm,
   getAllForms,
@@ -7,7 +7,8 @@ import {
   getApplicationFormForResponseId,
   createApplicationForm,
   setApplicationFormDueDate,
-} from "../services/applicationFormsService";
+} from "@/services/applicationFormsService";
+import type { ApplicationForm } from "@/types/types";
 
 export function useAllApplicationForms() {
   return useQuery<ApplicationForm[]>({

@@ -1,40 +1,39 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { ReviewStatus } from "@app-portal/shared/constants";
-import type { ApplicationResponse } from "@/types/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
-import { useCallback, useMemo, useState } from "react";
-import { DataTable } from "../../DataTable";
-import { Button } from "../../ui/button";
 import {
   ClipboardIcon,
   AlertTriangle,
   UserCheckIcon,
   EllipsisVertical,
 } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { throwSuccessToast } from "../../toasts/SuccessToast";
-import { throwErrorToast } from "../../toasts/ErrorToast";
-import ApplicantRolePill from "../../role-pill/RolePill";
+
+import { DataTable } from "@/components/DataTable";
+import type { ApplicationRow } from "@/components/dor/UnderReviewDashboard/useRows";
+import {
+  flattenRows,
+  useRows,
+} from "@/components/dor/UnderReviewDashboard/useRows";
+import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
+import ApplicantRolePill from "@/components/role-pill/RolePill";
+import SortableHeader from "@/components/tables/SortableHeader";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { throwWarningToast } from "@/components/toasts/WarningToast";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
-import SortableHeader from "../../tables/SortableHeader";
-import type { ApplicationRow } from "../../dor/UnderReviewDashboard/useRows";
-import { flattenRows, useRows } from "../../dor/UnderReviewDashboard/useRows";
-import { displayTimestamp } from "@/utils/dates";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -42,9 +41,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { ApplicationResponse } from "@/types/types";
+import { displayTimestamp } from "@/utils/dates";
 import { displayReviewStatus } from "@/utils/display";
-import { throwWarningToast } from "@/components/toasts/WarningToast";
-import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
 
 type BoardApplicationsTableProps = {
   applications: ApplicationResponse[];

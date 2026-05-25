@@ -1,12 +1,13 @@
+import { sendPasswordResetEmail } from "firebase/auth";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { validEmail } from "../../utils/verification";
-import TextBox from "../../components/TextBox";
-import { Button } from "../../components/ui/button";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "@/config/firebase";
+
+import TextBox from "@/components/TextBox";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwWarningToast } from "@/components/toasts/WarningToast";
+import { Button } from "@/components/ui/button";
+import { auth } from "@/config/firebase";
+import { validEmail } from "@/utils/verification";
 
 export default function ForgotPassCard() {
   const navigate = useNavigate();

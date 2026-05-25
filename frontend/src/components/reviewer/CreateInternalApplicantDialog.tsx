@@ -1,5 +1,10 @@
 import { ApplicantRole } from "@app-portal/shared/constants";
-import { Button } from "../ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,19 +14,14 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose,
-} from "../ui/dialog";
-import { Input } from "../ui/input";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
-import { displayApplicantRoleName } from "@/utils/display";
-import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createInternalApplicant } from "@/services/userService";
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useActiveForm } from "@/hooks/useApplicationForm";
-import { generateSectionResponses } from "@/utils/dummy-response";
 import { useAuth } from "@/hooks/useAuth";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { createInternalApplicant } from "@/services/userService";
+import { displayApplicantRoleName } from "@/utils/display";
+import { generateSectionResponses } from "@/utils/dummy-response";
 
 export default function CreateInternalApplicantDialog() {
   const [open, setOpen] = useState(false);
