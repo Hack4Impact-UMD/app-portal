@@ -1,5 +1,7 @@
+import type { ReactNode } from "react";
+import { useState } from "react";
+
 import { SearchContext } from "@/contexts/searchContext";
-import { ReactNode, useState } from "react";
 
 export default function SearchProvider({ children }: { children: ReactNode }) {
   const [search, setSearch] = useState<string>("");

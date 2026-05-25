@@ -1,6 +1,6 @@
-import { NextFunction, Request, Response } from "express";
-import { logger } from "firebase-functions";
+import type { NextFunction, Request, Response } from "express";
 import * as admin from "firebase-admin";
+import { logger } from "firebase-functions";
 
 export default async function appcheck(
   req: Request,

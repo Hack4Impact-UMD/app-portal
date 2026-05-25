@@ -1,4 +1,5 @@
-import { CloudTasksClient, protos } from "@google-cloud/tasks";
+import type { protos } from "@google-cloud/tasks";
+import { CloudTasksClient } from "@google-cloud/tasks";
 import { logger } from "firebase-functions";
 
 type ITask = protos.google.cloud.tasks.v2.ITask;

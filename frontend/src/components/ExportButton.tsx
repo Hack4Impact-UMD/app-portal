@@ -1,7 +1,9 @@
 import { mkConfig, generateCsv, download } from "export-to-csv";
-import { Button } from "./ui/button";
+
+import type { CsvRow } from "@/types/types";
+
 import { throwErrorToast } from "./toasts/ErrorToast";
-import { CsvRow } from "@/types/types";
+import { Button } from "./ui/button";
 
 interface CsvButtonProps {
   data: CsvRow[];

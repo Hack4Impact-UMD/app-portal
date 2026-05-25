@@ -1,11 +1,12 @@
-import { storage } from "@/config/firebase";
+import type { UploadMetadata } from "firebase/storage";
 import {
   getDownloadURL,
   getMetadata,
   ref,
   uploadBytesResumable,
-  UploadMetadata,
 } from "firebase/storage";
+
+import { storage } from "@/config/firebase";
 
 export async function uploadFile(
   file: File,

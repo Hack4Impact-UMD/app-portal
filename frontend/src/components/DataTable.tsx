@@ -1,12 +1,12 @@
+import type { ColumnDef, TableOptions } from "@tanstack/react-table";
 import {
-  ColumnDef,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
-  TableOptions,
   useReactTable,
 } from "@tanstack/react-table";
+import { twMerge } from "tailwind-merge";
 
 import {
   Table,
@@ -16,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { twMerge } from "tailwind-merge";
 
 interface DataTableProps<TData, TValue> {
   className?: string;

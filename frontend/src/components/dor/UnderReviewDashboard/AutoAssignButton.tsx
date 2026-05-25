@@ -1,11 +1,10 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CheckIcon, TriangleAlertIcon } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  calculateBootcampAssignmentPlan,
-  AutoAssignmentPlanItem,
-  makeAssignmentsFromPlan,
-} from "@/services/autoAssignmentService";
+
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,11 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { AutoAssignmentPlanItem } from "@/services/autoAssignmentService";
+import {
+  calculateBootcampAssignmentPlan,
+  makeAssignmentsFromPlan,
+} from "@/services/autoAssignmentService";
+import type { ReviewCapableUser } from "@/types/types";
+
 import ExemptReviewersDialog from "./ExemptReviewersDialog";
-import { ReviewCapableUser } from "@/types/types";
-import { CheckIcon, TriangleAlertIcon } from "lucide-react";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 
 interface AutoAssignButtonProps {
   formId: string;

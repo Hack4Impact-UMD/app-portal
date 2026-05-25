@@ -1,19 +1,21 @@
-import React, { memo, useState } from "react";
-import { DownloadIcon } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { FullMetadata } from "firebase/storage";
+import { DownloadIcon } from "lucide-react";
+import React, { memo, useState } from "react";
+import { Link } from "react-router-dom";
+
+import Spinner from "@/components/Spinner";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/hooks/useAuth";
 import {
   getFileMetadata,
   getFileURL,
   uploadFile,
 } from "@/services/storageService";
-import { throwErrorToast } from "../toasts/ErrorToast";
-import { throwSuccessToast } from "../toasts/SuccessToast";
-import { Progress } from "../ui/progress";
-import { useAuth } from "@/hooks/useAuth";
-import { FullMetadata } from "firebase/storage";
-import Spinner from "../Spinner";
-import { Link } from "react-router-dom";
-import { Button } from "../ui/button";
+
 import FormMarkdown from "./FormMarkdown";
 
 type FileUploadProps = {
