@@ -1,14 +1,16 @@
-import FormMarkdown from "@/components/form/FormMarkdown";
-import { ReviewRubricQuestion } from "@/types/types";
-import { RubricScoreButton } from "./RubricScoreButton";
-import { memo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import type { ReviewRubricQuestion } from "@app-portal/shared/types";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { memo, useState } from "react";
+
+import FormMarkdown from "@/components/form/FormMarkdown";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+import { RubricScoreButton } from "./RubricScoreButton";
 
 type RubricQuestionProps = {
   question: ReviewRubricQuestion;

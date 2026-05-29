@@ -1,16 +1,16 @@
-import { useNavigate, useParams } from "react-router-dom";
-import Section from "@/components/form/Section";
-import { useApplicationForm } from "@/hooks/useApplicationForm";
-import Loading from "@/components/Loading";
-import { useApplicationResponse } from "@/hooks/useApplicationResponses";
-import Spinner from "@/components/Spinner";
-import { useApplicant } from "@/hooks/useApplicants";
-import { ApplicantRole, ApplicationForm } from "@/types/formBuilderTypes";
-import { displayApplicantRoleName } from "@/utils/display";
-import { Button } from "@/components/ui/button";
-import RoleRubric from "@/components/reviewer/rubric/RoleRubric";
+import { PermissionRole } from "@app-portal/shared/constants";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type { ApplicationInterviewData } from "@app-portal/shared/types";
+import { CheckIcon, CircleAlertIcon, UserCheckIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import Section from "@/components/form/Section";
+import Loading from "@/components/Loading";
+import RoleRubric from "@/components/reviewer/rubric/RoleRubric";
+import Spinner from "@/components/Spinner";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,26 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import {
-  useInterviewData,
-  useUpdateInterviewData,
-} from "@/hooks/useInterviewData";
-import { useInterviewRubricsForFormRole } from "@/hooks/useInterviewRubrics";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { CheckIcon, CircleAlertIcon, UserCheckIcon } from "lucide-react";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
-import { ApplicationInterviewData, PermissionRole } from "@/types/types";
-import { useAuth } from "@/hooks/useAuth";
-import { useUser } from "@/hooks/useUsers";
+import { Button } from "@/components/ui/button";
 import {
   CommandDialog,
   CommandEmpty,
@@ -50,6 +31,28 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useApplicant } from "@/hooks/useApplicants";
+import { useApplicationForm } from "@/hooks/useApplicationForm";
+import { useApplicationResponse } from "@/hooks/useApplicationResponses";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  useInterviewData,
+  useUpdateInterviewData,
+} from "@/hooks/useInterviewData";
+import { useInterviewRubricsForFormRole } from "@/hooks/useInterviewRubrics";
+import { useUser } from "@/hooks/useUsers";
+import type { ApplicationForm } from "@/types/types";
+import { displayApplicantRoleName } from "@/utils/display";
 import { calculateInterviewScore } from "@/utils/scores";
 
 type UserHeaderProps = {

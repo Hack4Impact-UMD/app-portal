@@ -1,20 +1,18 @@
+import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
 import { useMemo, useState } from "react";
-import { Button } from "../../../components/ui/button";
-import {
-  ApplicantRole,
-  ApplicationResponse,
-  ApplicationStatus,
-} from "@/types/types";
+import { useParams } from "react-router-dom";
+
+import { UnderReviewTable } from "@/components/dor/UnderReviewDashboard";
+import Loading from "@/components/Loading";
+import { Button } from "@/components/ui/button";
+import { useAllApplicationResponsesForForm } from "@/hooks/useApplicationResponses";
+import useSearch from "@/hooks/useSearch";
+import type { ApplicationResponse } from "@/types/types";
 import {
   applicantRoleColor,
   applicantRoleDarkColor,
   displayApplicantRoleName,
 } from "@/utils/display";
-import { useAllApplicationResponsesForForm } from "@/hooks/useApplicationResponses";
-import { useParams } from "react-router-dom";
-import Loading from "../../../components/Loading";
-import { UnderReviewTable } from "@/components/dor/UnderReviewDashboard";
-import useSearch from "@/hooks/useSearch";
 
 export default function UnderReviewDashboard() {
   const { formId } = useParams<{ formId: string }>();

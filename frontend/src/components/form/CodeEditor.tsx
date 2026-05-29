@@ -1,5 +1,5 @@
-import { twMerge } from "tailwind-merge";
 import Editor from "@monaco-editor/react";
+import { twMerge } from "tailwind-merge";
 
 interface CodeEditorProps {
   value: string;

@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -6,8 +8,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../ui/alert-dialog";
-import { useEffect, useState } from "react";
+} from "@/components/ui/alert-dialog";
 
 type DataWarningDialogProps = {
   open: boolean;

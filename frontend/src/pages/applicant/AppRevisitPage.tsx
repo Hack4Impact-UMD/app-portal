@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useMyApplicationResponseAndForm } from "../../hooks/useApplicationResponses";
-import Loading from "../../components/Loading";
-import Section from "../../components/form/Section";
-import { Button } from "../../components/ui/button";
+
+import Section from "@/components/form/Section";
+import Loading from "@/components/Loading";
+import { Button } from "@/components/ui/button";
+import { useMyApplicationResponseAndForm } from "@/hooks/useApplicationResponses";
 
 export default function AppRevisitPage() {
   const { formId } = useParams();

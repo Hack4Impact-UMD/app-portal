@@ -1,3 +1,8 @@
+import { useEffect, useState } from "react";
+
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { Button } from "@/components/ui/button";
 import {
   DialogContent,
   DialogDescription,
@@ -7,14 +12,10 @@ import {
   DialogClose,
   Dialog,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { useSubmitGradingJob } from "@/hooks/useGrading";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubmitGradingJob } from "@/hooks/useGrading";
 
 export default function SubmitGradingJobDialog({
   open,

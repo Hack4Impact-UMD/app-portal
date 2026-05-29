@@ -1,38 +1,44 @@
-import { useMemo, useState } from "react";
-import { DataTable } from "@/components/DataTable";
-import { Button } from "@/components/ui/button";
-import { ApplicantRole, ApplicationResponse } from "@/types/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type {
+  InterviewAssignment,
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
   getPaginationRowModel,
-  ColumnDef,
 } from "@tanstack/react-table";
-import RolePill from "@/components/role-pill/RolePill";
-import {
-  assignInterview,
-  removeInterviewAssignment,
-} from "@/services/interviewAssignmentService";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import type { InterviewAssignment, ReviewCapableUser } from "@/types/types";
-import { ApplicationInterviewData } from "@/types/types";
-import { QualifiedAppRow, useRows } from "../QualifiedDashboard/useRows";
-import SortableHeader from "@/components/tables/SortableHeader";
 import { Clipboard, EllipsisVertical, AlertTriangle } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { displayTimestamp } from "@/utils/dates";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { DataTable } from "@/components/DataTable";
+import type { QualifiedAppRow } from "@/components/dor/QualifiedDashboard/useRows";
+import { useRows } from "@/components/dor/QualifiedDashboard/useRows";
+import RolePill from "@/components/role-pill/RolePill";
+import SortableHeader from "@/components/tables/SortableHeader";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
-import { useNavigate } from "react-router-dom";
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  assignInterview,
+  removeInterviewAssignment,
+} from "@/services/interviewAssignmentService";
+import type { ApplicationResponse, ReviewCapableUser } from "@/types/types";
+import { displayTimestamp } from "@/utils/dates";
+
 import { InterviewerSelect } from "./InterviewerSelect";
 
 export default function BoardInterviewsTable({

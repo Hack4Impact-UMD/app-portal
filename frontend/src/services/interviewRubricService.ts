@@ -1,7 +1,6 @@
-import { API_URL, db } from "@/config/firebase";
-import { ApplicantRole, RoleReviewRubric } from "@/types/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type { RoleReviewRubric } from "@app-portal/shared/types";
 import axios from "axios";
-import { getAppCheckToken } from "./appCheckService";
 import {
   collection,
   doc,
@@ -10,6 +9,10 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+
+import { API_URL, db } from "@/config/firebase";
+
+import { getAppCheckToken } from "./appCheckService";
 
 export const INTERVIEW_RUBRIC_COLLECTION = "interview-rubrics";
 

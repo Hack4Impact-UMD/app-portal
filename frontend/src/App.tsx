@@ -1,18 +1,18 @@
+import { PermissionRole } from "@app-portal/shared/constants";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 
-import AuthProvider from "./components/providers/AuthProvider";
 import RequireAuth from "./components/auth/RequireAuth";
 import RequireNoAuth from "./components/auth/RequireNoAuth";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { PermissionRole } from "./types/types";
-import FormProvider from "./components/providers/FormProvider";
-import { ToastContainer } from "react-toastify";
-import { queryClient } from "./config/query";
-import SearchProvider from "./components/providers/SearchProvider";
 import Loading from "./components/Loading";
-import LandingPage from "./pages/LandingPage";
+import AuthProvider from "./components/providers/AuthProvider";
+import FormProvider from "./components/providers/FormProvider";
+import SearchProvider from "./components/providers/SearchProvider";
 import UpdateNotifier from "./components/UpdateNotifier";
+import { queryClient } from "./config/query";
+import LandingPage from "./pages/LandingPage";
 
 const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
 const StatusPage = lazy(() => import("./components/status/StatusPage"));

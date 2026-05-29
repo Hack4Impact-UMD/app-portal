@@ -1,11 +1,15 @@
+import { PermissionRole } from "@app-portal/shared/constants";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type {
+  InterviewAssignment,
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
+import { useQuery } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
+
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -14,18 +18,15 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useReviewersForRole } from "@/hooks/useReviewers";
 import { getInterviewAssignmentsForApplication } from "@/services/interviewAssignmentService";
-import {
-  ApplicantRole,
-  ApplicationInterviewData,
-  InterviewAssignment,
-  PermissionRole,
-  ReviewCapableUser,
-} from "@/types/types";
-import { useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
 import { reviewingFor } from "@/services/reviewersService";
+import type { ReviewCapableUser } from "@/types/types";
 
 function InterviewerSearchPopover({
   role,

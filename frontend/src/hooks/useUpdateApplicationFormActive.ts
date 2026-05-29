@@ -1,10 +1,11 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import {
   getAllForms,
   setApplicationFormActiveStatus,
 } from "@/services/applicationFormsService";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useUpdateApplicationFormActive() {
   const queryClient = useQueryClient();

@@ -1,6 +1,10 @@
-import { db } from "@/config/firebase";
-import { ApplicantRole, BoardUserProfile, PermissionRole } from "@/types/types";
+import { PermissionRole } from "@app-portal/shared/constants";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import { collection, getDocs, query, where } from "firebase/firestore";
+
+import { db } from "@/config/firebase";
+import type { BoardUserProfile } from "@/types/types";
+
 import { getUserById } from "./userService";
 
 const USERS_COLLECTION = "users";

@@ -1,3 +1,7 @@
+import { ChevronDownIcon, CheckIcon } from "lucide-react";
+import { useMemo } from "react";
+import { Outlet, useParams, useLocation, NavLink } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenuContent,
@@ -8,9 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import useSearch from "@/hooks/useSearch";
-import { ChevronDownIcon, CheckIcon } from "lucide-react";
-import { useMemo } from "react";
-import { Outlet, useParams, useLocation, NavLink } from "react-router-dom";
 
 export default function BoardDashboardShell() {
   const { search, setSearch } = useSearch();

@@ -1,7 +1,8 @@
 import React, { memo, useEffect, useState } from "react";
-import OptionButton from "./OptionButton";
 import { twMerge } from "tailwind-merge";
+
 import FormMarkdown from "./FormMarkdown";
+import OptionButton from "./OptionButton";
 
 interface MultiSelectGroupProps {
   question: string;

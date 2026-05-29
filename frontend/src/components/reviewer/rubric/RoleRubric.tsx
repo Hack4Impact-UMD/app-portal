@@ -1,15 +1,17 @@
-import {
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type {
   ApplicationInterviewData,
-  ApplicantRole,
-  ApplicationForm,
   ApplicationReviewData,
   RoleReviewRubric,
-} from "@/types/types";
-import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
-import RubricQuestion from "./RubricQuestion";
+} from "@app-portal/shared/types";
+import { useMemo } from "react";
+
 import FormMarkdown from "@/components/form/FormMarkdown";
 import { RichTextarea } from "@/components/ui/rich-textarea";
-import { useMemo } from "react";
+import type { ApplicationForm } from "@/types/types";
+import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
+
+import RubricQuestion from "./RubricQuestion";
 
 type RoleRubricProps = {
   rubric: RoleReviewRubric;

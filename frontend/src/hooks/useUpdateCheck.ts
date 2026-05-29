@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+
 import { getLatestDeployedCommit } from "@/services/githubService";
 
 const localCommit = import.meta.env.VITE_COMMIT;

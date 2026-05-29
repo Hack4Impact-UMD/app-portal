@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase-admin/firestore";
+import type { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 // TODO: we should do zod schemas to ensure typescript <-> firebase <-> golang conversions work as expected

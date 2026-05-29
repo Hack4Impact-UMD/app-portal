@@ -1,10 +1,11 @@
-import { ApplicantRole } from "@/types/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import { twMerge } from "tailwind-merge";
+
 import {
   applicantRoleColor,
   applicantRoleDarkColor,
   displayApplicantRoleName,
 } from "@/utils/display";
-import { twMerge } from "tailwind-merge";
 
 type ApplicantRolePillProps = {
   role: ApplicantRole;

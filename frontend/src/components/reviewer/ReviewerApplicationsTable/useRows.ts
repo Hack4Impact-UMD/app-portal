@@ -1,16 +1,17 @@
-import { getApplicantById } from "@/services/applicantService";
-import { getReviewDataForAssignment } from "@/services/reviewDataService";
-import {
-  ApplicantRole,
-  ApplicationReviewData,
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type {
   AppReviewAssignment,
-} from "@/types/types";
-import { calculateReviewScore } from "@/utils/scores";
+  ApplicationReviewData,
+} from "@app-portal/shared/types";
 import { useQuery } from "@tanstack/react-query";
-import { getPreviouslyAppliedCount } from "@/services/previouslyAppliedService";
+import type { Timestamp } from "firebase/firestore";
+
+import { getApplicantById } from "@/services/applicantService";
 import { getApplicationForm } from "@/services/applicationFormsService";
 import { getApplicationResponseById } from "@/services/applicationResponsesService";
-import { Timestamp } from "firebase/firestore";
+import { getPreviouslyAppliedCount } from "@/services/previouslyAppliedService";
+import { getReviewDataForAssignment } from "@/services/reviewDataService";
+import { calculateReviewScore } from "@/utils/scores";
 
 export type AssignmentRow = {
   index: number;

@@ -1,6 +1,8 @@
-import { UserProfile } from "@/types/types";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
-import { Button } from "./ui/button";
+
 import {
   DropdownMenuGroup,
   DropdownMenu,
@@ -10,15 +12,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "./ui/avatar";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { Link } from "react-router-dom";
 import { clearQueryCache } from "@/config/query";
+import { useAuth } from "@/hooks/useAuth";
+import type { UserProfile } from "@/types/types";
+
 import AboutDialog from "./AboutDialog";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Button } from "./ui/button";
 import { Dialog, DialogTrigger } from "./ui/dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 type NavProfileProps = {
   user: UserProfile;

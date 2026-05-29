@@ -1,10 +1,11 @@
-import { useParams } from "react-router-dom";
-import Loading from "../../../components/Loading";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import useSearch from "@/hooks/useSearch";
-import { useAllBoardMembers } from "@/hooks/useBoardMembers";
+import { useParams } from "react-router-dom";
+
 import { BoardMembersTable } from "@/components/dor/BoardDashboard/BoardMembersTable";
+import Loading from "@/components/Loading";
+import { Button } from "@/components/ui/button";
+import { useAllBoardMembers } from "@/hooks/useBoardMembers";
+import useSearch from "@/hooks/useSearch";
 
 export default function SuperReviewerBoardDashboard() {
   const { formId } = useParams<{ formId: string }>();

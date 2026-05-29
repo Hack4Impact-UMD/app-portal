@@ -1,19 +1,19 @@
-import { useState, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import type { DecisionConfirmation } from "@app-portal/shared/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { ClipboardIcon, EllipsisVertical } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { DecisionLetterStatus } from "@/types/types";
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/DataTable";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import SortableHeader from "@/components/tables/SortableHeader";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
+import SortableHeader from "@/components/tables/SortableHeader";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -25,10 +25,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useRows, DecisionRow } from "./useRows";
+
+import type { DecisionRow } from "./useRows";
+import { useRows } from "./useRows";
 
 type AcceptanceConfirmationTableProps = {
-  confirmations: DecisionLetterStatus[];
+  confirmations: DecisionConfirmation[];
   search: string;
   rowCount?: number;
   decisionFilter: "all" | "accepted" | "denied";

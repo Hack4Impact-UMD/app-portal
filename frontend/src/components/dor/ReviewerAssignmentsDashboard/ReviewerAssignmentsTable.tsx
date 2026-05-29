@@ -1,18 +1,24 @@
-import { ApplicationReviewData, AppReviewAssignment } from "@/types/types";
+import type {
+  AppReviewAssignment,
+  ApplicationReviewData,
+} from "@app-portal/shared/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
-import { DataTable } from "@/components/DataTable";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { getApplicationForm } from "@/services/applicationFormsService";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { DataTable } from "@/components/DataTable";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
-import { AssignedAppRow, useRows } from "./useRows";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { Button } from "@/components/ui/button";
+import { getApplicationForm } from "@/services/applicationFormsService";
+
+import type { AssignedAppRow } from "./useRows";
+import { useRows } from "./useRows";
 
 type ReviewerAssignmentsTableProps = {
   assignments: AppReviewAssignment[];

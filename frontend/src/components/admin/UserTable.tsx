@@ -1,25 +1,14 @@
-import {
-  ApplicantUserProfile,
-  PermissionRole,
-  UserProfile,
-} from "@/types/types";
-import {
-  ColumnDef,
-  createColumnHelper,
-  RowSelectionState,
-} from "@tanstack/react-table";
-import { DataTable } from "../DataTable";
-import { Checkbox } from "../ui/checkbox";
+import { PermissionRole } from "@app-portal/shared/constants";
+import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
+import type { Timestamp } from "firebase/firestore";
+import { ArrowDown, ArrowUp, ArrowUpDown, TrashIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+
+import { DataTable } from "@/components/DataTable";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogClose,
@@ -29,13 +18,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
-import { displayUserRoleName } from "@/utils/display";
-import { throwErrorToast } from "../toasts/ErrorToast";
-import { Timestamp } from "firebase/firestore";
-import { ArrowDown, ArrowUp, ArrowUpDown, TrashIcon } from "lucide-react";
-import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -43,7 +35,10 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import type { ApplicantUserProfile, UserProfile } from "@/types/types";
+import { displayUserRoleName } from "@/utils/display";
 
 type UserTableProps = {
   users: UserProfile[];

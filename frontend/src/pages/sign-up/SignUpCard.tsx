@@ -1,13 +1,14 @@
-import { useState } from "react";
-import TextBox from "../../components/TextBox";
-import { Button } from "../../components/ui/button";
-import { registerUser } from "../../services/userService";
-import { AxiosError } from "axios";
-import { validEmail, validPassword } from "../../utils/verification";
 import { useMutation } from "@tanstack/react-query";
-import { throwErrorToast } from "../../components/toasts/ErrorToast";
+import { AxiosError } from "axios";
 import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+
+import TextBox from "@/components/TextBox";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { Button } from "@/components/ui/button";
+import { registerUser } from "@/services/userService";
+import { validEmail, validPassword } from "@/utils/verification";
 
 export default function SignUpCard() {
   const signUpMutation = useMutation({

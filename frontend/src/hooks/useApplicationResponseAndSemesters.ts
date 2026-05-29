@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
+
+import { getApplicationResponseAndSemester } from "@/services/applicationResponseAndSemesterService";
+
 import { useAuth } from "./useAuth";
-import { getApplicationResponseAndSemester } from "../services/applicationResponseAndSemesterService";
 
 export function useApplicationResponsesAndSemesters() {
   const { user, isAuthed, isLoading } = useAuth();

@@ -1,20 +1,18 @@
+import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
 import { useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+
+import { BoardApplicationsTable } from "@/components/board/BoardApplicationsTable";
+import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
-import {
-  ApplicantRole,
-  ApplicationResponse,
-  ApplicationStatus,
-} from "@/types/types";
+import { useAllApplicationResponsesForForm } from "@/hooks/useApplicationResponses";
+import useSearch from "@/hooks/useSearch";
+import type { ApplicationResponse } from "@/types/types";
 import {
   applicantRoleColor,
   applicantRoleDarkColor,
   displayApplicantRoleName,
 } from "@/utils/display";
-import { useAllApplicationResponsesForForm } from "@/hooks/useApplicationResponses";
-import { useParams } from "react-router-dom";
-import Loading from "@/components/Loading";
-import { BoardApplicationsTable } from "@/components/board/BoardApplicationsTable";
-import useSearch from "@/hooks/useSearch";
 
 export default function BoardAllApplicationsPage() {
   const { formId } = useParams<{ formId: string }>();

@@ -1,11 +1,12 @@
-import express from "express";
-import authRouter from "./routes/auth";
-import statusRouter from "./routes/status";
-import applicationRouter from "./routes/application";
-import gradingRouter from "./routes/grading";
 import bodyParser from "body-parser";
 import cors from "cors";
+import express from "express";
+
 import appcheck from "./middleware/appcheck";
+import applicationRouter from "./routes/application";
+import authRouter from "./routes/auth";
+import gradingRouter from "./routes/grading";
+import statusRouter from "./routes/status";
 // import { uploadMockData } from "./utils/mockData";
 
 const app = express();

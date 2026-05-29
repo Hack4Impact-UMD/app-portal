@@ -1,12 +1,9 @@
-import {
-  collection,
-  CollectionReference,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
-import { db } from "../config/firebase";
-import { ApplicationForm, ApplicationResponse } from "../types/types";
+import type { CollectionReference } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
+
+import { db } from "@/config/firebase";
+import type { ApplicationForm, ApplicationResponse } from "@/types/types";
+
 import { getApplicationResponses } from "./applicationResponsesService";
 
 export const APPLICATION_RESPONSES_COLLECTION = "application-responses";

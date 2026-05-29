@@ -1,7 +1,9 @@
-import { ApplicantRole } from "@/types/types";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "./useAuth";
+
 import { getApplicationStatus } from "@/services/statusService";
+
+import { useAuth } from "./useAuth";
 
 export function useMyApplicationStatus(
   responseId?: string,

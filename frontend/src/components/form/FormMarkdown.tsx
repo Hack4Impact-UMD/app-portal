@@ -1,5 +1,6 @@
 import { memo, useMemo } from "react";
-import Markdown, { Options } from "react-markdown";
+import type { Options } from "react-markdown";
+import Markdown from "react-markdown";
 import { twMerge } from "tailwind-merge";
 
 function FormMarkdown({

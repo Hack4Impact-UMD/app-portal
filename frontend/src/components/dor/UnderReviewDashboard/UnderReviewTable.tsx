@@ -1,53 +1,39 @@
-import {
-  ApplicantRole,
-  ApplicationResponse,
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import { ReviewStatus } from "@app-portal/shared/constants";
+import type {
   AppReviewAssignment,
   InternalApplicationStatus,
-  ReviewCapableUser,
-  ReviewStatus,
-} from "@/types/types";
+} from "@app-portal/shared/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
-import { useCallback, useMemo, useState } from "react";
-import { DataTable } from "../../DataTable";
-import { Button } from "../../ui/button";
-import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { getReviewDataForAssignment } from "@/services/reviewDataService";
-import {
-  assignReview,
-  removeReviewAssignment,
-} from "@/services/reviewAssignmentService";
 import {
   EllipsisVertical,
   ClipboardIcon,
   AlertTriangle,
   UserCheckIcon,
 } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { throwSuccessToast } from "../../toasts/SuccessToast";
-import { throwErrorToast } from "../../toasts/ErrorToast";
-import ApplicantRolePill from "../../role-pill/RolePill";
-import { updateApplicationStatus } from "@/services/statusService";
+
+import { DataTable } from "@/components/DataTable";
+import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
+import ApplicantRolePill from "@/components/role-pill/RolePill";
+import SortableHeader from "@/components/tables/SortableHeader";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { throwWarningToast } from "@/components/toasts/WarningToast";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
-import SortableHeader from "../../tables/SortableHeader";
-import { ApplicationRow, flattenRows, useRows } from "./useRows";
-import { ReviewerSelect } from "./ReviewerSelect";
-import { displayTimestamp } from "@/utils/dates";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -55,9 +41,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  assignReview,
+  removeReviewAssignment,
+} from "@/services/reviewAssignmentService";
+import { getReviewDataForAssignment } from "@/services/reviewDataService";
+import { updateApplicationStatus } from "@/services/statusService";
+import type { ApplicationResponse, ReviewCapableUser } from "@/types/types";
+import { displayTimestamp } from "@/utils/dates";
 import { displayReviewStatus } from "@/utils/display";
-import { throwWarningToast } from "@/components/toasts/WarningToast";
+
 import { AutoAssignButton } from "./AutoAssignButton";
+import { ReviewerSelect } from "./ReviewerSelect";
+import type { ApplicationRow } from "./useRows";
+import { flattenRows, useRows } from "./useRows";
 
 type SuperReviewerApplicationsTableProps = {
   applications: ApplicationResponse[];

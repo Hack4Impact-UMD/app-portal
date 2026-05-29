@@ -1,3 +1,8 @@
+import { useState } from "react";
+
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { Button } from "@/components/ui/button";
 import {
   DialogContent,
   DialogDescription,
@@ -7,15 +12,11 @@ import {
   DialogClose,
   Dialog,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { ApplicationForm } from "@/types/formBuilderTypes";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
 import { useDuplicateForm } from "@/hooks/useApplicationForm";
 import { useAuth } from "@/hooks/useAuth";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import type { ApplicationForm } from "@/types/types";
 
 export default function DuplicateFormDialog({
   open,

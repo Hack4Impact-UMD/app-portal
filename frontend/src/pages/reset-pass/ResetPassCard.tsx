@@ -1,7 +1,8 @@
 import { useState } from "react";
-import TextBox from "../../components/TextBox";
-import { Button } from "../../components/ui/button";
-import { validPassword, validCode } from "../../utils/verification";
+
+import TextBox from "@/components/TextBox";
+import { Button } from "@/components/ui/button";
+import { validPassword, validCode } from "@/utils/verification";
 
 export default function ResetPassCard() {
   const [formData, setFormData] = useState({

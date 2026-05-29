@@ -1,3 +1,9 @@
+import { ApplicationStatus, QuestionType } from "@app-portal/shared/constants";
+import type {
+  SectionResponse,
+  ValidationError,
+} from "@app-portal/shared/types";
+import axios from "axios";
 import {
   setDoc,
   Timestamp,
@@ -10,19 +16,13 @@ import {
   where,
   getDoc,
 } from "firebase/firestore";
-import { API_URL, db } from "../config/firebase";
-import {
-  ApplicationForm,
-  ApplicationResponse,
-  ApplicationStatus,
-  QuestionType,
-  SectionResponse,
-  ValidationError,
-} from "../types/types";
 import { v4 as uuidv4 } from "uuid";
-import axios from "axios";
-import { getReviewAssignments } from "./reviewAssignmentService";
+
+import { API_URL, db } from "@/config/firebase";
+import type { ApplicationForm, ApplicationResponse } from "@/types/types";
+
 import { getAppCheckToken } from "./appCheckService";
+import { getReviewAssignments } from "./reviewAssignmentService";
 
 export const APPLICATION_RESPONSES_COLLECTION = "application-responses";
 

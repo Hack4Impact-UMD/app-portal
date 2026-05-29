@@ -7,9 +7,10 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import { onRequest } from "firebase-functions/v2/https";
 // import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { onRequest } from "firebase-functions/v2/https";
+
 import app from "./app";
 // import { uploadMockData } from "./utils/mockData";
 

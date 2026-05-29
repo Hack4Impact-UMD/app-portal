@@ -1,24 +1,21 @@
+import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+
+import { BoardInterviewsTable } from "@/components/dor/BoardInterviewsDashboard";
+import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
-import {
-  ApplicantRole,
-  ApplicationResponse,
-  ApplicationStatus,
-  BoardUserProfile,
-} from "@/types/types";
+import { useAllApplicationResponsesForForm } from "@/hooks/useApplicationResponses";
+import { useAuth } from "@/hooks/useAuth";
+import useSearch from "@/hooks/useSearch";
+import { getQualifiedStatusesForFormRoles } from "@/services/statusService";
+import type { ApplicationResponse, BoardUserProfile } from "@/types/types";
 import {
   applicantRoleColor,
   applicantRoleDarkColor,
   displayApplicantRoleName,
 } from "@/utils/display";
-import { useAllApplicationResponsesForForm } from "@/hooks/useApplicationResponses";
-import { useParams } from "react-router-dom";
-import Loading from "@/components/Loading";
-import useSearch from "@/hooks/useSearch";
-import { useQuery } from "@tanstack/react-query";
-import { getQualifiedStatusesForFormRoles } from "@/services/statusService";
-import { useAuth } from "@/hooks/useAuth";
-import { BoardInterviewsTable } from "@/components/dor/BoardInterviewsDashboard";
 
 export default function BoardInterviewsDashboard() {
   const { user } = useAuth();

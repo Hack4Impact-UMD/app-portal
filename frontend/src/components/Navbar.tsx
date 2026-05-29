@@ -1,10 +1,12 @@
-import { NavLink } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import { twMerge } from "tailwind-merge";
-import { PermissionRole } from "@/types/types";
-import NavProfile from "./NavProfile";
+import { PermissionRole } from "@app-portal/shared/constants";
 import { HomeIcon } from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { twMerge } from "tailwind-merge";
+
+import { useAuth } from "@/hooks/useAuth";
 import { displayUserRoleName } from "@/utils/display";
+
+import NavProfile from "./NavProfile";
 
 function Navbar({ className }: { className?: string }) {
   const { isLoading, isAuthed, user } = useAuth();

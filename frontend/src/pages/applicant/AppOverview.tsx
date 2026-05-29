@@ -1,12 +1,13 @@
-import React, { useMemo, useState } from "react";
-import { useActiveForm } from "../../hooks/useApplicationForm";
-import Loading from "../../components/Loading";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { useMyApplicationResponses } from "@/hooks/useApplicationResponses";
-import { ApplicationStatus } from "@/types/types";
-import FormMarkdown from "@/components/form/FormMarkdown";
+import { ApplicationStatus } from "@app-portal/shared/constants";
 import { Timestamp } from "firebase/firestore";
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import FormMarkdown from "@/components/form/FormMarkdown";
+import Loading from "@/components/Loading";
+import { Button } from "@/components/ui/button";
+import { useActiveForm } from "@/hooks/useApplicationForm";
+import { useMyApplicationResponses } from "@/hooks/useApplicationResponses";
 
 const AppOverview: React.FC = () => {
   const {

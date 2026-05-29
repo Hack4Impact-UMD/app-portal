@@ -1,9 +1,10 @@
-import { ReactNode } from "react";
+import type { PermissionRole } from "@app-portal/shared/constants";
+import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { PermissionRole } from "../../types/types";
-import Loading from "../Loading";
+
+import Loading from "@/components/Loading";
 import { auth } from "@/config/firebase";
+import { useAuth } from "@/hooks/useAuth";
 
 interface RequireAuthProps {
   requireRoles?: PermissionRole[];

@@ -1,6 +1,7 @@
+import axios from "axios";
+import type { CollectionReference } from "firebase/firestore";
 import {
   collection,
-  CollectionReference,
   doc,
   getDoc,
   getDocs,
@@ -8,12 +9,13 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { db, API_URL } from "../config/firebase";
-import { ApplicationForm } from "../types/types";
 import { query } from "firebase/firestore";
-import axios from "axios";
-import { getApplicationResponseById } from "./applicationResponsesService";
+
+import { db, API_URL } from "@/config/firebase";
+import type { ApplicationForm } from "@/types/types";
+
 import { getAppCheckToken } from "./appCheckService";
+import { getApplicationResponseById } from "./applicationResponsesService";
 
 export const APPLICATION_FORMS_COLLECTION = "application-forms";
 

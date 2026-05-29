@@ -1,3 +1,6 @@
+import type { ApplicationInterviewData } from "@app-portal/shared/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import {
   getInterviewDataById,
@@ -6,8 +9,7 @@ import {
   updateInterviewData,
   getInterviewDataForInterviewer,
 } from "@/services/interviewDataService";
-import { ApplicationInterviewData } from "@/types/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { useAuth } from "./useAuth";
 
 export function useInterviewData(interviewDataId: string) {

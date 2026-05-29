@@ -1,17 +1,19 @@
-import { Request, Response, Router } from "express";
-import { hasRoles, isAuthenticated } from "../middleware/authentication";
-import { db } from "..";
-import { CollectionReference } from "firebase-admin/firestore";
-import { InternalApplicationStatus, ReviewStatus } from "../models/appStatus";
-import { ApplicationForm } from "../models/appForm";
-import { ApplicationResponse } from "../models/appResponse";
+import { ReviewStatus, PermissionRole } from "@app-portal/shared/constants";
+import { DecisionConfirmationSchema } from "@app-portal/shared/types";
+import type {
+  DecisionConfirmation,
+  InternalApplicationStatus,
+} from "@app-portal/shared/types";
+import type { Request, Response } from "express";
+import { Router } from "express";
+import type { CollectionReference } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
-import {
-  DecisionLetterStatusSchema,
-  DecisionLetterStatus,
-} from "../models/confirmation";
+
+import { db } from "..";
+import { hasRoles, isAuthenticated } from "../middleware/authentication";
 import { validateSchema } from "../middleware/validation";
-import { PermissionRole } from "../models/user";
+import type { ApplicationForm } from "../models/appForm";
+import type { ApplicationResponse } from "../models/appResponse";
 
 const router = Router();
 const APPLICATION_STATUS_COLLECTION = "app-status";
@@ -101,7 +103,7 @@ router.post(
   [
     isAuthenticated,
     hasRoles([PermissionRole.Applicant]),
-    validateSchema(DecisionLetterStatusSchema),
+    validateSchema(DecisionConfirmationSchema),
   ],
   async (req: Request, res: Response) => {
     try {
@@ -109,9 +111,9 @@ router.post(
 
       const decisionStatusCollection = db.collection(
         DECISION_STATUS_COLLECTION,
-      ) as CollectionReference<DecisionLetterStatus>;
+      ) as CollectionReference<DecisionConfirmation>;
 
-      const input = req.body as DecisionLetterStatus;
+      const input = req.body as DecisionConfirmation;
       const { responseId, userId, internalStatusId } = input;
       const uid = req.token!.uid;
 

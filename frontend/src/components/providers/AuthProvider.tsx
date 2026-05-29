@@ -1,18 +1,22 @@
-import { ReactNode, useEffect, useState } from "react";
+import { PermissionRole } from "@app-portal/shared/constants";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import { useMutation } from "@tanstack/react-query";
+import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
+
+import ReviewerRoleSelectDialog from "@/components/reviewer/ReviewerRoleSelectDialog";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { auth } from "@/config/firebase";
+import { AuthContext } from "@/contexts/authContext";
 import {
   getUserById,
   loginUser,
   logoutUser,
   onAuthStateChange,
   setReviewCapableUserRolePreferences,
-} from "../../services/userService";
-import { ApplicantRole, PermissionRole, UserProfile } from "../../types/types";
-import { auth } from "../../config/firebase";
-import { AuthContext } from "../../contexts/authContext";
-import ReviewerRoleSelectDialog from "../reviewer/ReviewerRoleSelectDialog";
-import { useMutation } from "@tanstack/react-query";
-import { throwErrorToast } from "../toasts/ErrorToast";
-import { throwSuccessToast } from "../toasts/SuccessToast";
+} from "@/services/userService";
+import type { UserProfile } from "@/types/types";
 
 interface AuthProviderProps {
   children?: ReactNode;

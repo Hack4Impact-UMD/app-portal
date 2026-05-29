@@ -1,16 +1,15 @@
-import { useApplicationForm } from "@/hooks/useApplicationForm";
-import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
-import {
-  ApplicantRole,
-  ApplicationResponse,
-  ReviewStatus,
-} from "@/types/types";
-import { Timestamp } from "firebase/firestore";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import { ReviewStatus } from "@app-portal/shared/constants";
+import type { Timestamp } from "firebase/firestore";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import ApplicantRolePill from "../role-pill/RolePill";
+
+import ApplicantRolePill from "@/components/role-pill/RolePill";
+import Spinner from "@/components/Spinner";
+import { useApplicationForm } from "@/hooks/useApplicationForm";
+import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
+import type { ApplicationResponse } from "@/types/types";
 import { statusDisplay } from "@/utils/status";
-import Spinner from "../Spinner";
 
 export function ApplicationResponseRow({
   response,

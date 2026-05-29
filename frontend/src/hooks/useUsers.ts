@@ -1,6 +1,7 @@
-import { getAllUsers, getUserById } from "@/services/userService";
-import { UserProfile } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
+
+import { getAllUsers, getUserById } from "@/services/userService";
+import type { UserProfile } from "@/types/types";
 
 export function useUsers() {
   return useQuery<UserProfile[]>({

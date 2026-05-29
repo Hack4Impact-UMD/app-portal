@@ -1,3 +1,8 @@
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type {
+  AppReviewAssignment,
+  ApplicationReviewData,
+} from "@app-portal/shared/types";
 import {
   collection,
   doc,
@@ -8,13 +13,9 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import {
-  ApplicantRole,
-  ApplicationReviewData,
-  AppReviewAssignment,
-} from "../types/types";
-import { db } from "../config/firebase";
 import { v4 as uuidv4 } from "uuid";
+
+import { db } from "@/config/firebase";
 
 export const REVIEW_DATA_COLLECTION = "review-data";
 

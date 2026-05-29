@@ -1,6 +1,13 @@
-import { useCallback, useState } from "react";
-import { Button } from "./ui/button";
+import { ApplicantRole } from "@app-portal/shared/constants";
+import { mkConfig, generateCsv, download } from "export-to-csv";
 import { Download } from "lucide-react";
+import { useCallback, useState } from "react";
+
+import type { CsvRow } from "@/types/types";
+import { displayApplicantRoleName } from "@/utils/display";
+
+import { throwErrorToast } from "./toasts/ErrorToast";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,10 +16,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { ApplicantRole, CsvRow } from "@/types/types";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import { throwErrorToast } from "./toasts/ErrorToast";
-import { displayApplicantRoleName } from "@/utils/display";
 
 interface ExportRoleDialogButtonProps {
   onExport: (role: ApplicantRole) => CsvRow[];

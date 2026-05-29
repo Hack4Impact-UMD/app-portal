@@ -1,10 +1,11 @@
-import { useParams, useNavigate } from "react-router-dom";
-import Section from "../../components/form/Section";
-import Timeline from "../../components/status/Timeline"; // Import Timeline component
-import useForm from "../../hooks/useForm";
-import { Button } from "../../components/ui/button";
 import { useMemo, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+
+import Section from "@/components/form/Section";
+import Timeline from "@/components/status/Timeline"; // Import Timeline component
 import { throwWarningToast } from "@/components/toasts/WarningToast";
+import { Button } from "@/components/ui/button";
+import useForm from "@/hooks/useForm";
 
 const ApplicationPage: React.FC = () => {
   //TODO: Some parts of this component should be moved to the form provider,

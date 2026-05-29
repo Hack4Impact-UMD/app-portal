@@ -1,11 +1,12 @@
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import type {
+  DecisionConfirmation,
+  InternalApplicationStatus,
+} from "@app-portal/shared/types";
+import { useQuery } from "@tanstack/react-query";
+
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationStatusById } from "@/services/statusService";
-import {
-  ApplicantRole,
-  DecisionLetterStatus,
-  InternalApplicationStatus,
-} from "@/types/types";
-import { useQuery } from "@tanstack/react-query";
 
 export type DecisionRow = {
   index: number;
@@ -19,7 +20,7 @@ export type DecisionRow = {
   responseId: string;
 };
 
-export function useRows(confirmations: DecisionLetterStatus[], formId: string) {
+export function useRows(confirmations: DecisionConfirmation[], formId: string) {
   return useQuery({
     queryKey: [
       "confirmation-rows",

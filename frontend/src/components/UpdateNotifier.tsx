@@ -1,3 +1,9 @@
+import type { ReactNode } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { useUpdateCheck } from "@/hooks/useUpdateCheck";
+
 import {
   AlertDialog,
   AlertDialogTitle,
@@ -8,9 +14,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
 } from "./ui/alert-dialog";
-import { ReactNode, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUpdateCheck } from "@/hooks/useUpdateCheck";
 
 export default function UpdateNotifier({ children }: { children: ReactNode }) {
   const [showDialog, setShowDialog] = useState(false);

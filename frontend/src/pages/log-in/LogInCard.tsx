@@ -1,12 +1,13 @@
-import { useState } from "react";
-import TextBox from "../../components/TextBox";
-import { Button } from "../../components/ui/button";
-import { useAuth } from "../../hooks/useAuth";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { PermissionRole } from "@app-portal/shared/constants";
 import { useMutation } from "@tanstack/react-query";
-import { throwErrorToast } from "../../components/toasts/ErrorToast";
 import { Eye, EyeOff } from "lucide-react";
-import { PermissionRole } from "@/types/types";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
+import TextBox from "@/components/TextBox";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LogInCard() {
   const { login } = useAuth();

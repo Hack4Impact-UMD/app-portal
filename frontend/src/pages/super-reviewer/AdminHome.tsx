@@ -1,19 +1,4 @@
-import Loading from "@/components/Loading";
-import { Button } from "@/components/ui/button";
-import { useAllApplicationForms } from "@/hooks/useApplicationForm";
-import { useAuth } from "@/hooks/useAuth";
-import { ApplicationForm, PermissionRole } from "@/types/types";
-import { displayUserRoleName } from "@/utils/display";
-import { Link, useNavigate } from "react-router-dom";
-import UploadReviewRubricDialog from "@/components/admin/UploadReviewRubricDialog";
-import UploadInterviewRubricDialog from "@/components/admin/UploadInterviewRubricDialog";
-import { Switch } from "@/components/ui/switch";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { PermissionRole } from "@app-portal/shared/constants";
 import {
   EllipsisVertical,
   LockIcon,
@@ -21,17 +6,34 @@ import {
   MailOpenIcon,
   UnlockIcon,
 } from "lucide-react";
-import { useUpdateApplicationFormActive } from "@/hooks/useUpdateApplicationFormActive";
-import DuplicateFormDialog from "@/components/dor/DuplicateFormDialog/DuplicateFormDialog";
 import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import SubmitGradingJobDialog from "@/components/admin/SubmitGradingJobDialog";
+import UploadInterviewRubricDialog from "@/components/admin/UploadInterviewRubricDialog";
+import UploadReviewRubricDialog from "@/components/admin/UploadReviewRubricDialog";
+import ChangeDueDateDialog from "@/components/dor/ChangeDueDateDialog/ChangeDueDateDialog";
+import DuplicateFormDialog from "@/components/dor/DuplicateFormDialog/DuplicateFormDialog";
+import Loading from "@/components/Loading";
 import CreateInternalApplicantDialog from "@/components/reviewer/CreateInternalApplicantDialog";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
 import {
   TooltipContent,
   Tooltip,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import ChangeDueDateDialog from "@/components/dor/ChangeDueDateDialog/ChangeDueDateDialog";
-import SubmitGradingJobDialog from "@/components/admin/SubmitGradingJobDialog";
+import { useAllApplicationForms } from "@/hooks/useApplicationForm";
+import { useAuth } from "@/hooks/useAuth";
+import { useUpdateApplicationFormActive } from "@/hooks/useUpdateApplicationFormActive";
+import type { ApplicationForm } from "@/types/types";
+import { displayUserRoleName } from "@/utils/display";
 
 export default function AdminHome() {
   const navigate = useNavigate();

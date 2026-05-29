@@ -1,28 +1,31 @@
-import {
-  ApplicationInterviewData,
+import type {
   InterviewAssignment,
-  ReviewCapableUser,
-} from "@/types/types";
+  ApplicationInterviewData,
+} from "@app-portal/shared/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ColumnDef,
   createColumnHelper,
   getPaginationRowModel,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
-import { DataTable } from "../../DataTable";
-import { Button } from "../../ui/button";
 import { EllipsisVertical } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { DataTable } from "@/components/DataTable";
+// import { RoleSelect } from "./RoleSelect";
+import { ExportButton } from "@/components/ExportButton";
+import SortableHeader from "@/components/tables/SortableHeader";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
-import { InterviewerRow, flattenRows, useRows } from "./useRows";
-// import { RoleSelect } from "./RoleSelect";
-import { ExportButton } from "@/components/ExportButton";
-import SortableHeader from "@/components/tables/SortableHeader";
+} from "@/components/ui/dropdown-menu";
+import type { ReviewCapableUser } from "@/types/types";
+
+import type { InterviewerRow } from "./useRows";
+import { flattenRows, useRows } from "./useRows";
 
 type InterviewersTableProps = {
   interviewers: ReviewCapableUser[];

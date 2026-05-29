@@ -1,3 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+
 import InterviewerAssignmentsTable from "@/components/dor/InterviewerAssignmentsDashboard/InterviewerAssignmentsTable";
 import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
@@ -5,9 +9,6 @@ import { Button } from "@/components/ui/button";
 import { useInterviewAssignments } from "@/hooks/useInterviewAssignments";
 import { useInterviewDataForInterviewer } from "@/hooks/useInterviewData";
 import { getReviewerById, reviewingFor } from "@/services/reviewersService";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
 
 function useInterviewerForId(interviewerId: string) {
   return useQuery({

@@ -1,11 +1,12 @@
+import { useMutation } from "@tanstack/react-query";
+import { useCallback, useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/config/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import { logoutUser, sendVerificationEmail } from "@/services/userService";
-import { useMutation } from "@tanstack/react-query";
-import { useCallback, useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
 
 export default function VerifyEmailPage() {
   const { isAuthed, user } = useAuth();

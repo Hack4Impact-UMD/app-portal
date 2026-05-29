@@ -1,26 +1,28 @@
+import type { ApplicationSection } from "@app-portal/shared/types";
+import { Timestamp } from "firebase/firestore";
+import { AlertTriangleIcon } from "lucide-react";
 import { useState, useEffect, useCallback, Fragment } from "react";
+import { useParams } from "react-router-dom";
+
+import CodeEditor from "@/components/form/CodeEditor";
+import FormMarkdown from "@/components/form/FormMarkdown";
+import Section from "@/components/form/Section";
+import Loading from "@/components/Loading";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { h4iApplicationForm } from "@/data/h4i-application-form";
-import CodeEditor from "@/components/form/CodeEditor";
-import Section from "@/components/form/Section";
-import FormMarkdown from "@/components/form/FormMarkdown";
-import { ApplicationForm, ApplicationSection } from "@/types/formBuilderTypes";
 import {
   useUploadApplicationForm,
   useApplicationForm,
 } from "@/hooks/useApplicationForm";
 import { useAuth } from "@/hooks/useAuth";
-import { Timestamp } from "firebase/firestore";
-import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import Loading from "@/components/Loading";
-import { useParams } from "react-router-dom";
-import { Switch } from "@/components/ui/switch";
-import { AlertTriangleIcon } from "lucide-react";
+import type { ApplicationForm } from "@/types/types";
 
 const decisionLetterVariants = ["accepted", "waitlist"] as const;
 const noop = () => {};

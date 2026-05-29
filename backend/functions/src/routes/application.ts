@@ -1,25 +1,35 @@
-import { Router, Request, Response } from "express";
-import { db } from "../index";
-import { validateSchema } from "../middleware/validation";
 import {
-  ApplicationResponse,
-  ApplicationResponseSaveRequest,
-  ApplicationResponseSaveRequestSchema,
-  ApplicationResponseSubmitRequest,
-  ApplicationResponseSubmitRequestSchema,
   ApplicationStatus,
-  QuestionResponse,
   QuestionType,
-} from "../models/appResponse";
-import { CollectionReference, Timestamp } from "firebase-admin/firestore";
+  ReviewStatus,
+  PermissionRole,
+} from "@app-portal/shared/constants";
+import type {
+  ApplicationResponseSaveRequest,
+  ApplicationResponseSubmitRequest,
+  InternalApplicationStatus,
+  QuestionResponse,
+  RoleReviewRubric,
+  ValidationError,
+} from "@app-portal/shared/types";
+import {
+  ApplicationResponseSaveRequestSchema,
+  ApplicationResponseSubmitRequestSchema,
+  RoleReviewRubricSchema,
+} from "@app-portal/shared/types";
+import type { Request, Response } from "express";
+import { Router } from "express";
+import type { CollectionReference } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
-import { hasRoles, isAuthenticated } from "../middleware/authentication";
-import { ApplicationForm } from "../models/appForm";
-import { RoleReviewRubric, roleReviewRubricSchema } from "../models/appReview";
-import { InternalApplicationStatus, ReviewStatus } from "../models/appStatus";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { PermissionRole } from "../models/user";
+
+import { db } from "../index";
+import { hasRoles, isAuthenticated } from "../middleware/authentication";
+import { validateSchema } from "../middleware/validation";
+import type { ApplicationForm } from "../models/appForm";
+import type { ApplicationResponse } from "../models/appResponse";
 // import * as admin from "firebase-admin"
 
 const router = Router();
@@ -35,12 +45,6 @@ interface QuestionMetadata {
   minimumWordCount?: number;
   maximumWordCount?: number;
 }
-
-type ValidationError = {
-  sectionId: string;
-  questionId: string;
-  message: string;
-};
 
 function validateResponses(
   applicationResponse: ApplicationResponseSubmitRequest,
@@ -458,7 +462,7 @@ router.post(
   [
     isAuthenticated,
     hasRoles([PermissionRole.SuperReviewer]),
-    validateSchema(z.array(roleReviewRubricSchema)),
+    validateSchema(z.array(RoleReviewRubricSchema)),
   ],
   async (req: Request, res: Response) => {
     try {
@@ -532,7 +536,7 @@ router.post(
   [
     isAuthenticated,
     hasRoles([PermissionRole.SuperReviewer]),
-    validateSchema(z.array(roleReviewRubricSchema)),
+    validateSchema(z.array(RoleReviewRubricSchema)),
   ],
   async (req: Request, res: Response) => {
     try {

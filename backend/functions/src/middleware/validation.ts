@@ -1,6 +1,7 @@
-import { z, ZodError } from "zod";
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { logger } from "firebase-functions";
+import type { z } from "zod";
+import { ZodError } from "zod";
 
 export function validateSchema(schema: z.ZodSchema) {
   return (req: Request, res: Response, next: NextFunction) => {

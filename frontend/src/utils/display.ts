@@ -1,4 +1,5 @@
-import { ApplicantRole, PermissionRole, ReviewStatus } from "@/types/types";
+import type { ReviewStatus } from "@app-portal/shared/constants";
+import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
 
 export function displayUserRoleName(role: PermissionRole) {
   if (role === PermissionRole.SuperReviewer) return "Super Reviewer";

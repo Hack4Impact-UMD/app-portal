@@ -1,6 +1,8 @@
 import React, { memo } from "react";
 import { twMerge } from "tailwind-merge";
-import { Input } from "../ui/input";
+
+import { Input } from "@/components/ui/input";
+
 import FormMarkdown from "./FormMarkdown";
 
 interface OneLineInputProps {

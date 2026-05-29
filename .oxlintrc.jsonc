@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript"],
+  "plugins": ["typescript", "import"],
   "categories": {
     "correctness": "off",
   },
@@ -109,12 +109,12 @@
         "null": "ignore",
       },
     ],
-    // "no-duplicate-imports": [
-    //   "error",
-    //   {
-    //     "allowSeparateTypeImports": true,
-    //   },
-    // ],
+    "no-duplicate-imports": [
+      "error",
+      {
+        "allowSeparateTypeImports": true,
+      },
+    ],
     "typescript/no-unsafe-enum-comparison": "error",
     "typescript/consistent-type-assertions": [
       "error",
@@ -123,13 +123,14 @@
         "objectLiteralTypeAssertions": "never",
       },
     ],
-    // "typescript/consistent-type-imports": [
-    //   "error",
-    //   {
-    //     "prefer": "type-imports",
-    //     "fixStyle": "separate-type-imports",
-    //   },
-    // ],
+    "typescript/consistent-type-imports": [
+      "error",
+      {
+        "prefer": "type-imports",
+        "fixStyle": "separate-type-imports",
+      },
+    ],
+    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
   },
   "overrides": [
     {
@@ -140,6 +141,7 @@
         "es2020": true,
       },
       "rules": {
+        "import/no-relative-parent-imports": "error",
         "react/rules-of-hooks": "error",
         "react/exhaustive-deps": "warn",
         "react/only-export-components": [
@@ -152,7 +154,6 @@
     },
     {
       "files": ["backend/functions/**/*.{js,ts}"],
-      "plugins": ["import"],
       "env": {
         "node": true,
       },

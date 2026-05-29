@@ -1,4 +1,4 @@
-import { ReviewStatus } from "@/types/types";
+import { ReviewStatus } from "@app-portal/shared/constants";
 
 export function statusDisplay(status: ReviewStatus | "decided") {
   switch (status) {

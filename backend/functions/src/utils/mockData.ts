@@ -1,6 +1,8 @@
-import { DocumentData, Timestamp } from "firebase-admin/firestore";
-import { db } from "..";
+import type { DocumentData } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
+
+import { db } from "..";
 
 async function upload(collection: string, id: string, data: DocumentData) {
   await db.collection(collection).doc(id).set(data);

@@ -1,6 +1,8 @@
 import React, { memo, useMemo } from "react";
 import { twMerge } from "tailwind-merge";
-import { Textarea } from "../ui/textarea";
+
+import { Textarea } from "@/components/ui/textarea";
+
 import FormMarkdown from "./FormMarkdown";
 
 interface LongFormInputProps {
