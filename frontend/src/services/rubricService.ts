@@ -1,21 +1,14 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { RoleReviewRubric } from "@app-portal/shared/types";
 import axios from "axios";
-import {
-  collection,
-  doc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 import { API_URL, db } from "@/config/firebase";
 import type { ApplicationForm } from "@/types/types";
 
 import { getAppCheckToken } from "./appCheckService";
 
-export const RUBRIC_COLLECTION = "rubrics";
+const RUBRIC_COLLECTION = "rubrics";
 
 export interface RubricValidationWarnings {
   missingInForm: Array<{ role: ApplicantRole; scoreKey: string }>;
@@ -41,16 +34,6 @@ export async function getRoleRubricsForFormRole(
   return (await getDocs(q)).docs
     .map((d) => d.data() as RoleReviewRubric)
     .filter((r) => r.roles.length === 0 || r.roles.includes(role));
-}
-
-export async function updateRoleRubric(
-  rubricId: string,
-  update: Partial<Omit<RoleReviewRubric, "id">>,
-) {
-  const rubrics = collection(db, RUBRIC_COLLECTION);
-  const rubricRef = doc(rubrics, rubricId);
-
-  await updateDoc(rubricRef, update);
 }
 
 export async function uploadRubrics(

@@ -109,23 +109,6 @@ export async function createReviewData(
   return reviewDoc;
 }
 
-export async function updateReviewDataForReviewerResponse(
-  reviewerId: string,
-  responseId: string,
-  update: Partial<Omit<ApplicationReviewData, "id">>,
-) {
-  const reviewData = collection(db, REVIEW_DATA_COLLECTION);
-  const q = query(
-    reviewData,
-    where("reviewerId", "==", reviewerId),
-    where("applicationResponseId", "==", responseId),
-  );
-
-  const reviewRef = (await getDocs(q)).docs[0].ref;
-
-  await updateDoc(reviewRef, update);
-}
-
 export async function updateReviewData(
   reviewDataId: string,
   update: Partial<Omit<ApplicationReviewData, "id">>,

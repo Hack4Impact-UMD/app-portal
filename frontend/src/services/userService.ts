@@ -170,14 +170,6 @@ export async function getAllUsers(): Promise<UserProfile[]> {
   return results.docs.map((d) => d.data() as UserProfile);
 }
 
-export async function updateUserRole(userId: string, role: PermissionRole) {
-  const users = collection(db, USER_COLLECTION);
-  const userDoc = doc(users, userId);
-  await updateDoc(userDoc, {
-    role: role,
-  });
-}
-
 export async function updateUserRoles(
   users: UserProfile[],
   role: PermissionRole,
@@ -252,7 +244,7 @@ export async function setReviewCapableUserRolePreferences(
   }
 }
 
-export async function setReviewerRolePreferences(
+async function setReviewerRolePreferences(
   reviewerId: string,
   prefs: ApplicantRole[],
 ) {
@@ -294,10 +286,6 @@ export function onAuthStateChange(
   return auth.onAuthStateChanged((userInfo) => {
     handler(userInfo);
   });
-}
-
-export function authStateSnapshot() {
-  return auth.currentUser;
 }
 
 export async function createInternalApplicant(

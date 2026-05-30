@@ -6,8 +6,7 @@ import type { ApplicationForm, ApplicationResponse } from "@/types/types";
 
 import { getApplicationResponses } from "./applicationResponsesService";
 
-export const APPLICATION_RESPONSES_COLLECTION = "application-responses";
-export const APPLICATION_FORMS_COLLECTION = "application-forms";
+const APPLICATION_FORMS_COLLECTION = "application-forms";
 
 export type ApplicationResponseWithSemester = ApplicationResponse & {
   semester: string;

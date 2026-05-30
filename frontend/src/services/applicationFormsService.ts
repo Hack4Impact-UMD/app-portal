@@ -17,7 +17,7 @@ import type { ApplicationForm } from "@/types/types";
 import { getAppCheckToken } from "./appCheckService";
 import { getApplicationResponseById } from "./applicationResponsesService";
 
-export const APPLICATION_FORMS_COLLECTION = "application-forms";
+const APPLICATION_FORMS_COLLECTION = "application-forms";
 
 export async function getApplicationForm(
   formId: string,

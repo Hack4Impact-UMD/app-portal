@@ -24,7 +24,7 @@ import type { ApplicationForm, ApplicationResponse } from "@/types/types";
 import { getAppCheckToken } from "./appCheckService";
 import { getReviewAssignments } from "./reviewAssignmentService";
 
-export const APPLICATION_RESPONSES_COLLECTION = "application-responses";
+const APPLICATION_RESPONSES_COLLECTION = "application-responses";
 
 export async function saveApplicationResponse(
   response: ApplicationResponse,
@@ -66,7 +66,7 @@ export async function getApplicationResponseById(
   return (await getDoc(respDoc)).data() as ApplicationResponse | undefined;
 }
 
-export async function getApplicationResponseByFormId(
+async function getApplicationResponseByFormId(
   userId: string,
   formId: string,
 ): Promise<ApplicationResponse | undefined> {

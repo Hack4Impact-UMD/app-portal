@@ -3,15 +3,7 @@ import type {
   AppReviewAssignment,
   ApplicationReviewData,
 } from "@app-portal/shared/types";
-import {
-  collection,
-  doc,
-  getDocs,
-  query,
-  runTransaction,
-  where,
-  writeBatch,
-} from "firebase/firestore";
+import { collection, doc, writeBatch } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
 import { db } from "@/config/firebase";
@@ -22,10 +14,7 @@ import {
   getReviewAssignmentsForForm,
   REVIEW_ASSIGNMENT_COLLECTION,
 } from "./reviewAssignmentService";
-import {
-  getReviewDataForForm,
-  REVIEW_DATA_COLLECTION,
-} from "./reviewDataService";
+import { getReviewDataForForm } from "./reviewDataService";
 import { getAllReviewers } from "./reviewersService";
 import { getUserById } from "./userService";
 
@@ -295,7 +284,7 @@ export async function calculateBootcampAssignmentPlan(
   return plan;
 }
 
-export function planItemToAssignments(
+function planItemToAssignments(
   item: AutoAssignmentPlanItem,
 ): AppReviewAssignment[] {
   const assignments: AppReviewAssignment[] = [];
@@ -348,46 +337,46 @@ export async function makeAssignmentsFromPlan(plan: AutoAssignmentPlanItem[]) {
   }
 }
 
-export async function deleteReviewAssignmentsAndDataForForm(formId: string) {
-  const reviewAssignmentsCollection = collection(
-    db,
-    REVIEW_ASSIGNMENT_COLLECTION,
-  );
-  const reviewDataCollection = collection(db, REVIEW_DATA_COLLECTION);
+// export async function deleteReviewAssignmentsAndDataForForm(formId: string) {
+//   const reviewAssignmentsCollection = collection(
+//     db,
+//     REVIEW_ASSIGNMENT_COLLECTION,
+//   );
+//   const reviewDataCollection = collection(db, REVIEW_DATA_COLLECTION);
 
-  const assignmentsQuery = query(
-    reviewAssignmentsCollection,
-    where("formId", "==", formId),
-  );
-  const dataQuery = query(
-    reviewDataCollection,
-    where("applicationFormId", "==", formId),
-  );
+//   const assignmentsQuery = query(
+//     reviewAssignmentsCollection,
+//     where("formId", "==", formId),
+//   );
+//   const dataQuery = query(
+//     reviewDataCollection,
+//     where("applicationFormId", "==", formId),
+//   );
 
-  const assignments = await getDocs(assignmentsQuery);
-  const reviewData = await getDocs(dataQuery);
+//   const assignments = await getDocs(assignmentsQuery);
+//   const reviewData = await getDocs(dataQuery);
 
-  const forms = new Set<string>();
+//   const forms = new Set<string>();
 
-  assignments.forEach((doc) => {
-    const assignment = doc.data() as AppReviewAssignment;
-    forms.add(assignment.formId);
-  });
-  reviewData.forEach((doc) => {
-    const review = doc.data() as ApplicationReviewData;
-    forms.add(review.applicationFormId);
-  });
+//   assignments.forEach((doc) => {
+//     const assignment = doc.data() as AppReviewAssignment;
+//     forms.add(assignment.formId);
+//   });
+//   reviewData.forEach((doc) => {
+//     const review = doc.data() as ApplicationReviewData;
+//     forms.add(review.applicationFormId);
+//   });
 
-  if (
-    confirm(
-      `This will delete ${reviewData.docs.length} review data docs and ${assignments.docs.length} assignment docs. Forms impacted: ${[...forms]}`,
-    )
-  ) {
-    await runTransaction(db, async (transaction) => {
-      assignments.forEach((doc) => transaction.delete(doc.ref));
-      reviewData.forEach((doc) => transaction.delete(doc.ref));
-    });
-  } else {
-    throw new Error("Cancelled");
-  }
-}
+//   if (
+//     confirm(
+//       `This will delete ${reviewData.docs.length} review data docs and ${assignments.docs.length} assignment docs. Forms impacted: ${[...forms]}`,
+//     )
+//   ) {
+//     await runTransaction(db, async (transaction) => {
+//       assignments.forEach((doc) => transaction.delete(doc.ref));
+//       reviewData.forEach((doc) => transaction.delete(doc.ref));
+//     });
+//   } else {
+//     throw new Error("Cancelled");
+//   }
+// }
