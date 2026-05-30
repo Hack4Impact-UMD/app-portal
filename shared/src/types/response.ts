@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { ApplicantRole, ApplicationStatus, QuestionType } from "../constants";
+import {
+  ApplicantRole,
+  ApplicationStatus,
+  QuestionType,
+} from "../constants/index.js";
 
 export const QuestionResponseSchema = z.object({
   questionType: z.enum(QuestionType),

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { ApplicantRole } from "../constants";
+import { ApplicantRole } from "../constants/index.js";
 
 export const AssignmentBaseSchema = z.object({
   id: z.string().min(1),

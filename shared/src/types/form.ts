@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { ApplicantRole, QuestionType, ReviewStatus } from "../constants";
+import {
+  ApplicantRole,
+  QuestionType,
+  ReviewStatus,
+} from "../constants/index.js";
 
 export const ApplicationQuestionBaseSchema = z.object({
   questionId: z.string().nonempty(),

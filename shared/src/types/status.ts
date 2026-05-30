@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { ApplicantRole, ReviewStatus } from "../constants";
+import { ApplicantRole, ReviewStatus } from "../constants/index.js";
 
 export const InternalApplicationStatusSchema = z.object({
   id: z.string().min(1),

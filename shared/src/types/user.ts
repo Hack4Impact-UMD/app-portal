@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { ApplicantRole, PermissionRole } from "../constants";
-import { SectionResponseSchema } from "./response";
+import { ApplicantRole, PermissionRole } from "../constants/index.js";
+import { SectionResponseSchema } from "./response.js";
 
 export const UserProfileBaseSchema = z.object({
   id: z.string().nonempty(),
