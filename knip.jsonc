@@ -3,6 +3,10 @@
   "tags": [
     "-lintignore"
   ],
+  "ignoreIssues": {
+    // shadcn interfaces
+    "frontend/src/components/ui/**": ["exports"]
+  },
   "workspaces": {
     ".": {}
   }
