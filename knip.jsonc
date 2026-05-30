@@ -11,6 +11,10 @@
     // shadcn interfaces
     "frontend/src/components/ui/**": ["exports"]
   },
+  "ignoreBinaries": [
+    // typically globally installed
+    "firebase"
+  ],
   "workspaces": {
     ".": {}
   }
