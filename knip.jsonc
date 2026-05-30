@@ -3,6 +3,10 @@
   "tags": [
     "-lintignore"
   ],
+  "ignoreDependencies": [
+    // firebase.json
+    "isolate-package"
+  ],
   "ignoreIssues": {
     // shadcn interfaces
     "frontend/src/components/ui/**": ["exports"]
