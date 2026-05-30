@@ -6,9 +6,7 @@ import {
   getAllApplicationResponsesByFormId,
   getApplicationResponseById,
   getApplicationResponses,
-  getAssignedApplicationResponsesByFormId,
 } from "@/services/applicationResponsesService";
-import { reviewCapable } from "@/services/reviewersService";
 import type { ApplicationForm, ApplicationResponse } from "@/types/types";
 
 import { useAuth } from "./useAuth";
@@ -55,23 +53,6 @@ export function useAllApplicationResponsesForForm(formId: string | undefined) {
     queryFn: () => {
       if (!formId) throw new Error("formId is required");
       return getAllApplicationResponsesByFormId(formId);
-    },
-  });
-}
-
-//gets all application responses for a given form assigned to the current reviewer
-export function useAssignedApplicationResponsesForForm(formId: string) {
-  const { user, isAuthed, isLoading } = useAuth();
-
-  return useQuery<ApplicationResponse[]>({
-    queryKey: ["responses", "assigned", user?.id, formId],
-    enabled: !isLoading && isAuthed && formId !== undefined,
-    queryFn: async () => {
-      if (!user || !reviewCapable(user))
-        throw new Error(
-          "Assigned application data is only available to reviewers!",
-        );
-      return getAssignedApplicationResponsesByFormId(formId, user.id);
     },
   });
 }

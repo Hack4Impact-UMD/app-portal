@@ -12,9 +12,7 @@ import {
   doc,
   getDoc,
   getDocs,
-  query,
   updateDoc,
-  where,
   writeBatch,
 } from "firebase/firestore";
 
@@ -149,18 +147,6 @@ export async function getUserById(id: string): Promise<UserProfile> {
   const userData = (await getDoc(userDoc)).data();
 
   return userData as UserProfile;
-}
-
-export async function getUserByEmail(email: string): Promise<UserProfile> {
-  const users = collection(db, USER_COLLECTION);
-  const q = query(users, where("email", "==", email));
-
-  const results = await getDocs(q);
-  if (!results.empty) {
-    return results.docs[0].data() as UserProfile;
-  } else {
-    throw new Error(`User with email ${email} does not exist!`);
-  }
 }
 
 export async function getAllUsers(): Promise<UserProfile[]> {

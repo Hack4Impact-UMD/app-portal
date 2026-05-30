@@ -1,12 +1,9 @@
-import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { ApplicationReviewData } from "@app-portal/shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import {
   getReviewDataById,
-  getReviewDataForApplicant,
-  getReviewDataForApplicantRole,
   getReviewDataForApplication,
   getReviewDataForForm,
   getReviewDataForReviewer,
@@ -77,33 +74,11 @@ export function useUpdateReviewData(reviewDataId: string) {
   });
 }
 
-export function useReviewDataForApplicant(formId: string, applicantId: string) {
-  return useQuery<ApplicationReviewData[]>({
-    queryKey: ["review-data", "applicant", formId, applicantId],
-    queryFn: () => {
-      return getReviewDataForApplicant(formId, applicantId);
-    },
-  });
-}
-
 export function useReviewDataForReviewer(formId: string, reviewerId: string) {
   return useQuery<ApplicationReviewData[]>({
     queryKey: ["review-data", "reviewer", formId, reviewerId],
     queryFn: () => {
       return getReviewDataForReviewer(formId, reviewerId);
-    },
-  });
-}
-
-export function useReviewDataForApplicantAndRole(
-  formId: string,
-  applicantId: string,
-  role: ApplicantRole,
-) {
-  return useQuery<ApplicationReviewData[]>({
-    queryKey: ["review-data", "applicant", "role", formId, applicantId],
-    queryFn: () => {
-      return getReviewDataForApplicantRole(formId, applicantId, role);
     },
   });
 }
