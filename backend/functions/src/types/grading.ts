@@ -2,20 +2,21 @@ import type { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 // TODO: we should do zod schemas to ensure typescript <-> firebase <-> golang conversions work as expected
+// and move these to shared once they become more relevant
 
 export enum GradingJobStatus {
   Queued = "queued",
-  Pending = "pending",
-  Cloning = "cloning",
-  Installing = "installing",
-  Building = "building",
-  Serving = "serving",
-  Testing = "testing",
+  // Pending = "pending",
+  // Cloning = "cloning",
+  // Installing = "installing",
+  // Building = "building",
+  // Serving = "serving",
+  // Testing = "testing",
   Completed = "completed",
   Failed = "failed",
 }
 
-export interface TestResult {
+interface TestResult {
   suite: string;
   testName: string;
   passed: boolean;
@@ -26,7 +27,7 @@ export interface TestResult {
   points: number;
 }
 
-export interface PublicTestResult {
+interface PublicTestResult {
   suiteName: string;
   passed: number;
   failed: number;
