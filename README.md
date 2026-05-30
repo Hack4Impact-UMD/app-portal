@@ -83,9 +83,7 @@ backend/
     pnpm --filter functions serve
     ```
 
-Additional Guides:
-- See the [Data Fetching Guide](./DataFetching.md).
-- See the [Firebase Emulator Setup Guide](./backend/README.md).
+In addition, see the [Firebase Emulator Setup Guide](./backend/README.md).
 
 ### Formatting
 
