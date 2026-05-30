@@ -39,42 +39,6 @@ export async function getReviewDataForApplication(
   return result.docs.map((doc) => doc.data() as ApplicationReviewData);
 }
 
-//NOTE: all of these functions take formId as a parameter since
-//it's necessary to specify which form to fetch reviews for. This allows
-//the system to easily work over multiple application cycles as review
-//data and responses for different forms are differentiated
-export async function getReviewDataForApplicant(
-  formId: string,
-  applicantId: string,
-) {
-  const reviewData = collection(db, REVIEW_DATA_COLLECTION);
-  const q = query(
-    reviewData,
-    where("applicantId", "==", applicantId),
-    where("applicationFormId", "==", formId),
-  );
-  const result = await getDocs(q);
-
-  return result.docs.map((doc) => doc.data() as ApplicationReviewData);
-}
-
-export async function getReviewDataForApplicantRole(
-  formId: string,
-  applicantId: string,
-  role: ApplicantRole,
-) {
-  const reviewData = collection(db, REVIEW_DATA_COLLECTION);
-  const q = query(
-    reviewData,
-    where("applicantId", "==", applicantId),
-    where("forRole", "==", role),
-    where("applicationFormId", "==", formId),
-  );
-  const result = await getDocs(q);
-
-  return result.docs.map((doc) => doc.data() as ApplicationReviewData);
-}
-
 export async function getReviewDataForAssignment(
   assignment: AppReviewAssignment,
 ) {

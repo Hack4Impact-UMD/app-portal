@@ -22,7 +22,6 @@ import { API_URL, db } from "@/config/firebase";
 import type { ApplicationForm, ApplicationResponse } from "@/types/types";
 
 import { getAppCheckToken } from "./appCheckService";
-import { getReviewAssignments } from "./reviewAssignmentService";
 
 const APPLICATION_RESPONSES_COLLECTION = "application-responses";
 
@@ -97,30 +96,6 @@ export async function getAllApplicationResponsesByFormId(
   const results = await getDocs(q);
 
   return results.docs.map((d) => d.data() as ApplicationResponse);
-}
-
-export async function getAssignedApplicationResponsesByFormId(
-  formId: string,
-  reviewerId: string,
-): Promise<ApplicationResponse[]> {
-  const assignments = (await getReviewAssignments(formId, reviewerId)).filter(
-    (a) => a.assignmentType === "review",
-  );
-  const responses = collection(db, APPLICATION_RESPONSES_COLLECTION);
-
-  if (assignments.length === 0) return [];
-
-  const q = query(
-    responses,
-    where(
-      "id",
-      "in",
-      assignments.map((a) => a.applicationResponseId),
-    ),
-  );
-  const res = await getDocs(q);
-
-  return res.docs.map((d) => d.data() as ApplicationResponse);
 }
 
 export async function fetchOrCreateApplicationResponse(

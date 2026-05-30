@@ -29,7 +29,7 @@ import type {
 
 import { getAppCheckToken } from "./appCheckService";
 
-export const USER_COLLECTION = "users";
+const USER_COLLECTION = "users";
 
 export async function sendVerificationEmail(user: User) {
   try {
