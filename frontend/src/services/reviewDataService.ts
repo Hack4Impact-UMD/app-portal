@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { db } from "@/config/firebase";
 
-export const REVIEW_DATA_COLLECTION = "review-data";
+const REVIEW_DATA_COLLECTION = "review-data";
 
 export async function getReviewDataById(id: string) {
   const reviewData = collection(db, REVIEW_DATA_COLLECTION);

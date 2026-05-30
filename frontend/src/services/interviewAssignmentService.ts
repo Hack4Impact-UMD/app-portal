@@ -16,7 +16,7 @@ import { db } from "@/config/firebase";
 
 import { getApplicationResponseById } from "./applicationResponsesService";
 
-export const INTERVIEW_ASSIGNMENT_COLLECTION = "interview-assignments";
+const INTERVIEW_ASSIGNMENT_COLLECTION = "interview-assignments";
 
 export async function assignInterview(
   responseId: string,
