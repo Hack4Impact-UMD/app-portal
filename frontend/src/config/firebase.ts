@@ -1,4 +1,3 @@
-import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
 import {
   initializeAppCheck,
@@ -11,7 +10,7 @@ import { connectStorageEmulator, getStorage } from "firebase/storage";
 const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY;
 
-export const firebaseConfig = {
+const firebaseConfig = {
   apiKey: FIREBASE_API_KEY,
   authDomain: "h4i-applications.firebaseapp.com",
   projectId: "h4i-applications",
@@ -53,7 +52,6 @@ export const appCheck = initializeAppCheck(app, {
   isTokenAutoRefreshEnabled: true,
 });
 
-export const analytics = getAnalytics(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);

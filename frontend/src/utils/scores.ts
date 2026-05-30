@@ -56,7 +56,7 @@ export function calculateInterviewScore(
   return calculateScore(weightsForRole, interview.interviewScores);
 }
 
-export function calculateScore(
+function calculateScore(
   weights: Record<string, number>,
   scores: Record<string, number>,
 ): number {

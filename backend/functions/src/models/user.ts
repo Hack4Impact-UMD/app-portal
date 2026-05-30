@@ -5,7 +5,7 @@ import { z } from "zod";
 
 // TODO: backend type does not distinguish between user permission roles
 // and it definitely should, but don't want to bundle in current PR
-export const UserProfileSchema = UserProfileBaseSchema.extend({
+const UserProfileSchema = UserProfileBaseSchema.extend({
   role: z.enum(PermissionRole),
   dateCreated: z.custom<Timestamp>((d) => d instanceof Timestamp),
   activeApplications: z.array(z.string()).optional(),

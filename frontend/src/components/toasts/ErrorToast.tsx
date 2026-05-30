@@ -6,7 +6,7 @@ type ErrorToastProps = {
   closeToast?: () => void;
 };
 
-export function ErrorToast({ message, closeToast }: ErrorToastProps) {
+function ErrorToast({ message, closeToast }: ErrorToastProps) {
   return (
     <div className="bg-red-100 text-red-800 border border-red-300 rounded-xl shadow-lg p-4 flex items-center gap-2 max-w-md z-50">
       <CircleAlert className="size-6" />

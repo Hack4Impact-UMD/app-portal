@@ -49,7 +49,7 @@ type ReviewerSearchPopoverProps = {
   responseId: string;
 };
 
-export function ReviewerSearchPopover({
+function ReviewerSearchPopover({
   role,
   responseId,
   onSelect,

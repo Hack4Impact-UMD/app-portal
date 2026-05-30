@@ -1,7 +1,7 @@
 import { TriangleAlert, XIcon } from "lucide-react";
 import { toast } from "react-toastify";
 
-export default function WarningToast({
+function WarningToast({
   message,
   closeToast,
 }: {
