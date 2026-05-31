@@ -4,7 +4,7 @@
     "packageManager": "pnpm@10.33.0",
     "scripts": {
         "build": "pnpm -r build",
-        "checks": "concurrently \"pnpm format:check:all\" \"pnpm lint:all\" \"pnpm typecheck\"",
+        "checks": "concurrently \"pnpm format:check:all\" \"pnpm lint:all\" \"pnpm typecheck\" \"pnpm knip\"",
         "typecheck": "pnpm -r typecheck",
         "lint": "pnpm -r lint",
         "lint:fix": "pnpm -r lint:fix",
@@ -12,7 +12,8 @@
         "format": "pnpm -r format",
         "format:check": "pnpm -r format:check",
         "format:check:all": "pnpm -r --no-bail format:check",
-        "knip": "knip"
+        "knip": "knip",
+        "knip:fix": "knip --fix"
     },
     "devDependencies": {
         "@types/node": "^25.9.1",
