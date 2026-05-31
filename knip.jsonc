@@ -4,8 +4,9 @@
     "-lintignore"
   ],
   "ignoreDependencies": [
-    // firebase.json
-    "isolate-package"
+    // firebase deployment
+    "isolate-package",
+    "@google-cloud/functions-framework"
   ],
   "ignoreIssues": {
     // shadcn interfaces

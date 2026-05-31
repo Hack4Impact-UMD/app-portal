@@ -24,6 +24,7 @@
   "main": "lib/index.js",
   "dependencies": {
     "@app-portal/shared": "workspace:*",
+    "@google-cloud/functions-framework": "^5.0.2",
     "@google-cloud/tasks": "^6.2.1",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
