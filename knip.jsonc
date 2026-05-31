@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "tags": [
+    "-lintignore"
+  ],
+  "ignoreDependencies": [
+    // firebase.json
+    "isolate-package"
+  ],
+  "ignoreIssues": {
+    // shadcn interfaces
+    "frontend/src/components/ui/**": ["exports"]
+  },
+  "ignoreBinaries": [
+    // typically globally installed
+    "firebase"
+  ],
+  "workspaces": {
+    ".": {}
+  }
+}

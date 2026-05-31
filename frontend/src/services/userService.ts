@@ -12,9 +12,7 @@ import {
   doc,
   getDoc,
   getDocs,
-  query,
   updateDoc,
-  where,
   writeBatch,
 } from "firebase/firestore";
 
@@ -31,7 +29,7 @@ import type {
 
 import { getAppCheckToken } from "./appCheckService";
 
-export const USER_COLLECTION = "users";
+const USER_COLLECTION = "users";
 
 export async function sendVerificationEmail(user: User) {
   try {
@@ -151,31 +149,11 @@ export async function getUserById(id: string): Promise<UserProfile> {
   return userData as UserProfile;
 }
 
-export async function getUserByEmail(email: string): Promise<UserProfile> {
-  const users = collection(db, USER_COLLECTION);
-  const q = query(users, where("email", "==", email));
-
-  const results = await getDocs(q);
-  if (!results.empty) {
-    return results.docs[0].data() as UserProfile;
-  } else {
-    throw new Error(`User with email ${email} does not exist!`);
-  }
-}
-
 export async function getAllUsers(): Promise<UserProfile[]> {
   const users = collection(db, USER_COLLECTION);
   const results = await getDocs(users);
 
   return results.docs.map((d) => d.data() as UserProfile);
-}
-
-export async function updateUserRole(userId: string, role: PermissionRole) {
-  const users = collection(db, USER_COLLECTION);
-  const userDoc = doc(users, userId);
-  await updateDoc(userDoc, {
-    role: role,
-  });
 }
 
 export async function updateUserRoles(
@@ -252,7 +230,7 @@ export async function setReviewCapableUserRolePreferences(
   }
 }
 
-export async function setReviewerRolePreferences(
+async function setReviewerRolePreferences(
   reviewerId: string,
   prefs: ApplicantRole[],
 ) {
@@ -294,10 +272,6 @@ export function onAuthStateChange(
   return auth.onAuthStateChanged((userInfo) => {
     handler(userInfo);
   });
-}
-
-export function authStateSnapshot() {
-  return auth.currentUser;
 }
 
 export async function createInternalApplicant(

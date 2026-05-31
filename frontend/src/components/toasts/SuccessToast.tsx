@@ -6,10 +6,7 @@ type SuccessToastProps = {
   closeToast?: () => void;
 };
 
-export default function SuccessToast({
-  message,
-  closeToast,
-}: SuccessToastProps) {
+function SuccessToast({ message, closeToast }: SuccessToastProps) {
   return (
     <div className="bg-green-100 text-black border border-green-300 rounded-xl shadow-lg p-4 flex items-center justify-center gap-2 max-w-md z-50">
       <CheckIcon className="size-6 text-green-500" />

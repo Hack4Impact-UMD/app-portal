@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { db } from "@/config/firebase";
 
-export const INTERVIEW_DATA_COLLECTION = "interview-data";
+const INTERVIEW_DATA_COLLECTION = "interview-data";
 
 export async function getInterviewDataForResponseRole(
   formId: string,

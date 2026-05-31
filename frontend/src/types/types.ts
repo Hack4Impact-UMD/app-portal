@@ -21,7 +21,7 @@ export type ReviewerUserProfile =
 
 export type BoardUserProfile = ProfileWithClientTimestamp<BoardUserProfileBase>;
 
-export type SuperReviewerUserProfile =
+type SuperReviewerUserProfile =
   ProfileWithClientTimestamp<SuperReviewerUserProfileBase>;
 
 export type UserProfile =

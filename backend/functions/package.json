@@ -24,7 +24,6 @@
   "main": "lib/index.js",
   "dependencies": {
     "@app-portal/shared": "workspace:*",
-    "@google-cloud/functions-framework": "^5.0.2",
     "@google-cloud/tasks": "^6.2.1",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
@@ -39,8 +38,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
     "@types/node": "^25.9.1",
-    "esbuild": "^0.28.0",
-    "firebase-functions-test": "^3.1.0"
+    "esbuild": "^0.28.0"
   },
   "private": true
 }

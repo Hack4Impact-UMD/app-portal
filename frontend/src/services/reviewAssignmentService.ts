@@ -5,12 +5,10 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDoc,
   getDocs,
   query,
   setDoc,
   where,
-  writeBatch,
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
@@ -73,15 +71,6 @@ export async function getReviewAssignments(
   return res.docs.map((d) => d.data() as AppReviewAssignment);
 }
 
-export async function getReviewAssignmentById(
-  assignmentId: string,
-): Promise<AppReviewAssignment | undefined> {
-  const assignments = collection(db, REVIEW_ASSIGNMENT_COLLECTION);
-  const docRef = doc(assignments, assignmentId);
-
-  return (await getDoc(docRef)).data() as AppReviewAssignment | undefined;
-}
-
 export async function getReviewAssignmentsForApplication(
   responseId: string,
 ): Promise<AppReviewAssignment[]> {
@@ -99,23 +88,4 @@ export async function getReviewAssignmentsForForm(formId: string) {
   const q = query(assignments, where("formId", "==", formId));
 
   return (await getDocs(q)).docs.map((d) => d.data() as AppReviewAssignment);
-}
-
-export async function batchAssignReviews(
-  assignments: AppReviewAssignment[],
-): Promise<void> {
-  const assignmentsCollection = collection(db, REVIEW_ASSIGNMENT_COLLECTION);
-
-  const chunkSize = 250;
-
-  for (let i = 0; i < assignments.length; i += chunkSize) {
-    const chunk = assignments.slice(i, i + chunkSize);
-    const batch = writeBatch(db);
-
-    chunk.forEach((assignment) => {
-      batch.set(doc(assignmentsCollection, assignment.id), assignment);
-    });
-
-    await batch.commit();
-  }
 }

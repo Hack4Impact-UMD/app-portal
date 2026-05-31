@@ -5,7 +5,6 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDoc,
   getDocs,
   query,
   setDoc,
@@ -17,7 +16,7 @@ import { db } from "@/config/firebase";
 
 import { getApplicationResponseById } from "./applicationResponsesService";
 
-export const INTERVIEW_ASSIGNMENT_COLLECTION = "interview-assignments";
+const INTERVIEW_ASSIGNMENT_COLLECTION = "interview-assignments";
 
 export async function assignInterview(
   responseId: string,
@@ -70,15 +69,6 @@ export async function getInterviewAssignments(
   const res = await getDocs(q);
 
   return res.docs.map((d) => d.data() as InterviewAssignment);
-}
-
-export async function getInterviewAssignmentById(
-  assignmentId: string,
-): Promise<InterviewAssignment | undefined> {
-  const assignments = collection(db, INTERVIEW_ASSIGNMENT_COLLECTION);
-  const docRef = doc(assignments, assignmentId);
-
-  return (await getDoc(docRef)).data() as InterviewAssignment | undefined;
 }
 
 export async function getInterviewAssignmentsForApplication(
