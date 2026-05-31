@@ -51,7 +51,7 @@ export async function uploadRubrics(
 export function validateRubricScoreKeys(
   rubrics: RoleReviewRubric[],
   form: ApplicationForm,
-  isInterview: boolean = false,
+  isInterview = false,
 ): RubricValidationWarnings {
   const weights = isInterview ? form.interviewScoreWeights : form.scoreWeights;
   if (!weights) {

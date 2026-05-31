@@ -17,7 +17,7 @@ export function useAllApplicationForms() {
   });
 }
 
-export function useApplicationForm(formId?: string, refetch: boolean = true) {
+export function useApplicationForm(formId?: string, refetch = true) {
   return useQuery<ApplicationForm>({
     queryKey: ["form", formId],
     queryFn: () => getApplicationForm(formId!),

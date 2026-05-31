@@ -19,7 +19,7 @@ function SuccessToast({ message, closeToast }: SuccessToastProps) {
   );
 }
 
-export function throwSuccessToast(message: string, autoClose: number = 2000) {
+export function throwSuccessToast(message: string, autoClose = 2000) {
   toast.success(<SuccessToast message={message} />, {
     closeButton: false,
     hideProgressBar: true,
