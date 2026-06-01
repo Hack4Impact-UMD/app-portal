@@ -1,7 +1,9 @@
-import { PermissionRole } from "@app-portal/shared/constants";
+import {
+  FirestoreCollection,
+  PermissionRole,
+} from "@app-portal/shared/constants";
 import type { Response, Request } from "express";
 import { Router } from "express";
-import type { CollectionReference } from "firebase-admin/firestore";
 import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { v4 as uuidv4 } from "uuid";
@@ -14,19 +16,11 @@ import {
 } from "../middleware/authentication";
 import { validateSchema } from "../middleware/validation";
 import type { ApplicationResponse } from "../models/appResponse";
-import type {
-  GradingJobPublic,
-  GradingJobDataInternal,
-} from "../types/grading";
 import { submitGradingJobSchema, GradingJobStatus } from "../types/grading";
 import { publishGradingTask } from "../utils/cloudTasks";
+import { appCollection } from "../utils/firestore";
 
 const router = Router();
-
-// TODO: we should have a centralized file for importing these to avoid duplication
-const GRADING_JOBS_PUBLIC_COLLECTION = "grading-jobs-public";
-const GRADING_JOBS_INTERNAL_COLLECTION = "grading-jobs-internal";
-const APPLICATION_RESPONSES_COLLECTION = "application-responses";
 
 router.post(
   "/submit",
@@ -51,15 +45,15 @@ router.post(
 
       logger.info(`Received autograder request for responseId ${responseId}`);
 
-      const applicationResponseCollection = db.collection(
-        APPLICATION_RESPONSES_COLLECTION,
-      ) as CollectionReference<ApplicationResponse>;
-      const gradingJobsPublicCollection = db.collection(
-        GRADING_JOBS_PUBLIC_COLLECTION,
-      ) as CollectionReference<GradingJobPublic>;
-      const gradingJobsInternalCollection = db.collection(
-        GRADING_JOBS_INTERNAL_COLLECTION,
-      ) as CollectionReference<GradingJobDataInternal>;
+      const applicationResponseCollection = appCollection(
+        FirestoreCollection.ApplicationResponses,
+      );
+      const gradingJobsPublicCollection = appCollection(
+        FirestoreCollection.GradingJobsPublic,
+      );
+      const gradingJobsInternalCollection = appCollection(
+        FirestoreCollection.GradingJobsInternal,
+      );
 
       const responseDoc = await applicationResponseCollection
         .doc(responseId)
@@ -70,9 +64,15 @@ router.post(
         return res.status(404).send("Application response not found");
       }
 
-      const responseData = responseDoc.data() as ApplicationResponse;
+      const responseData: ApplicationResponse | undefined = responseDoc.data();
+      if (!responseData) {
+        logger.warn(
+          `Attempted to retrieve response with id: ${responseId} unsuccessfully`,
+        );
+        return res.status(404).send("Application response not found");
+      }
 
-      const isOwner = responseData?.userId === userId;
+      const isOwner = responseData.userId === userId;
       const isAdmin = [
         PermissionRole.Board,
         PermissionRole.SuperReviewer,

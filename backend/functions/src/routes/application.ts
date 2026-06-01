@@ -1,5 +1,6 @@
 import {
   ApplicationStatus,
+  FirestoreCollection,
   QuestionType,
   ReviewStatus,
   PermissionRole,
@@ -19,7 +20,6 @@ import {
 } from "@app-portal/shared/types";
 import type { Request, Response } from "express";
 import { Router } from "express";
-import type { CollectionReference } from "firebase-admin/firestore";
 import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { v4 as uuidv4 } from "uuid";
@@ -30,15 +30,10 @@ import { hasRoles, isAuthenticated } from "../middleware/authentication";
 import { validateSchema } from "../middleware/validation";
 import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
+import { appCollection } from "../utils/firestore";
 // import * as admin from "firebase-admin"
 
 const router = Router();
-
-const APPLICATION_RESPONSE_COLLECTION = "application-responses";
-const APPLICATION_FORMS_COLLECTION = "application-forms";
-const APPLICATION_STATUS_COLLECTION = "app-status";
-const RUBRICS_COLLECTION = "rubrics";
-const INTERVIEW_RUBRICS_COLLECTION = "interview-rubrics";
 
 interface QuestionMetadata {
   optional: boolean;
@@ -192,22 +187,27 @@ router.post(
       logger.info(`${req.token?.email} is submitting an application!`);
 
       // initialize connections to collections
-      const applicationResponseCollection = db.collection(
-        APPLICATION_RESPONSE_COLLECTION,
-      ) as CollectionReference<ApplicationResponse>;
-      const applicationFormCollection = db.collection(
-        APPLICATION_FORMS_COLLECTION,
-      ) as CollectionReference<ApplicationForm>;
-      const statusCollection = db.collection(
-        APPLICATION_STATUS_COLLECTION,
-      ) as CollectionReference<InternalApplicationStatus>;
+      const applicationResponseCollection = appCollection(
+        FirestoreCollection.ApplicationResponses,
+      );
+      const applicationFormCollection = appCollection(
+        FirestoreCollection.ApplicationForms,
+      );
+      const statusCollection = appCollection(
+        FirestoreCollection.ApplicationStatus,
+      );
 
       // check that the correct user is updating the application
       const applicationDoc = await applicationResponseCollection
         .doc(applicationResponse.id)
         .get();
-      const formattedApplicationDoc =
-        applicationDoc.data() as ApplicationResponse;
+      const formattedApplicationDoc: ApplicationResponse | undefined =
+        applicationDoc.data();
+      if (!formattedApplicationDoc) {
+        logger.warn(`Application response ${applicationResponse.id} not found`);
+        return res.status(404).send("Application response not found");
+      }
+
       if (formattedApplicationDoc.userId !== req.token?.uid) {
         return res
           .status(403)
@@ -218,10 +218,17 @@ router.post(
       const applicationFormDoc = await applicationFormCollection
         .doc(formattedApplicationDoc.applicationFormId)
         .get();
-      const applicationFormDocData = applicationFormDoc.data();
+      const applicationFormDocData: ApplicationForm | undefined =
+        applicationFormDoc.data();
+      if (!applicationFormDocData) {
+        logger.warn(
+          `Application form ${formattedApplicationDoc.applicationFormId} not found`,
+        );
+        return res.status(404).send("Application form not found");
+      }
 
       const currentTime = Timestamp.now();
-      const dueDate = applicationFormDocData!.dueDate;
+      const dueDate = applicationFormDocData.dueDate;
       if (currentTime > dueDate) {
         logger.warn(
           "Submission deadline passed for form:" + applicationFormDocData?.id,
@@ -326,12 +333,12 @@ router.put(
         return;
       }
 
-      const appCollection = db.collection(
-        APPLICATION_RESPONSE_COLLECTION,
-      ) as CollectionReference<ApplicationResponse>;
+      const applicationResponsesCollection = appCollection(
+        FirestoreCollection.ApplicationResponses,
+      );
 
-      const existingResp = (
-        await appCollection.doc(newAppResponse.id).get()
+      const existingResp: ApplicationResponse | undefined = (
+        await applicationResponsesCollection.doc(newAppResponse.id).get()
       ).data();
 
       if (!existingResp) {
@@ -352,7 +359,9 @@ router.put(
         return;
       }
 
-      await appCollection.doc(existingResp.id).set(newAppResponse);
+      await applicationResponsesCollection
+        .doc(existingResp.id)
+        .set(newAppResponse);
       logger.info(
         `Saved ApplicationResponse with ID: ${newAppResponse.id} for user ${newAppResponse.userId}`,
       );
@@ -374,12 +383,12 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       const formData = req.body as ApplicationForm;
-      const formsCollection = db.collection(
-        APPLICATION_FORMS_COLLECTION,
-      ) as CollectionReference<ApplicationForm>;
-      const responsesCollection = db.collection(
-        APPLICATION_RESPONSE_COLLECTION,
-      ) as CollectionReference<ApplicationResponse>;
+      const formsCollection = appCollection(
+        FirestoreCollection.ApplicationForms,
+      );
+      const responsesCollection = appCollection(
+        FirestoreCollection.ApplicationResponses,
+      );
 
       const existingFormDoc = await formsCollection.doc(formData.id).get();
       const existingResponses =
@@ -390,7 +399,13 @@ router.post(
         ).docs.length > 0;
 
       if (existingFormDoc.exists && existingResponses) {
-        const existingForm = existingFormDoc.data() as ApplicationForm;
+        const existingForm: ApplicationForm | undefined =
+          existingFormDoc.data();
+        if (!existingForm) {
+          logger.warn(`Existing form ${formData.id} could not be retrieved`);
+          return res.status(400).send("Existing form could not be retrieved");
+        }
+
         const existingSectionIds = existingForm.sections.map(
           (s) => s.sectionId,
         );
@@ -501,14 +516,9 @@ router.post(
 
       const formId = [...formIds][0];
 
-      const rubricsCollection = db.collection(
-        RUBRICS_COLLECTION,
-      ) as CollectionReference<RoleReviewRubric>;
+      const rubricsCollection = appCollection(FirestoreCollection.Rubrics);
       const existingRubricsForForm = (
-        await db
-          .collection(RUBRICS_COLLECTION)
-          .where("formId", "==", formId)
-          .get()
+        await rubricsCollection.where("formId", "==", formId).get()
       ).docs;
 
       await db.runTransaction(async (transaction) => {
@@ -575,14 +585,11 @@ router.post(
 
       const formId = [...formIds][0];
 
-      const rubricsCollection = db.collection(
-        INTERVIEW_RUBRICS_COLLECTION,
-      ) as CollectionReference<RoleReviewRubric>;
+      const rubricsCollection = appCollection(
+        FirestoreCollection.InterviewRubrics,
+      );
       const existingRubricsForForm = (
-        await db
-          .collection(INTERVIEW_RUBRICS_COLLECTION)
-          .where("formId", "==", formId)
-          .get()
+        await rubricsCollection.where("formId", "==", formId).get()
       ).docs;
 
       await db.runTransaction(async (transaction) => {
