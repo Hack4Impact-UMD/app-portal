@@ -1,10 +1,11 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import { ReviewStatus } from "@app-portal/shared/constants";
+import {
+  FirestoreCollection,
+  ReviewStatus,
+} from "@app-portal/shared/constants";
 import type { InternalApplicationStatus } from "@app-portal/shared/types";
 import axios from "axios";
-import type { CollectionReference } from "firebase/firestore";
 import {
-  collection,
   doc,
   getDocs,
   query,
@@ -16,8 +17,7 @@ import {
 import { API_URL, db } from "@/config/firebase";
 
 import { getAppCheckToken } from "./appCheckService";
-
-const STATUS_COLLECTION = "app-status";
+import { appCollection } from "./firestore";
 
 export async function getApplicationStatus(
   token: string,
@@ -40,19 +40,16 @@ export async function getApplicationStatus(
 }
 
 export async function getAllApplicationStatusesForForm(formId: string) {
-  const statusCollection = collection(db, STATUS_COLLECTION);
+  const statusCollection = appCollection(FirestoreCollection.ApplicationStatus);
   const q = query(statusCollection, where("formId", "==", formId));
   const docsSnap = await getDocs(q);
-  return docsSnap.docs.map((d) => d.data() as InternalApplicationStatus);
+  return docsSnap.docs.map((d) => d.data());
 }
 
 export async function rejectUndecidedApplicantsForForm(formId: string) {
   const statuses = await getAllApplicationStatusesForForm(formId);
   const undecided = statuses.filter((s) => !isDecided(s.status));
-  const statusCollection = collection(
-    db,
-    STATUS_COLLECTION,
-  ) as CollectionReference<InternalApplicationStatus>;
+  const statusCollection = appCollection(FirestoreCollection.ApplicationStatus);
 
   const chunkSize = 250;
 
@@ -84,10 +81,7 @@ export async function getApplicationStatusForResponseRole(
   responseId: string,
   role: ApplicantRole,
 ) {
-  const statusCollection = collection(
-    db,
-    STATUS_COLLECTION,
-  ) as CollectionReference<InternalApplicationStatus>;
+  const statusCollection = appCollection(FirestoreCollection.ApplicationStatus);
   const q = query(
     statusCollection,
     where("role", "==", role),
@@ -101,10 +95,7 @@ export async function getApplicationStatusForResponseRole(
 }
 
 export async function getApplicationStatusById(statusId: string) {
-  const statusCollection = collection(
-    db,
-    STATUS_COLLECTION,
-  ) as CollectionReference<InternalApplicationStatus>;
+  const statusCollection = appCollection(FirestoreCollection.ApplicationStatus);
   const q = query(statusCollection, where("id", "==", statusId));
 
   const resp = (await getDocs(q)).docs.map((d) => d.data());
@@ -117,10 +108,7 @@ export async function updateApplicationStatus(
   statusId: string,
   update: Partial<Omit<InternalApplicationStatus, "id">>,
 ) {
-  const statusCollection = collection(
-    db,
-    STATUS_COLLECTION,
-  ) as CollectionReference<InternalApplicationStatus>;
+  const statusCollection = appCollection(FirestoreCollection.ApplicationStatus);
   const statusDoc = doc(statusCollection, statusId);
   await updateDoc(statusDoc, update);
 }
@@ -128,14 +116,16 @@ export async function updateApplicationStatus(
 // Helper to fetch all qualified statuses for a form
 export async function getQualifiedStatusesForForm(formId: string) {
   try {
-    const statusCollection = collection(db, STATUS_COLLECTION);
+    const statusCollection = appCollection(
+      FirestoreCollection.ApplicationStatus,
+    );
     const q = query(
       statusCollection,
       where("formId", "==", formId),
       where("isQualified", "==", true),
     );
     const docsSnap = await getDocs(q);
-    return docsSnap.docs.map((d) => d.data() as InternalApplicationStatus);
+    return docsSnap.docs.map((d) => d.data());
   } catch (error) {
     console.error("Failed to fetch qualified statuses:", error);
     throw error;
@@ -148,7 +138,9 @@ export async function getQualifiedStatusesForFormRoles(
 ) {
   if (roles.length === 0) return [];
   try {
-    const statusCollection = collection(db, STATUS_COLLECTION);
+    const statusCollection = appCollection(
+      FirestoreCollection.ApplicationStatus,
+    );
     const q = query(
       statusCollection,
       where("formId", "==", formId),
@@ -156,7 +148,7 @@ export async function getQualifiedStatusesForFormRoles(
       where("role", "in", roles),
     );
     const docsSnap = await getDocs(q);
-    return docsSnap.docs.map((d) => d.data() as InternalApplicationStatus);
+    return docsSnap.docs.map((d) => d.data());
   } catch (error) {
     console.error("Failed to fetch qualified statuses:", error);
     throw error;

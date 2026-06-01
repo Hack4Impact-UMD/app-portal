@@ -1,10 +1,10 @@
+import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
 } from "@app-portal/shared/types";
 import {
-  collection,
   doc,
   getDoc,
   getDocs,
@@ -15,12 +15,10 @@ import {
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
-import { db } from "@/config/firebase";
-
-const REVIEW_DATA_COLLECTION = "review-data";
+import { appCollection } from "./firestore";
 
 export async function getReviewDataById(id: string) {
-  const reviewData = collection(db, REVIEW_DATA_COLLECTION);
+  const reviewData = appCollection(FirestoreCollection.ReviewData);
   const docRef = doc(reviewData, id);
 
   return (await getDoc(docRef)).data() as ApplicationReviewData;
@@ -29,20 +27,20 @@ export async function getReviewDataById(id: string) {
 export async function getReviewDataForApplication(
   applicationResponseId: string,
 ) {
-  const reviewData = collection(db, REVIEW_DATA_COLLECTION);
+  const reviewData = appCollection(FirestoreCollection.ReviewData);
   const q = query(
     reviewData,
     where("applicationResponseId", "==", applicationResponseId),
   );
   const result = await getDocs(q);
 
-  return result.docs.map((doc) => doc.data() as ApplicationReviewData);
+  return result.docs.map((doc) => doc.data());
 }
 
 export async function getReviewDataForAssignment(
   assignment: AppReviewAssignment,
 ) {
-  const reviewData = collection(db, REVIEW_DATA_COLLECTION);
+  const reviewData = appCollection(FirestoreCollection.ReviewData);
   const q = query(
     reviewData,
     where("applicantId", "==", assignment.applicantId),
@@ -54,13 +52,13 @@ export async function getReviewDataForAssignment(
 
   if (result.docs.length < 1) return undefined;
 
-  return result.docs[0].data() as ApplicationReviewData;
+  return result.docs[0].data();
 }
 
 export async function createReviewData(
   review: Omit<ApplicationReviewData, "id">,
 ) {
-  const reviewData = collection(db, REVIEW_DATA_COLLECTION);
+  const reviewData = appCollection(FirestoreCollection.ReviewData);
   const id = uuidv4();
   const reviewDoc: ApplicationReviewData = {
     id: id,
@@ -77,7 +75,7 @@ export async function updateReviewData(
   reviewDataId: string,
   update: Partial<Omit<ApplicationReviewData, "id">>,
 ) {
-  const reviewData = collection(db, REVIEW_DATA_COLLECTION);
+  const reviewData = appCollection(FirestoreCollection.ReviewData);
   const reviewRef = doc(reviewData, reviewDataId);
 
   await updateDoc(reviewRef, update);
@@ -87,7 +85,7 @@ export async function getReviewDataForReviewer(
   formId: string,
   reviewerId: string,
 ) {
-  const reviewData = collection(db, REVIEW_DATA_COLLECTION);
+  const reviewData = appCollection(FirestoreCollection.ReviewData);
   const q = query(
     reviewData,
     where("reviewerId", "==", reviewerId),
@@ -95,7 +93,7 @@ export async function getReviewDataForReviewer(
   );
   const result = await getDocs(q);
 
-  return result.docs.map((doc) => doc.data() as ApplicationReviewData);
+  return result.docs.map((doc) => doc.data());
 }
 
 export async function getReviewDataForResponseRole(
@@ -103,7 +101,7 @@ export async function getReviewDataForResponseRole(
   responseId: string,
   role: ApplicantRole,
 ) {
-  const reviewData = collection(db, REVIEW_DATA_COLLECTION);
+  const reviewData = appCollection(FirestoreCollection.ReviewData);
   const q = query(
     reviewData,
     where("applicationFormId", "==", formId),
@@ -112,13 +110,13 @@ export async function getReviewDataForResponseRole(
   );
   const result = await getDocs(q);
 
-  return result.docs.map((doc) => doc.data() as ApplicationReviewData);
+  return result.docs.map((doc) => doc.data());
 }
 
 export async function getReviewDataForForm(formId: string) {
-  const reviewData = collection(db, REVIEW_DATA_COLLECTION);
+  const reviewData = appCollection(FirestoreCollection.ReviewData);
   const q = query(reviewData, where("applicationFormId", "==", formId));
   const result = await getDocs(q);
 
-  return result.docs.map((doc) => doc.data() as ApplicationReviewData);
+  return result.docs.map((doc) => doc.data());
 }

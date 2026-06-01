@@ -1,8 +1,8 @@
+import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { InterviewAssignment } from "@app-portal/shared/types";
 import {
   and,
-  collection,
   deleteDoc,
   doc,
   getDocs,
@@ -12,11 +12,8 @@ import {
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
-import { db } from "@/config/firebase";
-
 import { getApplicationResponseById } from "./applicationResponsesService";
-
-const INTERVIEW_ASSIGNMENT_COLLECTION = "interview-assignments";
+import { appCollection } from "./firestore";
 
 export async function assignInterview(
   responseId: string,
@@ -40,14 +37,14 @@ export async function assignInterview(
     interviewerId: interviewerId,
   };
 
-  const assignments = collection(db, INTERVIEW_ASSIGNMENT_COLLECTION);
+  const assignments = appCollection(FirestoreCollection.InterviewAssignments);
   await setDoc(doc(assignments, interviewAssignment.id), interviewAssignment);
 
   return interviewAssignment;
 }
 
 export async function removeInterviewAssignment(assignmentId: string) {
-  const assignments = collection(db, INTERVIEW_ASSIGNMENT_COLLECTION);
+  const assignments = appCollection(FirestoreCollection.InterviewAssignments);
   const assignment = doc(assignments, assignmentId);
   await deleteDoc(assignment);
 }
@@ -56,7 +53,7 @@ export async function getInterviewAssignments(
   formId: string,
   interviewerId: string,
 ): Promise<InterviewAssignment[]> {
-  const assignments = collection(db, INTERVIEW_ASSIGNMENT_COLLECTION);
+  const assignments = appCollection(FirestoreCollection.InterviewAssignments);
   const q = query(
     assignments,
     and(
@@ -68,24 +65,24 @@ export async function getInterviewAssignments(
 
   const res = await getDocs(q);
 
-  return res.docs.map((d) => d.data() as InterviewAssignment);
+  return res.docs.map((d) => d.data());
 }
 
 export async function getInterviewAssignmentsForApplication(
   responseId: string,
 ): Promise<InterviewAssignment[]> {
-  const assignments = collection(db, INTERVIEW_ASSIGNMENT_COLLECTION);
+  const assignments = appCollection(FirestoreCollection.InterviewAssignments);
   const q = query(
     assignments,
     where("applicationResponseId", "==", responseId),
   );
 
-  return (await getDocs(q)).docs.map((d) => d.data() as InterviewAssignment);
+  return (await getDocs(q)).docs.map((d) => d.data());
 }
 
 export async function getInterviewAssignmentsForForm(formId: string) {
-  const assignments = collection(db, INTERVIEW_ASSIGNMENT_COLLECTION);
+  const assignments = appCollection(FirestoreCollection.InterviewAssignments);
   const q = query(assignments, where("formId", "==", formId));
 
-  return (await getDocs(q)).docs.map((d) => d.data() as InterviewAssignment);
+  return (await getDocs(q)).docs.map((d) => d.data());
 }

@@ -1,4 +1,8 @@
-import { ApplicationStatus, QuestionType } from "@app-portal/shared/constants";
+import {
+  ApplicationStatus,
+  FirestoreCollection,
+  QuestionType,
+} from "@app-portal/shared/constants";
 import type {
   SectionResponse,
   ValidationError,
@@ -8,7 +12,6 @@ import {
   setDoc,
   Timestamp,
   arrayUnion,
-  collection,
   doc,
   getDocs,
   query,
@@ -18,12 +21,11 @@ import {
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
-import { API_URL, db } from "@/config/firebase";
+import { API_URL } from "@/config/firebase";
 import type { ApplicationForm, ApplicationResponse } from "@/types/types";
 
 import { getAppCheckToken } from "./appCheckService";
-
-const APPLICATION_RESPONSES_COLLECTION = "application-responses";
+import { appCollection } from "./firestore";
 
 export async function saveApplicationResponse(
   response: ApplicationResponse,
@@ -50,26 +52,29 @@ export async function saveApplicationResponse(
 export async function getApplicationResponses(
   userId: string,
 ): Promise<ApplicationResponse[]> {
-  const responses = collection(db, APPLICATION_RESPONSES_COLLECTION);
+  const responses = appCollection(FirestoreCollection.ApplicationResponses);
   const q = query(responses, where("userId", "==", userId));
   const results = await getDocs(q);
 
-  return results.docs.map((d) => d.data() as ApplicationResponse);
+  return results.docs.map((d) => d.data());
 }
 
 export async function getApplicationResponseById(
   responseId: string,
 ): Promise<ApplicationResponse | undefined> {
-  const responses = collection(db, APPLICATION_RESPONSES_COLLECTION);
+  const responses = appCollection(FirestoreCollection.ApplicationResponses);
   const respDoc = doc(responses, responseId);
-  return (await getDoc(respDoc)).data() as ApplicationResponse | undefined;
+  const response: ApplicationResponse | undefined = (
+    await getDoc(respDoc)
+  ).data();
+  return response;
 }
 
 async function getApplicationResponseByFormId(
   userId: string,
   formId: string,
 ): Promise<ApplicationResponse | undefined> {
-  const responses = collection(db, APPLICATION_RESPONSES_COLLECTION);
+  const responses = appCollection(FirestoreCollection.ApplicationResponses);
   const q = query(
     responses,
     where("userId", "==", userId),
@@ -82,7 +87,7 @@ async function getApplicationResponseByFormId(
   }
 
   const doc = results.docs[0];
-  const data = doc.data() as ApplicationResponse;
+  const data = doc.data();
 
   return data;
 }
@@ -90,12 +95,12 @@ async function getApplicationResponseByFormId(
 export async function getAllApplicationResponsesByFormId(
   formId: string,
 ): Promise<ApplicationResponse[]> {
-  const responses = collection(db, APPLICATION_RESPONSES_COLLECTION);
+  const responses = appCollection(FirestoreCollection.ApplicationResponses);
   const q = query(responses, where("applicationFormId", "==", formId));
 
   const results = await getDocs(q);
 
-  return results.docs.map((d) => d.data() as ApplicationResponse);
+  return results.docs.map((d) => d.data());
 }
 
 export async function fetchOrCreateApplicationResponse(
@@ -144,11 +149,14 @@ export async function fetchOrCreateApplicationResponse(
   console.log("new response:");
   console.log(newResponse);
 
-  const docRef = doc(db, APPLICATION_RESPONSES_COLLECTION, newResponse.id);
+  const docRef = doc(
+    appCollection(FirestoreCollection.ApplicationResponses),
+    newResponse.id,
+  );
 
   await setDoc(docRef, newResponse);
 
-  const userRef = doc(db, "users", userId);
+  const userRef = doc(appCollection(FirestoreCollection.Users), userId);
   await updateDoc(userRef, {
     activeApplications: arrayUnion(form.id),
   });

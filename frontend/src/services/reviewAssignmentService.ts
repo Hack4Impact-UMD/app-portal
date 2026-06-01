@@ -1,8 +1,8 @@
+import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { AppReviewAssignment } from "@app-portal/shared/types";
 import {
   and,
-  collection,
   deleteDoc,
   doc,
   getDocs,
@@ -12,11 +12,8 @@ import {
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
-import { db } from "@/config/firebase";
-
 import { getApplicationResponseById } from "./applicationResponsesService";
-
-export const REVIEW_ASSIGNMENT_COLLECTION = "review-assignments";
+import { appCollection } from "./firestore";
 
 export async function assignReview(
   responseId: string,
@@ -40,14 +37,14 @@ export async function assignReview(
     reviewerId: reviewerId,
   };
 
-  const assignments = collection(db, REVIEW_ASSIGNMENT_COLLECTION);
+  const assignments = appCollection(FirestoreCollection.ReviewAssignments);
   await setDoc(doc(assignments, reviewAssignment.id), reviewAssignment);
 
   return reviewAssignment;
 }
 
 export async function removeReviewAssignment(assignmentId: string) {
-  const assignments = collection(db, REVIEW_ASSIGNMENT_COLLECTION);
+  const assignments = appCollection(FirestoreCollection.ReviewAssignments);
   const assignment = doc(assignments, assignmentId);
   await deleteDoc(assignment);
 }
@@ -56,7 +53,7 @@ export async function getReviewAssignments(
   formId: string,
   reviewerId: string,
 ): Promise<AppReviewAssignment[]> {
-  const assignments = collection(db, REVIEW_ASSIGNMENT_COLLECTION);
+  const assignments = appCollection(FirestoreCollection.ReviewAssignments);
   const q = query(
     assignments,
     and(
@@ -68,24 +65,24 @@ export async function getReviewAssignments(
 
   const res = await getDocs(q);
 
-  return res.docs.map((d) => d.data() as AppReviewAssignment);
+  return res.docs.map((d) => d.data());
 }
 
 export async function getReviewAssignmentsForApplication(
   responseId: string,
 ): Promise<AppReviewAssignment[]> {
-  const assignments = collection(db, REVIEW_ASSIGNMENT_COLLECTION);
+  const assignments = appCollection(FirestoreCollection.ReviewAssignments);
   const q = query(
     assignments,
     where("applicationResponseId", "==", responseId),
   );
 
-  return (await getDocs(q)).docs.map((d) => d.data() as AppReviewAssignment);
+  return (await getDocs(q)).docs.map((d) => d.data());
 }
 
 export async function getReviewAssignmentsForForm(formId: string) {
-  const assignments = collection(db, REVIEW_ASSIGNMENT_COLLECTION);
+  const assignments = appCollection(FirestoreCollection.ReviewAssignments);
   const q = query(assignments, where("formId", "==", formId));
 
-  return (await getDocs(q)).docs.map((d) => d.data() as AppReviewAssignment);
+  return (await getDocs(q)).docs.map((d) => d.data());
 }

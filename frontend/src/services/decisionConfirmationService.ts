@@ -1,13 +1,12 @@
+import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { DecisionConfirmation } from "@app-portal/shared/types";
 import axios from "axios";
-import type { CollectionReference } from "firebase/firestore";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { getDocs, query, where } from "firebase/firestore";
 
-import { API_URL, db } from "@/config/firebase";
+import { API_URL } from "@/config/firebase";
 
 import { getAppCheckToken } from "./appCheckService";
-
-const CONFIRMATION_COLLECTION = "decision-status";
+import { appCollection } from "./firestore";
 
 export async function createDecisionConfirmation(
   decisionConfirmation: DecisionConfirmation,
@@ -30,10 +29,9 @@ export async function getDecisionConfirmationForResponseRole(
   userId: string,
   responseId: string,
 ) {
-  const confirmationCollection = collection(
-    db,
-    CONFIRMATION_COLLECTION,
-  ) as CollectionReference<DecisionConfirmation>;
+  const confirmationCollection = appCollection(
+    FirestoreCollection.DecisionStatus,
+  );
   const q = query(
     confirmationCollection,
     where("userId", "==", userId),
@@ -49,10 +47,10 @@ export async function getDecisionConfirmationForResponseRole(
 export async function getAllDecisionConfirmationsByFormId(
   formId: string,
 ): Promise<DecisionConfirmation[]> {
-  const responses = collection(db, CONFIRMATION_COLLECTION);
+  const responses = appCollection(FirestoreCollection.DecisionStatus);
   const q = query(responses, where("formId", "==", formId));
 
   const results = await getDocs(q);
 
-  return results.docs.map((d) => d.data() as DecisionConfirmation);
+  return results.docs.map((d) => d.data());
 }

@@ -1,19 +1,21 @@
-import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
+import {
+  ApplicantRole,
+  ApplicationStatus,
+  FirestoreCollection,
+} from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
 } from "@app-portal/shared/types";
-import { collection, doc, writeBatch } from "firebase/firestore";
+import { doc, writeBatch } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
 import { db } from "@/config/firebase";
 import type { ReviewCapableUser } from "@/types/types";
 
 import { getAllApplicationResponsesByFormId } from "./applicationResponsesService";
-import {
-  getReviewAssignmentsForForm,
-  REVIEW_ASSIGNMENT_COLLECTION,
-} from "./reviewAssignmentService";
+import { appCollection } from "./firestore";
+import { getReviewAssignmentsForForm } from "./reviewAssignmentService";
 import { getReviewDataForForm } from "./reviewDataService";
 import { getAllReviewers } from "./reviewersService";
 import { getUserById } from "./userService";
@@ -329,7 +331,10 @@ export async function makeAssignmentsFromPlan(plan: AutoAssignmentPlanItem[]) {
     const batch = writeBatch(db);
     chunk.forEach((assignment) =>
       batch.set(
-        doc(collection(db, REVIEW_ASSIGNMENT_COLLECTION), assignment.id),
+        doc(
+          appCollection(FirestoreCollection.ReviewAssignments),
+          assignment.id,
+        ),
         assignment,
       ),
     );

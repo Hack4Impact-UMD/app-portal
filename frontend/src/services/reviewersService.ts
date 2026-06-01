@@ -1,12 +1,15 @@
-import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
-import { and, collection, getDocs, or, query, where } from "firebase/firestore";
+import {
+  ApplicantRole,
+  FirestoreCollection,
+  PermissionRole,
+} from "@app-portal/shared/constants";
+import { and, getDocs, or, query, where } from "firebase/firestore";
 
-import { db } from "@/config/firebase";
 import type { ReviewCapableUser, UserProfile } from "@/types/types";
 
+import { appCollection } from "./firestore";
 import { getUserById } from "./userService";
 
-const USERS_COLLECTION = "users";
 const REVIEW_CAPABLE_ROLES = [
   PermissionRole.Reviewer,
   PermissionRole.SuperReviewer,
@@ -34,7 +37,7 @@ export async function getRolePreferencesForReviewer(
 }
 
 export async function getAllReviewers(): Promise<ReviewCapableUser[]> {
-  const users = collection(db, USERS_COLLECTION);
+  const users = appCollection(FirestoreCollection.Users);
   const q = query(users, where("role", "in", REVIEW_CAPABLE_ROLES));
 
   // NOTE: for some reason, if the inactive field does not exist, querying on it never matches. we need to filter here instead.
@@ -46,7 +49,7 @@ export async function getAllReviewers(): Promise<ReviewCapableUser[]> {
 export async function getReviewersForRole(
   role: ApplicantRole,
 ): Promise<ReviewCapableUser[]> {
-  const users = collection(db, USERS_COLLECTION);
+  const users = appCollection(FirestoreCollection.Users);
   const q = query(
     users,
     and(
