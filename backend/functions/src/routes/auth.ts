@@ -1,5 +1,6 @@
 import {
   ApplicationStatus,
+  FirestoreCollection,
   ReviewStatus,
   PermissionRole,
 } from "@app-portal/shared/constants";
@@ -18,10 +19,6 @@ import type { Request, Response } from "express";
 import { Router } from "express";
 import * as admin from "firebase-admin";
 import { FirebaseAuthError } from "firebase-admin/auth";
-import type {
-  CollectionReference,
-  DocumentReference,
-} from "firebase-admin/firestore";
 import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { v4 as uuidv4 } from "uuid";
@@ -29,9 +26,9 @@ import { v4 as uuidv4 } from "uuid";
 import { db } from "../index";
 import { isAuthenticated } from "../middleware/authentication";
 import { validateSchema } from "../middleware/validation";
-import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { UserProfile } from "../models/user";
+import { appCollection } from "../utils/firestore";
 
 /* eslint new-cap: 0 */
 const router = Router();
@@ -65,9 +62,7 @@ router.post(
 
       logger.info(`Auth user created with UID ${userRecord.uid}`);
 
-      const collection = db.collection(
-        "users",
-      ) as CollectionReference<UserProfile>;
+      const collection = appCollection(FirestoreCollection.Users);
 
       const user: UserProfile = {
         id: userRecord.uid,
@@ -116,9 +111,7 @@ router.post(
       );
 
       // will throw if doc doesn't exist
-      const userRef = db
-        .collection("users")
-        .doc(uid) as DocumentReference<UserProfile>;
+      const userRef = appCollection(FirestoreCollection.Users).doc(uid);
       await userRef.update({
         email: updateForm.email,
         firstName: updateForm.firstName,
@@ -159,9 +152,9 @@ router.post(
     const requestorUid = req.token!.uid;
 
     try {
-      const requestorRef = db
-        .collection("users")
-        .doc(requestorUid) as DocumentReference<UserProfile>;
+      const requestorRef = appCollection(FirestoreCollection.Users).doc(
+        requestorUid,
+      );
       const requestorSnap = await requestorRef.get();
       const requestor = requestorSnap.data();
 
@@ -171,9 +164,9 @@ router.post(
           .send("Only super-reviewers can create internal applicants");
       }
 
-      const formRef = db
-        .collection("application-forms")
-        .doc(requestData.formId) as DocumentReference<ApplicationForm>;
+      const formRef = appCollection(FirestoreCollection.ApplicationForms).doc(
+        requestData.formId,
+      );
       const formSnap = await formRef.get();
 
       if (!formSnap.exists || !formSnap.data()) {
@@ -186,9 +179,7 @@ router.post(
 
       // note: internal applicants are only given a user doc, not auth.
       // any other code where doc/auth are manipulated together must be updated.
-      const usersCollection = db.collection(
-        "users",
-      ) as CollectionReference<UserProfile>;
+      const usersCollection = appCollection(FirestoreCollection.Users);
       const userId = uuidv4();
 
       const batch = db.batch();
@@ -212,9 +203,9 @@ router.post(
         `created internal applicant ${newUser.firstName} ${newUser.lastName} with ID: ${newUser.id}`,
       );
 
-      const applicationResponsesCollection = db.collection(
-        "application-responses",
-      ) as CollectionReference<ApplicationResponse>;
+      const applicationResponsesCollection = appCollection(
+        FirestoreCollection.ApplicationResponses,
+      );
       const applicationResponseId = uuidv4();
 
       // internal applicants skip the review process
@@ -234,9 +225,9 @@ router.post(
         newApplicationResponse,
       );
 
-      const statusCollection = db.collection(
-        "app-status",
-      ) as CollectionReference<InternalApplicationStatus>;
+      const statusCollection = appCollection(
+        FirestoreCollection.ApplicationStatus,
+      );
 
       for (const role of requestData.rolesApplied) {
         const statusId = uuidv4();

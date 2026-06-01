@@ -1,3 +1,19 @@
+export enum FirestoreCollection {
+  Users = "users",
+  ApplicationForms = "application-forms",
+  ApplicationResponses = "application-responses",
+  ApplicationStatus = "app-status",
+  DecisionStatus = "decision-status",
+  Rubrics = "rubrics",
+  InterviewRubrics = "interview-rubrics",
+  ReviewData = "review-data",
+  InterviewData = "interview-data",
+  ReviewAssignments = "review-assignments",
+  InterviewAssignments = "interview-assignments",
+  GradingJobsPublic = "grading-jobs-public",
+  GradingJobsInternal = "grading-jobs-internal",
+}
+
 export enum PermissionRole {
   SuperReviewer = "super-reviewer",
   Reviewer = "reviewer",

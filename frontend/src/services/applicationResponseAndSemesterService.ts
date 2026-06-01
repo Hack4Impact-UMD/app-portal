@@ -1,12 +1,10 @@
-import type { CollectionReference } from "firebase/firestore";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { FirestoreCollection } from "@app-portal/shared/constants";
+import { getDocs, query, where } from "firebase/firestore";
 
-import { db } from "@/config/firebase";
-import type { ApplicationForm, ApplicationResponse } from "@/types/types";
+import type { ApplicationResponse } from "@/types/types";
 
 import { getApplicationResponses } from "./applicationResponsesService";
-
-const APPLICATION_FORMS_COLLECTION = "application-forms";
+import { appCollection } from "./firestore";
 
 export type ApplicationResponseWithSemester = ApplicationResponse & {
   semester: string;
@@ -16,10 +14,7 @@ export type ApplicationResponseWithSemester = ApplicationResponse & {
 export async function getApplicationResponseAndSemester(
   userId: string,
 ): Promise<ApplicationResponseWithSemester[]> {
-  const forms = collection(
-    db,
-    APPLICATION_FORMS_COLLECTION,
-  ) as CollectionReference<ApplicationForm>;
+  const forms = appCollection(FirestoreCollection.ApplicationForms);
 
   const rawResponses = await getApplicationResponses(userId);
   const responsesWithSemester: ApplicationResponseWithSemester[] = [];
@@ -30,9 +25,7 @@ export async function getApplicationResponseAndSemester(
       where("id", "==", response.applicationFormId),
     );
     const formResults = await getDocs(formQuery);
-    const matchedForms = formResults.docs.map(
-      (d) => d.data() as ApplicationForm,
-    );
+    const matchedForms = formResults.docs.map((d) => d.data());
 
     const form = matchedForms.length > 0 ? matchedForms[0] : undefined;
     const semester = form?.semester ?? "Unknown";

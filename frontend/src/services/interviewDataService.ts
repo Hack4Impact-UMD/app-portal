@@ -1,10 +1,10 @@
+import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
   InterviewAssignment,
   ApplicationInterviewData,
 } from "@app-portal/shared/types";
 import {
-  collection,
   doc,
   getDoc,
   getDocs,
@@ -15,16 +15,14 @@ import {
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
-import { db } from "@/config/firebase";
-
-const INTERVIEW_DATA_COLLECTION = "interview-data";
+import { appCollection } from "./firestore";
 
 export async function getInterviewDataForResponseRole(
   formId: string,
   responseId: string,
   role: ApplicantRole,
 ) {
-  const interviewData = collection(db, INTERVIEW_DATA_COLLECTION);
+  const interviewData = appCollection(FirestoreCollection.InterviewData);
   const q = query(
     interviewData,
     where("applicationFormId", "==", formId),
@@ -33,11 +31,11 @@ export async function getInterviewDataForResponseRole(
   );
   const result = await getDocs(q);
 
-  return result.docs.map((doc) => doc.data() as ApplicationInterviewData);
+  return result.docs.map((doc) => doc.data());
 }
 
 export async function getInterviewDataById(id: string) {
-  const interviewData = collection(db, INTERVIEW_DATA_COLLECTION);
+  const interviewData = appCollection(FirestoreCollection.InterviewData);
   const docRef = doc(interviewData, id);
 
   return (await getDoc(docRef)).data() as ApplicationInterviewData;
@@ -47,7 +45,7 @@ export async function updateInterviewData(
   interviewDataId: string,
   update: Partial<Omit<ApplicationInterviewData, "id">>,
 ) {
-  const interviewData = collection(db, INTERVIEW_DATA_COLLECTION);
+  const interviewData = appCollection(FirestoreCollection.InterviewData);
   const interviewRef = doc(interviewData, interviewDataId);
 
   await updateDoc(interviewRef, update);
@@ -56,7 +54,7 @@ export async function updateInterviewData(
 export async function getInterviewDataForAssignment(
   assignment: InterviewAssignment,
 ) {
-  const reviewData = collection(db, INTERVIEW_DATA_COLLECTION);
+  const reviewData = appCollection(FirestoreCollection.InterviewData);
   const q = query(
     reviewData,
     where("applicantId", "==", assignment.applicantId),
@@ -68,13 +66,13 @@ export async function getInterviewDataForAssignment(
 
   if (result.docs.length < 1) return undefined;
 
-  return result.docs[0].data() as ApplicationInterviewData;
+  return result.docs[0].data();
 }
 
 export async function createInterviewData(
   review: Omit<ApplicationInterviewData, "id">,
 ) {
-  const reviewData = collection(db, INTERVIEW_DATA_COLLECTION);
+  const reviewData = appCollection(FirestoreCollection.InterviewData);
   const id = uuidv4();
   const reviewDoc: ApplicationInterviewData = {
     id: id,
@@ -88,18 +86,18 @@ export async function createInterviewData(
 }
 
 export async function getInterviewDataForForm(formId: string) {
-  const interviewData = collection(db, INTERVIEW_DATA_COLLECTION);
+  const interviewData = appCollection(FirestoreCollection.InterviewData);
   const q = query(interviewData, where("applicationFormId", "==", formId));
   const result = await getDocs(q);
 
-  return result.docs.map((doc) => doc.data() as ApplicationInterviewData);
+  return result.docs.map((doc) => doc.data());
 }
 
 export async function getInterviewDataForInterviewer(
   formId: string,
   interviewerId: string,
 ) {
-  const interviewData = collection(db, INTERVIEW_DATA_COLLECTION);
+  const interviewData = appCollection(FirestoreCollection.InterviewData);
   const q = query(
     interviewData,
     where("interviewerId", "==", interviewerId),
@@ -107,18 +105,18 @@ export async function getInterviewDataForInterviewer(
   );
   const result = await getDocs(q);
 
-  return result.docs.map((doc) => doc.data() as ApplicationInterviewData);
+  return result.docs.map((doc) => doc.data());
 }
 
 export async function getInterviewDataForResponse(
   applicationResponseId: string,
 ) {
-  const interviewData = collection(db, INTERVIEW_DATA_COLLECTION);
+  const interviewData = appCollection(FirestoreCollection.InterviewData);
   const q = query(
     interviewData,
     where("applicationResponseId", "==", applicationResponseId),
   );
   const result = await getDocs(q);
 
-  return result.docs.map((doc) => doc.data() as ApplicationInterviewData);
+  return result.docs.map((doc) => doc.data());
 }

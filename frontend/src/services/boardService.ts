@@ -1,13 +1,14 @@
-import { PermissionRole } from "@app-portal/shared/constants";
+import {
+  FirestoreCollection,
+  PermissionRole,
+} from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { getDocs, query, where } from "firebase/firestore";
 
-import { db } from "@/config/firebase";
 import type { BoardUserProfile } from "@/types/types";
 
+import { appCollection } from "./firestore";
 import { getUserById } from "./userService";
-
-const USERS_COLLECTION = "users";
 
 export async function getBoardMemberById(
   id: string,
@@ -36,15 +37,13 @@ export async function getApplicantRolesForBoardMember(
 }
 
 export async function getAllBoardMembers(): Promise<BoardUserProfile[]> {
-  const users = collection(db, USERS_COLLECTION);
+  const users = appCollection(FirestoreCollection.Users);
   const q = query(users, where("role", "==", PermissionRole.Board));
 
   return (await getDocs(q)).docs
     .map((d) => d.data() as BoardUserProfile)
-    .map(
-      (b: BoardUserProfile): BoardUserProfile => ({
-        ...b,
-        applicantRoles: b.applicantRoles ?? [],
-      }),
-    );
+    .map((b) => ({
+      ...b,
+      applicantRoles: b.applicantRoles ?? [],
+    }));
 }

@@ -1,32 +1,27 @@
-import { ReviewStatus, PermissionRole } from "@app-portal/shared/constants";
+import {
+  FirestoreCollection,
+  ReviewStatus,
+  PermissionRole,
+} from "@app-portal/shared/constants";
 import { DecisionConfirmationSchema } from "@app-portal/shared/types";
-import type {
-  DecisionConfirmation,
-  InternalApplicationStatus,
-} from "@app-portal/shared/types";
+import type { DecisionConfirmation } from "@app-portal/shared/types";
 import type { Request, Response } from "express";
 import { Router } from "express";
-import type { CollectionReference } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 
-import { db } from "..";
 import { hasRoles, isAuthenticated } from "../middleware/authentication";
 import { validateSchema } from "../middleware/validation";
 import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
+import { appCollection } from "../utils/firestore";
 
 const router = Router();
-const APPLICATION_STATUS_COLLECTION = "app-status";
-const APPLICATION_FORMS_COLLECTION = "application-forms";
-const APPLICATION_RESPONSE_COLLECTION = "application-responses";
-const DECISION_STATUS_COLLECTION = "decision-status";
 
 async function decisionsReleased(formId: string) {
-  const form = (
-    await db.collection(APPLICATION_FORMS_COLLECTION).doc(formId).get()
-  ).data() as ApplicationForm;
-  if (!form) throw new Error(`Form ${formId} not found!`);
-  return form.decisionsReleased;
+  const form: ApplicationForm | undefined = (
+    await appCollection(FirestoreCollection.ApplicationForms).doc(formId).get()
+  ).data();
+  return form?.decisionsReleased;
 }
 
 router.get(
@@ -36,11 +31,14 @@ router.get(
     const response = req.params.responseId as string;
     const role = req.params.role as string;
 
-    const responseDoc = (
-      await db.collection(APPLICATION_RESPONSE_COLLECTION).doc(response).get()
-    ).data() as ApplicationResponse;
+    const responseDoc: ApplicationResponse | undefined = (
+      await appCollection(FirestoreCollection.ApplicationResponses)
+        .doc(response)
+        .get()
+    ).data();
 
     if (!responseDoc) {
+      logger.warn(`Application response ${response} not found`);
       res.status(404).send();
       return;
     }
@@ -50,9 +48,9 @@ router.get(
       return;
     }
 
-    const statusCollection = db.collection(
-      APPLICATION_STATUS_COLLECTION,
-    ) as CollectionReference<InternalApplicationStatus>;
+    const statusCollection = appCollection(
+      FirestoreCollection.ApplicationStatus,
+    );
     const status = await statusCollection
       .where("role", "==", role)
       .where("responseId", "==", response)
@@ -60,11 +58,23 @@ router.get(
 
     const data = status.docs[0]?.data() ?? undefined;
     if (!data) {
+      logger.warn(
+        `Application status not found for response ${response} and role ${role}`,
+      );
       res.status(404).send();
       return;
     }
 
-    if (await decisionsReleased(responseDoc.applicationFormId)) {
+    const released = await decisionsReleased(responseDoc.applicationFormId);
+    if (released === undefined) {
+      logger.warn(
+        `Application form ${responseDoc.applicationFormId} not found`,
+      );
+      res.status(404).json({ error: "Form not found" });
+      return;
+    }
+
+    if (released) {
       res.json({
         id: status.docs[0].id,
         status: data.status,
@@ -109,9 +119,9 @@ router.post(
     try {
       console.log("Request received:", req.body); // Log the incoming request body
 
-      const decisionStatusCollection = db.collection(
-        DECISION_STATUS_COLLECTION,
-      ) as CollectionReference<DecisionConfirmation>;
+      const decisionStatusCollection = appCollection(
+        FirestoreCollection.DecisionStatus,
+      );
 
       const input = req.body as DecisionConfirmation;
       const { responseId, userId, internalStatusId } = input;
@@ -139,9 +149,9 @@ router.post(
       }
 
       // Look up applicant’s internal decision in app-status
-      const statusCollection = db.collection(
-        APPLICATION_STATUS_COLLECTION,
-      ) as CollectionReference<InternalApplicationStatus>;
+      const statusCollection = appCollection(
+        FirestoreCollection.ApplicationStatus,
+      );
       const statusDocs = await statusCollection
         .where("id", "==", internalStatusId)
         .get();

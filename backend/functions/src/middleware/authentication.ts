@@ -1,11 +1,11 @@
+import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { PermissionRole } from "@app-portal/shared/constants";
 import type { Request, Response, NextFunction } from "express";
 import * as admin from "firebase-admin";
-import type { CollectionReference } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 
-import { db } from "..";
 import type { UserProfile } from "../models/user";
+import { appCollection } from "../utils/firestore";
 
 // from the code sample here: https://github.com/firebase/functions-samples/blob/main/Node-1st-gen/authorized-https-endpoint/functions/index.js
 // NOTE: When a request is successfully authenticated, this middleware will set the `req.token` property
@@ -108,9 +108,10 @@ export function hasRoles(roles: PermissionRole[]) {
 export async function getUserById(
   id: string,
 ): Promise<UserProfile | undefined> {
-  const users = db.collection("users") as CollectionReference<UserProfile>;
+  const users = appCollection(FirestoreCollection.Users);
   const userDoc = users.doc(id);
   const res = await userDoc.get();
 
-  return res.data() as UserProfile;
+  const user: UserProfile | undefined = res.data();
+  return user;
 }

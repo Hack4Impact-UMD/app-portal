@@ -151,6 +151,25 @@
             "allowConstantExport": true,
           },
         ],
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "firebase/firestore",
+                "importNames": ["collection", "collectionGroup"],
+                "message": "Use the typed app Firestore helper instead.",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    // location of typed firestore helper on frontend
+    {
+      "files": ["frontend/src/services/firestore.ts"],
+      "rules": {
+        "no-restricted-imports": "off",
       },
     },
     {
@@ -164,6 +183,21 @@
         "import/no-named-as-default": "warn",
         "import/no-named-as-default-member": "warn",
         "import/no-duplicates": "warn",
+        "no-restricted-properties": [
+          "error",
+          {
+            "object": "db",
+            "property": "collection",
+            "message": "Use appCollection from utils/firestore instead.",
+          },
+        ],
+      },
+    },
+    // location of typed firestore helper on backend
+    {
+      "files": ["backend/functions/src/utils/firestore.ts"],
+      "rules": {
+        "no-restricted-properties": "off",
       },
     },
   ],
