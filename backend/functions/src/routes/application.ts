@@ -231,7 +231,7 @@ router.post(
       const dueDate = applicationFormDocData.dueDate;
       if (currentTime > dueDate) {
         logger.warn(
-          "Submission deadline passed for form:" + applicationFormDocData?.id,
+          "Submission deadline passed for form:" + applicationFormDocData.id,
         );
         return res.status(400).send("Submission deadline has passed");
       }
@@ -239,7 +239,7 @@ router.post(
       try {
         const errors = validateResponses(
           applicationResponse,
-          applicationFormDocData!,
+          applicationFormDocData,
         );
 
         if (errors.length !== 0) {

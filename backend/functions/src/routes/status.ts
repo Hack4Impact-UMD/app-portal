@@ -21,11 +21,7 @@ async function decisionsReleased(formId: string) {
   const form: ApplicationForm | undefined = (
     await appCollection(FirestoreCollection.ApplicationForms).doc(formId).get()
   ).data();
-  if (!form) {
-    logger.warn(`Application form ${formId} not found`);
-    throw new Error("Form not found!");
-  }
-  return form.decisionsReleased;
+  return form?.decisionsReleased;
 }
 
 router.get(
@@ -69,7 +65,16 @@ router.get(
       return;
     }
 
-    if (await decisionsReleased(responseDoc.applicationFormId)) {
+    const released = await decisionsReleased(responseDoc.applicationFormId);
+    if (released === undefined) {
+      logger.warn(
+        `Application form ${responseDoc.applicationFormId} not found`,
+      );
+      res.status(404).json({ error: "Form not found" });
+      return;
+    }
+
+    if (released) {
       res.json({
         id: status.docs[0].id,
         status: data.status,
