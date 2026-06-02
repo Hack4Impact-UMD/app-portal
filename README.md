@@ -29,39 +29,6 @@ In addition, the project is integrated with [Professor](https://github.com/Hack4
 - **Schema Validation:** [Zod](https://zod.dev/)
 - **Task Queue:** [Cloud Tasks](https://cloud.google.com/tasks)
 
-## 📂 Directory Structure
-
-### Frontend
-
-```
-frontend/
-├── public/              # Static assets
-└── src/
-    ├── components/      # Reusable React components
-    ├── config/          # Firebase and React Query configuration
-    ├── contexts/        # React contexts for state management
-    ├── hooks/           # Custom React hooks
-    ├── lib/             # Utility functions
-    ├── pages/           # Top-level page components
-    ├── services/        # Services for interacting with the backend
-    ├── types/           # TypeScript type definitions
-    └── utils/           # Miscellaneous utility functions
-```
-
-### Backend
-
-```
-backend/
-└── functions/
-    ├── src/
-    │   ├── middleware/  # Express middleware
-    │   ├── models/      # Data models
-    │   ├── routes/      # API routes
-    │   ├── types/       # TypeScript type definitions
-    │   └── utils/       # Utility functions
-    └── lib/             # Compiled JavaScript code
-```
-
 ## 🚀 Building and Running Locally
 
 1.  From the `app-portal` directory, install all dependencies with:
