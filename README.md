@@ -8,14 +8,14 @@ In addition, the project is integrated with [Professor](https://github.com/Hack4
 
 ## ✨ Features
 
-- **Multi-role workflows** give applicants, reviewers, board members, and admins focused views and actions.
+- **Role-specific workflows** for applicants, reviewers, board members, and admins.
 - **Dynamic applications** support role-specific sections, markdown, file uploads, autosave, and validation.
-- **Role-aware review tools** pair rubrics, notes, quick section navigation, and autosaved progress.
-- **Admin dashboards** manage review status, assignments, qualified applicants, decisions, and confirmations.
-- **Auto-assignment previews** draft reviewer assignment plans with room for manual adjustments.
+- **Review tools** with access to rubrics, notes, command pallete, and autosave.
+- **Admin dashboards** manage review status, assignments, decisions, and confirmations.
+- **Auto-assignment previews** generates applicant-to-reviewer matches
 - **Form automation tools** duplicate forms, update due dates, activate forms, and create internal applicants.
-- **Form and rubric builders** provide JSON editors, live previews, validation warnings, and upload tools.
-- **CSV exports** download and organize applicant and review data, including role-specific exports.
+- **Form and rubric builders** provide JSON editors, live previews, validation, and upload.
+- **CSV exports** download and organize applicant and review data
 - **Autograder integration** publishes and tracks grading jobs for engineering applicants.
 
 ## 🛠️ Tech Stack
