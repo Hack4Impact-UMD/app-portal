@@ -53,15 +53,7 @@ In addition, the project is integrated with [Professor](https://github.com/Hack4
 In addition:
 - Set up `.env` files with the templates available at `frontend/.env.example` and `backend/functions/.env.example`.
 - Set up backend emulators with the [Firebase Emulator Setup Guide](./backend/README.md).
-
-### Formatting
-
-This repository includes pre-commit hooks. Enable by running:
-
-```bash
-pip install pre-commit
-pre-commit install
-```
+- Set up pre-commit hooks with `pip install pre-commit` and `pre-commit install`
 
 ## 🖼️ Screenshots
 
