@@ -83,7 +83,9 @@ backend/
     pnpm --filter functions serve
     ```
 
-In addition, see the [Firebase Emulator Setup Guide](./backend/README.md).
+In addition:
+- Set up `.env` files with the templates available at `frontend/.env.example` and `backend/functions/.env.example`.
+- Set up backend emulators with the [Firebase Emulator Setup Guide](./backend/README.md).
 
 ### Formatting
 
