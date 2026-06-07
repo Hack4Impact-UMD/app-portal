@@ -9,6 +9,7 @@
         "lint": "pnpm -r lint",
         "lint:fix": "pnpm -r lint:fix",
         "lint:all": "pnpm -r --no-bail lint",
+        "lint:ci": "pnpm -r --no-bail lint:ci",
         "format": "pnpm -r format",
         "format:check": "pnpm -r format:check",
         "format:check:all": "pnpm -r --no-bail format:check",
