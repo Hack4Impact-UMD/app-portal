@@ -79,12 +79,12 @@ function StatusPage() {
   } = useApplicationResponsesAndSemesters();
 
   const activeApplications = useMemo(
-    () => applications.filter((app) => app.active) ?? [],
+    () => applications?.filter((app) => app.active) ?? [],
     [applications],
   );
 
   const inactiveApplications = useMemo(
-    () => applications.filter((app) => !app.active) ?? [],
+    () => applications?.filter((app) => !app.active) ?? [],
     [applications],
   );
 

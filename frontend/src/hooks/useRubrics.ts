@@ -1,12 +1,37 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { RoleReviewRubric } from "@app-portal/shared/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  skipToken,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import {
   getRoleRubricsForForm,
   getRoleRubricsForFormRole,
   uploadRubrics,
 } from "@/services/rubricService";
+
+const rubricRoot = "rubrics" as const;
+
+export const rubricQueries = {
+  root: [rubricRoot] as const,
+  byForm: (formId?: string) =>
+    queryOptions({
+      queryKey: [rubricRoot, "form", formId] as const,
+      queryFn: formId ? () => getRoleRubricsForForm(formId) : skipToken,
+    }),
+  byFormRole: (formId?: string, role?: ApplicantRole) =>
+    queryOptions({
+      queryKey: [rubricRoot, "form", formId, "role", role] as const,
+      queryFn:
+        formId && role
+          ? () => getRoleRubricsForFormRole(formId, role)
+          : skipToken,
+    }),
+};
 
 export const useUploadRubrics = () => {
   const queryClient = useQueryClient();
@@ -20,23 +45,15 @@ export const useUploadRubrics = () => {
       token: string;
     }) => uploadRubrics(rubrics, token),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["rubrics"] });
+      queryClient.invalidateQueries({ queryKey: rubricQueries.root });
     },
   });
 };
 
 export function useRubricsForForm(formId?: string) {
-  return useQuery({
-    queryKey: ["rubrics", "form", formId],
-    enabled: !!formId,
-    queryFn: () => getRoleRubricsForForm(formId!),
-  });
+  return useQuery(rubricQueries.byForm(formId));
 }
 
 export function useRubricsForFormRole(formId?: string, role?: ApplicantRole) {
-  return useQuery({
-    queryKey: ["rubrics", "form", "role", formId, role],
-    enabled: !!formId && !!role,
-    queryFn: () => getRoleRubricsForFormRole(formId!, role!),
-  });
+  return useQuery(rubricQueries.byFormRole(formId, role));
 }

@@ -1,5 +1,5 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 
 import {
   getAllReviewers,
@@ -7,23 +7,34 @@ import {
   getRolePreferencesForReviewer,
 } from "@/services/reviewersService";
 
-export function useAllReviewers() {
-  return useQuery({
-    queryKey: ["reviewers"],
+const reviewerRoot = "reviewers" as const;
+
+export const reviewerQueries = {
+  root: [reviewerRoot] as const,
+  all: queryOptions({
+    queryKey: [reviewerRoot] as const,
     queryFn: () => getAllReviewers(),
-  });
+  }),
+  byRole: (role: ApplicantRole) =>
+    queryOptions({
+      queryKey: [reviewerRoot, "role", role] as const,
+      queryFn: () => getReviewersForRole(role),
+    }),
+  rolePreferences: (reviewerId: string) =>
+    queryOptions({
+      queryKey: [reviewerRoot, "reviewer", reviewerId] as const,
+      queryFn: () => getRolePreferencesForReviewer(reviewerId),
+    }),
+};
+
+export function useAllReviewers() {
+  return useQuery(reviewerQueries.all);
 }
 
 export function useReviewersForRole(role: ApplicantRole) {
-  return useQuery({
-    queryKey: ["reviewers", "role", role],
-    queryFn: () => getReviewersForRole(role),
-  });
+  return useQuery(reviewerQueries.byRole(role));
 }
 
 export function useRolePreferencesForReviewer(reviewerId: string) {
-  return useQuery({
-    queryKey: ["reviewers", "reviewerId", reviewerId],
-    queryFn: () => getRolePreferencesForReviewer(reviewerId),
-  });
+  return useQuery(reviewerQueries.rolePreferences(reviewerId));
 }

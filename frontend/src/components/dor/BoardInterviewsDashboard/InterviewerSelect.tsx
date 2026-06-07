@@ -23,6 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { interviewAssignmentQueries } from "@/hooks/useInterviewAssignments";
 import { useReviewersForRole } from "@/hooks/useReviewers";
 import { getInterviewAssignmentsForApplication } from "@/services/interviewAssignmentService";
 import { reviewingFor } from "@/services/reviewersService";
@@ -47,7 +48,7 @@ function InterviewerSearchPopover({
     isPending: assignmentsPending,
     error: assignmentsError,
   } = useQuery({
-    queryKey: ["interview-assignments", responseId],
+    queryKey: interviewAssignmentQueries.byResponse(responseId).queryKey,
     queryFn: () => getInterviewAssignmentsForApplication(responseId),
   });
 

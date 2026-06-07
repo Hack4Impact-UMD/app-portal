@@ -1,12 +1,39 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { RoleReviewRubric } from "@app-portal/shared/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  skipToken,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import {
   getRoleInterviewRubricsForForm,
   getRoleInterviewRubricsForFormRole,
   uploadInterviewRubrics as uploadInterviewRubricsService,
 } from "@/services/interviewRubricService";
+
+const interviewRubricRoot = "interview-rubrics" as const;
+
+export const interviewRubricQueries = {
+  root: [interviewRubricRoot] as const,
+  byForm: (formId?: string) =>
+    queryOptions({
+      queryKey: [interviewRubricRoot, "form", formId] as const,
+      queryFn: formId
+        ? () => getRoleInterviewRubricsForForm(formId)
+        : skipToken,
+    }),
+  byFormRole: (formId?: string, role?: ApplicantRole) =>
+    queryOptions({
+      queryKey: [interviewRubricRoot, "form", formId, "role", role] as const,
+      queryFn:
+        formId && role
+          ? () => getRoleInterviewRubricsForFormRole(formId, role)
+          : skipToken,
+    }),
+};
 
 export const useUploadInterviewRubrics = () => {
   const queryClient = useQueryClient();
@@ -20,26 +47,18 @@ export const useUploadInterviewRubrics = () => {
       token: string;
     }) => uploadInterviewRubricsService(interviewRubrics, token),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["interview-rubrics"] });
+      queryClient.invalidateQueries({ queryKey: interviewRubricQueries.root });
     },
   });
 };
 
 export function useInterviewRubricsForForm(formId?: string) {
-  return useQuery({
-    queryKey: ["interview-rubrics", "form", formId],
-    enabled: !!formId,
-    queryFn: () => getRoleInterviewRubricsForForm(formId!),
-  });
+  return useQuery(interviewRubricQueries.byForm(formId));
 }
 
 export function useInterviewRubricsForFormRole(
   formId?: string,
   role?: ApplicantRole,
 ) {
-  return useQuery({
-    queryKey: ["interview-rubrics", "form", "role", formId, role],
-    enabled: !!formId && !!role,
-    queryFn: () => getRoleInterviewRubricsForFormRole(formId!, role!),
-  });
+  return useQuery(interviewRubricQueries.byFormRole(formId, role));
 }

@@ -37,7 +37,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { useApplicationForm } from "@/hooks/useApplicationForm";
+import { formQueries, useApplicationForm } from "@/hooks/useApplicationForm";
 import useSearch from "@/hooks/useSearch";
 import { setFormDecisionRelease } from "@/services/applicationFormsService";
 import {
@@ -74,7 +74,9 @@ export default function SuperReviewerDashboardShell() {
       await setFormDecisionRelease(formId, released);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["form", formId] });
+      queryClient.invalidateQueries({
+        queryKey: formQueries.detail(formId).queryKey,
+      });
     },
     onError: (err) => {
       console.log(err);

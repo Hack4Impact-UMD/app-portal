@@ -7,6 +7,8 @@ import {
   setApplicationFormActiveStatus,
 } from "@/services/applicationFormsService";
 
+import { formQueries } from "./useApplicationForm";
+
 export function useUpdateApplicationFormActive() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -36,7 +38,7 @@ export function useUpdateApplicationFormActive() {
       throwSuccessToast("Form active status updated successfully!");
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["form"] });
+      await queryClient.invalidateQueries({ queryKey: formQueries.root });
     },
   });
 }
