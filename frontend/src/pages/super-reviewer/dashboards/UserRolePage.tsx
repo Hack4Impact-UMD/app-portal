@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import UserTable from "@/components/admin/UserTable";
 import Loading from "@/components/Loading";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { reviewerQueries } from "@/hooks/useReviewers";
 import { userQueries, useUsers } from "@/hooks/useUsers";
 import {
   deleteUsers,
@@ -76,8 +75,7 @@ export default function UserRolePage() {
       queryClient.setQueryData(userQueries.all.queryKey, ctx?.prevUsers);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: userQueries.all.queryKey });
-      queryClient.invalidateQueries({ queryKey: reviewerQueries.root });
+      queryClient.invalidateQueries({ queryKey: userQueries.root });
     },
   });
 

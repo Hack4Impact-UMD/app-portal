@@ -5,17 +5,19 @@ import {
   getApplicantRolesForBoardMember,
 } from "@/services/boardService";
 
-const boardMemberRoot = "board-members" as const;
+import { userQueries } from "./useUsers";
+
+const boardMemberRoot = [...userQueries.root, "board-members"] as const;
 
 export const boardMemberQueries = {
-  root: [boardMemberRoot] as const,
+  root: boardMemberRoot,
   all: queryOptions({
-    queryKey: [boardMemberRoot] as const,
+    queryKey: [...boardMemberRoot, "all"] as const,
     queryFn: () => getAllBoardMembers(),
   }),
   roles: (boardId?: string) =>
     queryOptions({
-      queryKey: [boardMemberRoot, "boardId", boardId] as const,
+      queryKey: [...boardMemberRoot, "id", boardId] as const,
       queryFn: boardId
         ? () => getApplicantRolesForBoardMember(boardId)
         : skipToken,

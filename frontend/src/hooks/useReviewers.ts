@@ -7,22 +7,24 @@ import {
   getRolePreferencesForReviewer,
 } from "@/services/reviewersService";
 
-const reviewerRoot = "reviewers" as const;
+import { userQueries } from "./useUsers";
+
+const reviewerRoot = [...userQueries.root, "reviewers"] as const;
 
 export const reviewerQueries = {
-  root: [reviewerRoot] as const,
+  root: reviewerRoot,
   all: queryOptions({
-    queryKey: [reviewerRoot] as const,
+    queryKey: [...reviewerRoot, "all"] as const,
     queryFn: () => getAllReviewers(),
   }),
   byRole: (role: ApplicantRole) =>
     queryOptions({
-      queryKey: [reviewerRoot, "role", role] as const,
+      queryKey: [...reviewerRoot, "role", role] as const,
       queryFn: () => getReviewersForRole(role),
     }),
   rolePreferences: (reviewerId: string) =>
     queryOptions({
-      queryKey: [reviewerRoot, "reviewer", reviewerId] as const,
+      queryKey: [...reviewerRoot, "id", reviewerId] as const,
       queryFn: () => getRolePreferencesForReviewer(reviewerId),
     }),
 };

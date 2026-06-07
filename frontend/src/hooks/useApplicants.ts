@@ -5,18 +5,20 @@ import {
   getApplicantForResponse,
 } from "@/services/applicantService.ts";
 
-const applicantRoot = "applicant" as const;
+import { userQueries } from "./useUsers";
+
+const applicantRoot = [...userQueries.root, "applicant"] as const;
 
 export const applicantQueries = {
-  root: [applicantRoot] as const,
+  root: applicantRoot,
   detail: (id: string) =>
     queryOptions({
-      queryKey: [applicantRoot, id] as const,
+      queryKey: [...applicantRoot, id] as const,
       queryFn: () => getApplicantById(id),
     }),
   byResponse: (responseId?: string) =>
     queryOptions({
-      queryKey: [applicantRoot, "response", responseId] as const,
+      queryKey: [...applicantRoot, "response", responseId] as const,
       queryFn: responseId
         ? () => getApplicantForResponse(responseId)
         : skipToken,
