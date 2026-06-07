@@ -25,6 +25,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { reviewerQueries } from "@/hooks/useReviewers";
 import { getReviewerById, reviewingFor } from "@/services/reviewersService";
 import { setReviewCapableUserRolePreferences } from "@/services/userService";
 import type { ReviewCapableUser } from "@/types/types";
@@ -74,7 +75,7 @@ export default function ReviewersTable({
       );
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["reviewers"] });
+      await queryClient.invalidateQueries({ queryKey: reviewerQueries.root });
       throwSuccessToast("Successfully added role preference!");
     },
     onError: (error) => {
@@ -104,7 +105,7 @@ export default function ReviewersTable({
       );
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["reviewers"] });
+      await queryClient.invalidateQueries({ queryKey: reviewerQueries.root });
       throwSuccessToast("Successfully removed role preference!");
     },
     onError: (error) => {

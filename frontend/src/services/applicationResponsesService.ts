@@ -25,6 +25,7 @@ import { API_URL } from "@/config/firebase";
 import type { ApplicationForm, ApplicationResponse } from "@/types/types";
 
 import { getAppCheckToken } from "./appCheckService";
+import { getApplicationForm } from "./applicationFormsService";
 import { appCollection } from "./firestore";
 
 export async function saveApplicationResponse(
@@ -193,4 +194,17 @@ export async function submitApplicationResponse(
   const data = res.data as ApplicationSubmitResponse;
 
   return data;
+}
+
+export async function fetchMyApplicationResponseAndForm(
+  userId: string,
+  formId: string,
+) {
+  const form = await getApplicationForm(formId);
+  console.log(`form found: ${form.semester}`);
+
+  const response = await fetchOrCreateApplicationResponse(userId, form);
+  console.log(`got response: ${response.id}`);
+
+  return { form, response };
 }

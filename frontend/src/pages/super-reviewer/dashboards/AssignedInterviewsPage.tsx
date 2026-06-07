@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -6,24 +5,10 @@ import { AssignedInterviewsTable } from "@/components/dor/AssignedInterviewsDash
 import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import { Button } from "@/components/ui/button";
+import { useApplicantForResponse } from "@/hooks/useApplicants";
 import { useApplicationResponse } from "@/hooks/useApplicationResponses";
 import { useInterviewAssignmentsForResponse } from "@/hooks/useInterviewAssignments";
 import { useInterviewDataForResponse } from "@/hooks/useInterviewData";
-import { getApplicantById } from "@/services/applicantService";
-import { getApplicationResponseById } from "@/services/applicationResponsesService";
-
-function useApplicantForResponse(responseId: string) {
-  return useQuery({
-    queryKey: ["applicant", "response", responseId],
-    enabled: !!responseId,
-    queryFn: async () => {
-      const response = await getApplicationResponseById(responseId);
-      if (!response) throw new Error("Response not found!");
-      const user = await getApplicantById(response.userId);
-      return user;
-    },
-  });
-}
 
 export function AssignedInterviewsPage() {
   const [statusFilter, setStatusFilter] = useState<

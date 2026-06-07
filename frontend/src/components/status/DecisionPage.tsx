@@ -12,7 +12,10 @@ import { Button } from "@/components/ui/button";
 import { useApplicationFormForResponseId } from "@/hooks/useApplicationForm";
 import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
 import { useAuth } from "@/hooks/useAuth";
-import { useDecisionConfirmationForResponse } from "@/hooks/useDecisionConfirmation";
+import {
+  decisionConfirmationQueries,
+  useDecisionConfirmationForResponse,
+} from "@/hooks/useDecisionConfirmation";
 import ErrorPage from "@/pages/ErrorPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import { createDecisionConfirmation } from "@/services/decisionConfirmationService";
@@ -76,9 +79,14 @@ function DecisionPage() {
           ? "Decision to join confirmed!"
           : "Decision to not join confirmed.",
       );
-      queryClient.invalidateQueries({
-        queryKey: ["decision-confirmation", "response", responseId],
-      });
+      if (user && responseId) {
+        queryClient.invalidateQueries({
+          queryKey: decisionConfirmationQueries.byUserResponse(
+            user.id,
+            responseId,
+          ).queryKey,
+        });
+      }
     },
     onError: (error) => {
       console.error(error);

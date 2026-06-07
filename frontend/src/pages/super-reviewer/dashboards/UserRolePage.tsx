@@ -1,16 +1,40 @@
-import type { PermissionRole } from "@app-portal/shared/constants";
+import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import UserTable from "@/components/admin/UserTable";
 import Loading from "@/components/Loading";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { useUsers } from "@/hooks/useUsers";
+import { reviewerQueries } from "@/hooks/useReviewers";
+import { userQueries, useUsers } from "@/hooks/useUsers";
 import {
   deleteUsers,
   updateUserActiveStatus,
   updateUserRoles,
 } from "@/services/userService";
 import type { UserProfile } from "@/types/types";
+
+function withRole(user: UserProfile, role: PermissionRole): UserProfile {
+  switch (role) {
+    case PermissionRole.Applicant:
+    case PermissionRole.SuperReviewer:
+      return { ...user, role };
+    case PermissionRole.Reviewer:
+      return {
+        ...user,
+        role,
+        applicantRolePreferences:
+          "applicantRolePreferences" in user
+            ? user.applicantRolePreferences
+            : Object.values(ApplicantRole),
+      };
+    case PermissionRole.Board:
+      return {
+        ...user,
+        role,
+        applicantRoles: "applicantRoles" in user ? user.applicantRoles : [],
+      };
+  }
+}
 
 export default function UserRolePage() {
   const { data: users, isPending, error } = useUsers();
@@ -25,13 +49,11 @@ export default function UserRolePage() {
       inactive: boolean;
     }) => updateUserActiveStatus(user.id, inactive),
     onMutate: async ({ user, inactive }) => {
-      await queryClient.cancelQueries({ queryKey: ["users", "all"] });
-      const prevUsers = queryClient.getQueryData<UserProfile[]>([
-        "users",
-        "all",
-      ]);
+      const usersKey = userQueries.all.queryKey;
+      await queryClient.cancelQueries({ queryKey: usersKey });
+      const prevUsers = queryClient.getQueryData<UserProfile[]>(usersKey);
 
-      queryClient.setQueryData<UserProfile[]>(["users", "all"], (old) =>
+      queryClient.setQueryData<UserProfile[]>(usersKey, (old) =>
         old?.map((prevUser) => {
           if (prevUser.id === user.id) {
             return {
@@ -51,11 +73,11 @@ export default function UserRolePage() {
       console.error("Active status update failed");
       console.error(err);
       console.error("Update:", update);
-      queryClient.setQueryData(["users", "all"], ctx?.prevUsers);
+      queryClient.setQueryData(userQueries.all.queryKey, ctx?.prevUsers);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["users", "all"] });
-      queryClient.invalidateQueries({ queryKey: ["reviewers"] });
+      queryClient.invalidateQueries({ queryKey: userQueries.all.queryKey });
+      queryClient.invalidateQueries({ queryKey: reviewerQueries.root });
     },
   });
 
@@ -70,17 +92,15 @@ export default function UserRolePage() {
       return updateUserRoles(users, role);
     },
     onMutate: async ({ users, role }) => {
-      await queryClient.cancelQueries({ queryKey: ["users"] });
-      const prevUsers = queryClient.getQueryData(["users", "all"]);
+      const usersKey = userQueries.all.queryKey;
+      await queryClient.cancelQueries({ queryKey: userQueries.root });
+      const prevUsers = queryClient.getQueryData<UserProfile[]>(usersKey);
       const uids = new Set(users.map((u) => u.id));
 
-      queryClient.setQueryData(["users", "all"], (old: UserProfile[]) =>
-        old.map((user) => {
+      queryClient.setQueryData<UserProfile[]>(usersKey, (old) =>
+        old?.map((user) => {
           if (uids.has(user.id)) {
-            return {
-              ...user,
-              role: role,
-            };
+            return withRole(user, role);
           } else {
             return user;
           }
@@ -94,10 +114,10 @@ export default function UserRolePage() {
       console.error("Role update failed");
       console.error(err);
       console.error("Update:", update);
-      queryClient.setQueryData(["users", "all"], ctx?.prevUsers);
+      queryClient.setQueryData(userQueries.all.queryKey, ctx?.prevUsers);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: userQueries.root });
     },
   });
 
@@ -106,12 +126,13 @@ export default function UserRolePage() {
       return deleteUsers(users.map((u) => u.id));
     },
     onMutate: async (users) => {
-      await queryClient.cancelQueries({ queryKey: ["users"] });
-      const prevUsers = queryClient.getQueryData(["users", "all"]);
+      const usersKey = userQueries.all.queryKey;
+      await queryClient.cancelQueries({ queryKey: userQueries.root });
+      const prevUsers = queryClient.getQueryData<UserProfile[]>(usersKey);
       const uids = users.map((u) => u.id);
 
-      queryClient.setQueryData(["users", "all"], (old: UserProfile[]) =>
-        old.filter((user) => {
+      queryClient.setQueryData<UserProfile[]>(usersKey, (old) =>
+        old?.filter((user) => {
           if (uids.includes(user.id)) {
             return false;
           } else {
@@ -127,10 +148,10 @@ export default function UserRolePage() {
       console.error("Delete failed");
       console.error(err);
       console.error("Update:", update);
-      queryClient.setQueryData(["users", "all"], ctx?.prevUsers);
+      queryClient.setQueryData(userQueries.all.queryKey, ctx?.prevUsers);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: userQueries.root });
     },
   });
 
