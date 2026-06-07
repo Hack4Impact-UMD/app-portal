@@ -14,6 +14,7 @@
     "logs": "firebase functions:log",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint src",
+    "lint:ci": "oxlint src --format=github",
     "lint:fix": "oxlint src --fix",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check ."
