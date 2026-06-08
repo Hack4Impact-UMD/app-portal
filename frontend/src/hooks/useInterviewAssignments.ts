@@ -12,7 +12,7 @@ const interviewAssignmentRoot = "interview-assignments" as const;
 
 export const interviewAssignmentQueries = {
   root: [interviewAssignmentRoot] as const,
-  detail: (formId: string, interviewerId: string) =>
+  detail: (formId?: string, interviewerId?: string) =>
     queryOptions({
       queryKey: [
         interviewAssignmentRoot,
@@ -21,12 +21,17 @@ export const interviewAssignmentQueries = {
         "interviewer",
         interviewerId,
       ] as const,
-      queryFn: () => getInterviewAssignments(formId, interviewerId),
+      queryFn:
+        formId && interviewerId
+          ? () => getInterviewAssignments(formId, interviewerId)
+          : skipToken,
     }),
-  byForm: (formId: string) =>
+  byForm: (formId?: string) =>
     queryOptions({
       queryKey: [interviewAssignmentRoot, "form", formId] as const,
-      queryFn: () => getInterviewAssignmentsForForm(formId),
+      queryFn: formId
+        ? () => getInterviewAssignmentsForForm(formId)
+        : skipToken,
     }),
   mine: (formId: string, interviewerId?: string) =>
     queryOptions({
@@ -42,18 +47,23 @@ export const interviewAssignmentQueries = {
         ? () => getInterviewAssignments(formId, interviewerId)
         : skipToken,
     }),
-  byResponse: (responseId: string) =>
+  byResponse: (responseId?: string) =>
     queryOptions({
       queryKey: [interviewAssignmentRoot, "response", responseId] as const,
-      queryFn: () => getInterviewAssignmentsForApplication(responseId),
+      queryFn: responseId
+        ? () => getInterviewAssignmentsForApplication(responseId)
+        : skipToken,
     }),
 };
 
-export function useInterviewAssignments(formId: string, interviewerId: string) {
+export function useInterviewAssignments(
+  formId?: string,
+  interviewerId?: string,
+) {
   return useQuery(interviewAssignmentQueries.detail(formId, interviewerId));
 }
 
-export function useInterviewAssignmentsForForm(formId: string) {
+export function useInterviewAssignmentsForForm(formId?: string) {
   return useQuery(interviewAssignmentQueries.byForm(formId));
 }
 
@@ -63,6 +73,6 @@ export function useMyInterviewAssignments(formId: string) {
   return useQuery(interviewAssignmentQueries.mine(formId, user?.id));
 }
 
-export function useInterviewAssignmentsForResponse(responseId: string) {
+export function useInterviewAssignmentsForResponse(responseId?: string) {
   return useQuery(interviewAssignmentQueries.byResponse(responseId));
 }

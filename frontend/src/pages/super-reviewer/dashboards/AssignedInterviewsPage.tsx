@@ -19,22 +19,22 @@ export function AssignedInterviewsPage() {
     data: assignedApps,
     isPending: assignmentsPending,
     error: assignmentsError,
-  } = useInterviewAssignmentsForResponse(responseId!);
+  } = useInterviewAssignmentsForResponse(responseId);
   const {
     data: applicant,
     isPending: applicantPending,
     error: applicantError,
-  } = useApplicantForResponse(responseId!);
+  } = useApplicantForResponse(responseId);
   const {
     data: response,
     isPending: responsePending,
     error: responseError,
-  } = useApplicationResponse(responseId!);
+  } = useApplicationResponse(responseId);
   const {
     data: interviews,
     isPending: interviewsPending,
     error: interviewsError,
-  } = useInterviewDataForResponse(responseId!);
+  } = useInterviewDataForResponse(responseId);
 
   const numInterviewed = useMemo(
     () =>

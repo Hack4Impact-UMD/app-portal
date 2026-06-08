@@ -4,7 +4,6 @@ import type {
   InterviewAssignment,
   ApplicationInterviewData,
 } from "@app-portal/shared/types";
-import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 
 import ApplicantRolePill from "@/components/role-pill/RolePill";
@@ -23,9 +22,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { interviewAssignmentQueries } from "@/hooks/useInterviewAssignments";
+import { useInterviewAssignmentsForResponse } from "@/hooks/useInterviewAssignments";
 import { useReviewersForRole } from "@/hooks/useReviewers";
-import { getInterviewAssignmentsForApplication } from "@/services/interviewAssignmentService";
 import { reviewingFor } from "@/services/reviewersService";
 import type { ReviewCapableUser } from "@/types/types";
 
@@ -47,10 +45,7 @@ function InterviewerSearchPopover({
     data: allAssignments,
     isPending: assignmentsPending,
     error: assignmentsError,
-  } = useQuery({
-    queryKey: interviewAssignmentQueries.byResponse(responseId).queryKey,
-    queryFn: () => getInterviewAssignmentsForApplication(responseId),
-  });
+  } = useInterviewAssignmentsForResponse(responseId);
 
   const validInterviewers = useMemo(() => {
     if (!interviewers || !allAssignments) {

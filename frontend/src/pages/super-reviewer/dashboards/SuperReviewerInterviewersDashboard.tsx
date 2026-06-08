@@ -21,12 +21,12 @@ export default function SuperReviewerInterviewersDashboard() {
     data: interviewData,
     isPending: dataPending,
     error: dataError,
-  } = useInterviewDataForForm(formId!);
+  } = useInterviewDataForForm(formId);
   const {
     data: assignments,
     isPending: assignmentsPending,
     error: assignmentsError,
-  } = useInterviewAssignmentsForForm(formId!);
+  } = useInterviewAssignmentsForForm(formId);
 
   const { search } = useSearch();
 

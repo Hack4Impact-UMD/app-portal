@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -8,18 +7,8 @@ import ApplicantRolePill from "@/components/role-pill/RolePill";
 import { Button } from "@/components/ui/button";
 import { useInterviewAssignments } from "@/hooks/useInterviewAssignments";
 import { useInterviewDataForInterviewer } from "@/hooks/useInterviewData";
-import { getReviewerById, reviewingFor } from "@/services/reviewersService";
-
-function useInterviewerForId(interviewerId: string) {
-  return useQuery({
-    queryKey: ["interviewer", "interviewer", interviewerId],
-    enabled: !!interviewerId,
-    queryFn: async () => {
-      const user = await getReviewerById(interviewerId);
-      return user;
-    },
-  });
-}
+import { useReviewerForId } from "@/hooks/useReviewers";
+import { reviewingFor } from "@/services/reviewersService";
 
 export function InterviewerAssignmentsPage() {
   const [statusFilter, setStatusFilter] = useState<
@@ -34,17 +23,17 @@ export function InterviewerAssignmentsPage() {
     data: assignedInterviews,
     isPending: assignmentsPending,
     error: assignmentsError,
-  } = useInterviewAssignments(formId!, interviewerId!);
+  } = useInterviewAssignments(formId, interviewerId);
   const {
     data: interviewer,
     isPending: interviewerPending,
     error: interviewerError,
-  } = useInterviewerForId(interviewerId!);
+  } = useReviewerForId(interviewerId);
   const {
     data: interviews,
     isPending: interviewsPending,
     error: interviewsError,
-  } = useInterviewDataForInterviewer(formId!, interviewerId!);
+  } = useInterviewDataForInterviewer(formId, interviewerId);
 
   const numInterviewed = useMemo(
     () =>

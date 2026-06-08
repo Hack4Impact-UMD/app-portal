@@ -19,22 +19,22 @@ export function AssignedReviewsPage() {
     data: assignedApps,
     isPending: assignmentsPending,
     error: assignmentsError,
-  } = useReviewAssignmentsForResponse(responseId!);
+  } = useReviewAssignmentsForResponse(responseId);
   const {
     data: applicant,
     isPending: applicantPending,
     error: applicantError,
-  } = useApplicantForResponse(responseId!);
+  } = useApplicantForResponse(responseId);
   const {
     data: response,
     isPending: responsePending,
     error: responseError,
-  } = useApplicationResponse(responseId!);
+  } = useApplicationResponse(responseId);
   const {
     data: reviews,
     isPending: reviewsPending,
     error: reviewsError,
-  } = useReviewDataForApplication(responseId!);
+  } = useReviewDataForApplication(responseId);
 
   const numReviewed = useMemo(
     () =>

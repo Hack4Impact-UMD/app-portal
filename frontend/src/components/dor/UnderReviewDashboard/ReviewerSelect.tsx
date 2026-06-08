@@ -24,8 +24,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { reviewAssignmentQueries } from "@/hooks/useReviewAssignments";
 import { useReviewersForRole } from "@/hooks/useReviewers";
-import { getReviewAssignments } from "@/services/reviewAssignmentService";
 import { reviewingFor } from "@/services/reviewersService";
 import type { ReviewCapableUser } from "@/types/types";
 
@@ -60,8 +60,7 @@ function ReviewerSearchPopover({
   const assignments = useQueries({
     queries:
       reviewers?.map((reviewer) => ({
-        queryKey: ["assignments", "id", formId!, reviewer.id],
-        queryFn: () => getReviewAssignments(formId!, reviewer.id),
+        ...reviewAssignmentQueries.detail(formId, reviewer.id),
       })) ?? [],
   });
 

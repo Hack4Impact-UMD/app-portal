@@ -22,12 +22,12 @@ export default function SuperReviewerReviewersDashboard() {
     data: reviewData,
     isPending: dataPending,
     error: dataError,
-  } = useReviewDataForForm(formId!);
+  } = useReviewDataForForm(formId);
   const {
     data: assignments,
     isPending: assignmentsPending,
     error: assignmentsError,
-  } = useReviewAssignmentsForForm(formId!);
+  } = useReviewAssignmentsForForm(formId);
 
   const { search } = useSearch();
 
