@@ -46,6 +46,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { applicationStatusQueries } from "@/hooks/useApplicationStatus";
+import { reviewAssignmentQueries } from "@/hooks/useReviewAssignments";
 import {
   assignReview,
   removeReviewAssignment,
@@ -109,11 +111,7 @@ export default function SuperReviewerApplicationsTable({
       queryClient.invalidateQueries({
         queryKey: ["all-reviewers-rows"],
       });
-      queryClient.invalidateQueries({
-        predicate: (q) =>
-          q.queryKey.includes("assignments") ||
-          q.queryKey.includes("assignment"),
-      });
+      queryClient.invalidateQueries({ queryKey: reviewAssignmentQueries.root });
     },
   });
 
@@ -147,9 +145,7 @@ export default function SuperReviewerApplicationsTable({
         queryKey: ["all-reviewers-rows"],
       });
       queryClient.invalidateQueries({
-        predicate: (q) =>
-          q.queryKey.includes("assignments") ||
-          q.queryKey.includes("assignment"),
+        queryKey: reviewAssignmentQueries.root,
       });
     },
   });
@@ -204,7 +200,7 @@ export default function SuperReviewerApplicationsTable({
         predicate: (q) => q.queryKey.includes("qualified-apps-rows"),
       });
       queryClient.invalidateQueries({
-        predicate: (q) => q.queryKey.includes("qualified-statuses"),
+        queryKey: applicationStatusQueries.root,
       });
     },
   });

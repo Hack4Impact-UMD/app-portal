@@ -11,7 +11,10 @@ import Spinner from "@/components/Spinner";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Button } from "@/components/ui/button";
 import { FormContext } from "@/contexts/formContext";
-import { useMyApplicationResponseAndForm } from "@/hooks/useApplicationResponses";
+import {
+  applicationResponseQueries,
+  useMyApplicationResponseAndForm,
+} from "@/hooks/useApplicationResponses";
 import { useAuth } from "@/hooks/useAuth";
 import { saveApplicationResponse } from "@/services/applicationResponsesService";
 import type { ApplicationResponse } from "@/types/types";
@@ -84,9 +87,7 @@ export default function FormProvider() {
       throwErrorToast("Failed to save your application!");
     }
     await queryClient.invalidateQueries({
-      predicate: (q) =>
-        q.queryKey.includes("responses") ||
-        q.queryKey.includes("responses-and-semester"),
+      queryKey: applicationResponseQueries.root,
     });
   }, [response, saveMutation, queryClient]);
 

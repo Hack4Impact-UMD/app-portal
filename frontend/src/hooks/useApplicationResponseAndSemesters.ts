@@ -2,15 +2,19 @@ import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
 
 import { getApplicationResponseAndSemester } from "@/services/applicationResponseAndSemesterService";
 
+import { applicationResponseQueries } from "./useApplicationResponses";
 import { useAuth } from "./useAuth";
 
-const applicationResponseAndSemesterRoot = "responses-and-semester" as const;
+const applicationResponseAndSemesterRoot = [
+  ...applicationResponseQueries.root,
+  "semester",
+] as const;
 
 export const applicationResponseAndSemesterQueries = {
-  root: [applicationResponseAndSemesterRoot] as const,
+  root: [...applicationResponseAndSemesterRoot] as const,
   byUser: (userId?: string) =>
     queryOptions({
-      queryKey: [applicationResponseAndSemesterRoot, userId] as const,
+      queryKey: [...applicationResponseAndSemesterRoot, userId] as const,
       queryFn: userId
         ? () => getApplicationResponseAndSemester(userId)
         : skipToken,

@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { reviewAssignmentQueries } from "@/hooks/useReviewAssignments";
 import type { AutoAssignmentPlanItem } from "@/services/autoAssignmentService";
 import {
   calculateBootcampAssignmentPlan,
@@ -46,9 +47,7 @@ export function AutoAssignButton({ formId, disabled }: AutoAssignButtonProps) {
         queryKey: ["all-reviewers-rows"],
       });
       queryClient.invalidateQueries({
-        predicate: (q) =>
-          q.queryKey.includes("assignments") ||
-          q.queryKey.includes("assignment"),
+        queryKey: reviewAssignmentQueries.root,
       });
       throwSuccessToast("Assignments successfully created from plan!");
       setShowPreviewDialog(false);

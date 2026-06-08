@@ -1,5 +1,4 @@
 import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
-import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -7,9 +6,9 @@ import { BoardInterviewsTable } from "@/components/dor/BoardInterviewsDashboard"
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
 import { useAllApplicationResponsesForForm } from "@/hooks/useApplicationResponses";
+import { useQualifiedStatusesForFormRoles } from "@/hooks/useApplicationStatus";
 import { useAuth } from "@/hooks/useAuth";
 import useSearch from "@/hooks/useSearch";
-import { getQualifiedStatusesForFormRoles } from "@/services/statusService";
 import type { ApplicationResponse, BoardUserProfile } from "@/types/types";
 import {
   applicantRoleColor,
@@ -26,22 +25,12 @@ export default function BoardInterviewsDashboard() {
   const boardUser = user as BoardUserProfile;
   const allowedRoles = boardUser?.applicantRoles ?? [];
 
-  // Get all qualified statuses for this form
   const {
     data: qualifiedStatuses,
     isPending: statusesPending,
     error: statusesError,
-  } = useQuery({
-    queryKey: ["qualified-statuses", formId],
-    enabled: !!formId,
-    queryFn: () => {
-      if (!formId) throw new Error("formId is required");
-      return getQualifiedStatusesForFormRoles(formId, allowedRoles);
-    },
-    refetchOnWindowFocus: true, // Refetch when user switches back to this tab
-  });
+  } = useQualifiedStatusesForFormRoles(formId, allowedRoles);
 
-  // Get all application responses for this form
   const {
     data: apps,
     isPending: appsPending,

@@ -32,6 +32,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { interviewAssignmentQueries } from "@/hooks/useInterviewAssignments";
 import {
   assignInterview,
   removeInterviewAssignment,
@@ -85,10 +86,7 @@ export default function BoardInterviewsTable({
         queryKey: ["qualified-apps-rows"],
       });
       queryClient.invalidateQueries({
-        predicate: (q) =>
-          q.queryKey.includes("interview-assignments") ||
-          q.queryKey.includes("interview") ||
-          q.queryKey.includes("assignment"),
+        queryKey: interviewAssignmentQueries.root,
       });
     },
   });
@@ -126,9 +124,7 @@ export default function BoardInterviewsTable({
         queryKey: ["qualified-apps-rows"],
       });
       queryClient.invalidateQueries({
-        predicate: (q) =>
-          q.queryKey.includes("assignments") ||
-          q.queryKey.includes("assignment"),
+        queryKey: interviewAssignmentQueries.root,
       });
     },
   });

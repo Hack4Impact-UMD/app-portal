@@ -1,5 +1,4 @@
 import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
-import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -7,8 +6,8 @@ import { QualifiedApplicationsTable } from "@/components/dor/QualifiedDashboard"
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
 import { useAllApplicationResponsesForForm } from "@/hooks/useApplicationResponses";
+import { useQualifiedStatusesForForm } from "@/hooks/useApplicationStatus";
 import useSearch from "@/hooks/useSearch";
-import { getQualifiedStatusesForForm } from "@/services/statusService";
 import type { ApplicationResponse } from "@/types/types";
 import {
   applicantRoleColor,
@@ -21,22 +20,12 @@ export default function QualifiedApplicationsDashboard() {
   const [roleFilter, setRoleFilter] = useState<"all" | ApplicantRole>("all");
   const { search } = useSearch();
 
-  // Get all qualified statuses for this form
   const {
     data: qualifiedStatuses,
     isPending: statusesPending,
     error: statusesError,
-  } = useQuery({
-    queryKey: ["qualified-statuses", formId],
-    enabled: !!formId,
-    queryFn: () => {
-      if (!formId) throw new Error("formId is required");
-      return getQualifiedStatusesForForm(formId);
-    },
-    refetchOnWindowFocus: true, // Refetch when user switches back to this tab
-  });
+  } = useQualifiedStatusesForForm(formId);
 
-  // Get all application responses for this form
   const {
     data: apps,
     isPending: appsPending,
