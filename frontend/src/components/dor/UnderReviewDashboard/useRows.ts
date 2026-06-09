@@ -4,7 +4,7 @@ import type {
   ApplicationReviewData,
   InternalApplicationStatus,
 } from "@app-portal/shared/types";
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { Timestamp } from "firebase/firestore";
 
 import { getApplicantById } from "@/services/applicantService";
@@ -49,22 +49,18 @@ export type ApplicationRow = {
 
 export const underReviewRowsQueryRoot = ["under-review-rows"] as const;
 
-export function getUnderReviewRowsKey(
+export function underReviewRowsQueryOptions(
   applications: ApplicationResponse[],
   formId: string,
 ) {
-  return [
-    ...underReviewRowsQueryRoot,
-    "form",
-    formId,
-    "responses",
-    applications.map((a) => a.id).sort(),
-  ] as const;
-}
-
-export function useRows(applications: ApplicationResponse[], formId: string) {
-  return useQuery({
-    queryKey: getUnderReviewRowsKey(applications, formId),
+  return queryOptions({
+    queryKey: [
+      ...underReviewRowsQueryRoot,
+      "form",
+      formId,
+      "responses",
+      applications.map((a) => a.id).sort(),
+    ] as const,
     placeholderData: (prev) => prev,
     queryFn: async () => {
       const form = await getApplicationForm(formId);
@@ -141,6 +137,10 @@ export function useRows(applications: ApplicationResponse[], formId: string) {
       );
     },
   });
+}
+
+export function useRows(applications: ApplicationResponse[], formId: string) {
+  return useQuery(underReviewRowsQueryOptions(applications, formId));
 }
 
 export function flattenRows(

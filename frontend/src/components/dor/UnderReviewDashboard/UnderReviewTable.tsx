@@ -65,7 +65,7 @@ import { ReviewerSelect } from "./ReviewerSelect";
 import type { ApplicationRow } from "./useRows";
 import {
   flattenRows,
-  getUnderReviewRowsKey,
+  underReviewRowsQueryOptions,
   underReviewRowsQueryRoot,
   useRows,
 } from "./useRows";
@@ -164,14 +164,15 @@ export default function SuperReviewerApplicationsTable({
       });
     },
     onMutate: async ({ status }) => {
-      const rowsKey = getUnderReviewRowsKey(applications, formId);
+      const rowsOptions = underReviewRowsQueryOptions(applications, formId);
       await queryClient.cancelQueries({
-        queryKey: underReviewRowsQueryRoot,
+        queryKey: rowsOptions.queryKey,
       });
-      const oldRows = queryClient.getQueryData(rowsKey);
+      const oldRows = queryClient.getQueryData(rowsOptions.queryKey);
 
-      queryClient.setQueryData(rowsKey, (old: ApplicationRow[]) =>
-        old.map((row) => {
+      queryClient.setQueryData(rowsOptions.queryKey, (old) => {
+        if (!old) return old;
+        old?.map((row) => {
           if (row.status?.id === status.id) {
             return {
               ...row,
@@ -183,12 +184,12 @@ export default function SuperReviewerApplicationsTable({
           } else {
             return row;
           }
-        }),
-      );
+        });
+      });
 
       return {
         oldRows,
-        rowsKey,
+        rowsKey: rowsOptions.queryKey,
       };
     },
     onError: (error, _resp, ctx) => {

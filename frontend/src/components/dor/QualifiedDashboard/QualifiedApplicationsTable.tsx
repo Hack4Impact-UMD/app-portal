@@ -52,7 +52,7 @@ import { displayReviewStatus } from "@/utils/display";
 import type { QualifiedAppRow } from "./useRows";
 import {
   flattenRows,
-  getQualifiedRowsKey,
+  qualifiedRowsQueryOptions,
   qualifiedRowsQueryRoot,
   useRows,
 } from "./useRows";
@@ -137,15 +137,14 @@ export default function QualifiedApplicationsTable({
       newStatus: ReviewStatus;
     }) => updateApplicationStatus(statusId, { status: newStatus }),
     onMutate: async ({ statusId, newStatus }) => {
-      const queryKey = getQualifiedRowsKey(applications, formId);
+      const queryKey = qualifiedRowsQueryOptions(applications, formId).queryKey;
       await queryClient.cancelQueries({ queryKey });
 
-      const previousRows =
-        queryClient.getQueryData<QualifiedAppRow[]>(queryKey);
+      const previousRows = queryClient.getQueryData(queryKey);
 
-      queryClient.setQueryData<QualifiedAppRow[]>(queryKey, (old) => {
-        if (!old) return [];
-        return old.map((row: QualifiedAppRow): QualifiedAppRow => {
+      queryClient.setQueryData(queryKey, (old) => {
+        if (!old) return old;
+        return old.map((row) => {
           if (row.status?.id === statusId) {
             return {
               ...row,
