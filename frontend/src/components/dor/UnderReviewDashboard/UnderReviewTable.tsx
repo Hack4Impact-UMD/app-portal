@@ -20,6 +20,8 @@ import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { DataTable } from "@/components/DataTable";
+import { qualifiedRowsQueryRoot } from "@/components/dor/QualifiedDashboard/useRows";
+import { reviewerRowsQueryRoot } from "@/components/dor/ReviewersDashboard/useRows";
 import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import SortableHeader from "@/components/tables/SortableHeader";
@@ -61,7 +63,12 @@ import { displayReviewStatus } from "@/utils/display";
 import { AutoAssignButton } from "./AutoAssignButton";
 import { ReviewerSelect } from "./ReviewerSelect";
 import type { ApplicationRow } from "./useRows";
-import { flattenRows, useRows } from "./useRows";
+import {
+  flattenRows,
+  getUnderReviewRowsKey,
+  underReviewRowsQueryRoot,
+  useRows,
+} from "./useRows";
 
 type SuperReviewerApplicationsTableProps = {
   applications: ApplicationResponse[];
@@ -106,10 +113,10 @@ export default function SuperReviewerApplicationsTable({
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["all-apps-rows"],
+        queryKey: underReviewRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        queryKey: ["all-reviewers-rows"],
+        queryKey: reviewerRowsQueryRoot,
       });
       queryClient.invalidateQueries({ queryKey: reviewAssignmentQueries.root });
     },
@@ -139,10 +146,10 @@ export default function SuperReviewerApplicationsTable({
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["all-apps-rows"],
+        queryKey: underReviewRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        queryKey: ["all-reviewers-rows"],
+        queryKey: reviewerRowsQueryRoot,
       });
       queryClient.invalidateQueries({
         queryKey: reviewAssignmentQueries.root,
@@ -157,47 +164,45 @@ export default function SuperReviewerApplicationsTable({
       });
     },
     onMutate: async ({ status }) => {
+      const rowsKey = getUnderReviewRowsKey(applications, formId);
       await queryClient.cancelQueries({
-        queryKey: ["all-apps-rows"],
+        queryKey: underReviewRowsQueryRoot,
       });
-      const oldRows = queryClient.getQueryData([
-        "all-apps-rows",
-        applications.map((a) => a.id).sort(),
-        formId,
-      ]);
+      const oldRows = queryClient.getQueryData(rowsKey);
 
-      queryClient.setQueryData(
-        ["all-apps-rows", applications.map((a) => a.id).sort(), formId],
-        (old: ApplicationRow[]) =>
-          old.map((row) => {
-            if (row.status?.id === status.id) {
-              return {
-                ...row,
-                status: {
-                  ...status,
-                  isQualified: !status.isQualified,
-                },
-              };
-            } else {
-              return row;
-            }
-          }),
+      queryClient.setQueryData(rowsKey, (old: ApplicationRow[]) =>
+        old.map((row) => {
+          if (row.status?.id === status.id) {
+            return {
+              ...row,
+              status: {
+                ...status,
+                isQualified: !status.isQualified,
+              },
+            };
+          } else {
+            return row;
+          }
+        }),
       );
 
       return {
         oldRows,
+        rowsKey,
       };
     },
     onError: (error, _resp, ctx) => {
-      queryClient.setQueriesData({ queryKey: ["all-apps-rows"] }, ctx?.oldRows);
+      if (ctx?.rowsKey) {
+        queryClient.setQueryData(ctx.rowsKey, ctx.oldRows);
+      }
       throwErrorToast("Failed to update qualified status: " + error);
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["all-apps-rows"],
+        queryKey: underReviewRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        predicate: (q) => q.queryKey.includes("qualified-apps-rows"),
+        queryKey: qualifiedRowsQueryRoot,
       });
       queryClient.invalidateQueries({
         queryKey: applicationStatusQueries.root,
@@ -216,10 +221,10 @@ export default function SuperReviewerApplicationsTable({
   //   },
   //   onSettled: () => {
   //     queryClient.invalidateQueries({
-  //       queryKey: ["all-apps-rows"],
+  //       queryKey: underReviewRowsQueryRoot,
   //     });
   //     queryClient.invalidateQueries({
-  //       queryKey: ["all-reviewers-rows"],
+  //       queryKey: reviewerRowsQueryRoot,
   //     });
   //     queryClient.invalidateQueries({
   //       predicate: (q) =>

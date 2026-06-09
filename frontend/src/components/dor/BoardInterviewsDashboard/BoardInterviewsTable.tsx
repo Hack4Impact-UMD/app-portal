@@ -15,7 +15,10 @@ import { useNavigate } from "react-router-dom";
 
 import { DataTable } from "@/components/DataTable";
 import type { QualifiedAppRow } from "@/components/dor/QualifiedDashboard/useRows";
-import { useRows } from "@/components/dor/QualifiedDashboard/useRows";
+import {
+  qualifiedRowsQueryRoot,
+  useRows,
+} from "@/components/dor/QualifiedDashboard/useRows";
 import RolePill from "@/components/role-pill/RolePill";
 import SortableHeader from "@/components/tables/SortableHeader";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
@@ -83,7 +86,7 @@ export default function BoardInterviewsTable({
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["qualified-apps-rows"],
+        queryKey: qualifiedRowsQueryRoot,
       });
       queryClient.invalidateQueries({
         queryKey: interviewAssignmentQueries.root,
@@ -121,7 +124,7 @@ export default function BoardInterviewsTable({
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["qualified-apps-rows"],
+        queryKey: qualifiedRowsQueryRoot,
       });
       queryClient.invalidateQueries({
         queryKey: interviewAssignmentQueries.root,

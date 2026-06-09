@@ -47,9 +47,24 @@ export type ApplicationRow = {
   status: InternalApplicationStatus | undefined;
 };
 
+export const underReviewRowsQueryRoot = ["under-review-rows"] as const;
+
+export function getUnderReviewRowsKey(
+  applications: ApplicationResponse[],
+  formId: string,
+) {
+  return [
+    ...underReviewRowsQueryRoot,
+    "form",
+    formId,
+    "responses",
+    applications.map((a) => a.id).sort(),
+  ] as const;
+}
+
 export function useRows(applications: ApplicationResponse[], formId: string) {
   return useQuery({
-    queryKey: ["all-apps-rows", applications.map((a) => a.id).sort(), formId],
+    queryKey: getUnderReviewRowsKey(applications, formId),
     placeholderData: (prev) => prev,
     queryFn: async () => {
       const form = await getApplicationForm(formId);

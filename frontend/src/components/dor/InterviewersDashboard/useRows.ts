@@ -26,6 +26,8 @@ export type FlatInterviewerRow = {
   pendingAssignments: number;
 };
 
+export const interviewerRowsQueryRoot = ["interviewer-rows"] as const;
+
 export function useRows(
   interviewers: ReviewCapableUser[],
   interviewData: ApplicationInterviewData[],
@@ -33,7 +35,7 @@ export function useRows(
 ) {
   return useQuery({
     queryKey: [
-      "all-interviewers-rows",
+      ...interviewerRowsQueryRoot,
       interviewers.map((x) => x.id).sort(),
       interviewData.map((x) => x.id).sort(),
       assignments.map((x) => x.id).sort(),

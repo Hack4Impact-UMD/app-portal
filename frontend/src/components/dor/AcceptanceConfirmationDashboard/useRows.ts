@@ -20,10 +20,14 @@ export type DecisionRow = {
   responseId: string;
 };
 
+export const acceptanceConfirmationRowsQueryRoot = [
+  "acceptance-confirmation-rows",
+] as const;
+
 export function useRows(confirmations: DecisionConfirmation[], formId: string) {
   return useQuery({
     queryKey: [
-      "confirmation-rows",
+      ...acceptanceConfirmationRowsQueryRoot,
       confirmations.map((a) => a.userId).sort(),
       formId,
     ],

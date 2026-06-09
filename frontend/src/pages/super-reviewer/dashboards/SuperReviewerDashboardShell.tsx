@@ -9,6 +9,7 @@ import {
 import { useMemo, useState } from "react";
 import { Outlet, useParams, useLocation, NavLink } from "react-router-dom";
 
+import { qualifiedRowsQueryRoot } from "@/components/dor/QualifiedDashboard/useRows";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import {
@@ -103,7 +104,7 @@ export default function SuperReviewerDashboardShell() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        predicate: (q) => q.queryKey.includes("qualified-apps-rows"),
+        queryKey: qualifiedRowsQueryRoot,
       });
     },
   });

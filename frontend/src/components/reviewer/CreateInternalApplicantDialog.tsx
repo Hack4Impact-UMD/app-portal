@@ -2,6 +2,8 @@ import { ApplicantRole } from "@app-portal/shared/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { qualifiedRowsQueryRoot } from "@/components/dor/QualifiedDashboard/useRows";
+import { underReviewRowsQueryRoot } from "@/components/dor/UnderReviewDashboard/useRows";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { Button } from "@/components/ui/button";
@@ -106,8 +108,8 @@ export default function CreateInternalApplicantDialog() {
       queryClient.invalidateQueries({
         queryKey: applicationStatusQueries.root,
       });
-      queryClient.invalidateQueries({ queryKey: ["qualified-apps-rows"] });
-      queryClient.invalidateQueries({ queryKey: ["all-apps-rows"] });
+      queryClient.invalidateQueries({ queryKey: qualifiedRowsQueryRoot });
+      queryClient.invalidateQueries({ queryKey: underReviewRowsQueryRoot });
 
       setOpen(false);
     },

@@ -39,13 +39,24 @@ export type QualifiedAppRow = {
   internal: boolean;
 };
 
+export const qualifiedRowsQueryRoot = ["qualified-rows"] as const;
+
+export function getQualifiedRowsKey(
+  applications: ApplicationResponse[],
+  formId: string,
+) {
+  return [
+    ...qualifiedRowsQueryRoot,
+    "form",
+    formId,
+    "responses",
+    applications.map((a) => a.id).sort(),
+  ] as const;
+}
+
 export function useRows(applications: ApplicationResponse[], formId: string) {
   return useQuery<QualifiedAppRow[]>({
-    queryKey: [
-      "qualified-apps-rows",
-      formId,
-      applications.map((x) => x.id).sort(),
-    ],
+    queryKey: getQualifiedRowsKey(applications, formId),
     placeholderData: (prev) => prev,
     queryFn: async () => {
       const form = await getApplicationForm(formId);

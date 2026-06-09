@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckIcon, TriangleAlertIcon } from "lucide-react";
 import { useState } from "react";
 
+import { reviewerRowsQueryRoot } from "@/components/dor/ReviewersDashboard/useRows";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import {
 import type { ReviewCapableUser } from "@/types/types";
 
 import ExemptReviewersDialog from "./ExemptReviewersDialog";
+import { underReviewRowsQueryRoot } from "./useRows";
 
 interface AutoAssignButtonProps {
   formId: string;
@@ -41,10 +43,10 @@ export function AutoAssignButton({ formId, disabled }: AutoAssignButtonProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["all-apps-rows"],
+        queryKey: underReviewRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        queryKey: ["all-reviewers-rows"],
+        queryKey: reviewerRowsQueryRoot,
       });
       queryClient.invalidateQueries({
         queryKey: reviewAssignmentQueries.root,
