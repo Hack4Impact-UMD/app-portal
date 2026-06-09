@@ -10,7 +10,7 @@ const applicationResponseAndSemesterRoot = [
   "semester",
 ] as const;
 
-export const applicationResponseAndSemesterQueries = {
+const applicationResponseAndSemesterQueries = {
   root: [...applicationResponseAndSemesterRoot] as const,
   byUser: (userId?: string) =>
     queryOptions({

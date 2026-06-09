@@ -20,7 +20,7 @@ export type DecisionRow = {
   responseId: string;
 };
 
-export const acceptanceConfirmationRowsQueryRoot = [
+const acceptanceConfirmationRowsQueryRoot = [
   "acceptance-confirmation-rows",
 ] as const;
 

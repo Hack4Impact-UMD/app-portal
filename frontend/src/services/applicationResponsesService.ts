@@ -104,7 +104,7 @@ export async function getAllApplicationResponsesByFormId(
   return results.docs.map((d) => d.data());
 }
 
-export async function fetchOrCreateApplicationResponse(
+async function fetchOrCreateApplicationResponse(
   userId: string,
   form: ApplicationForm,
 ): Promise<ApplicationResponse> {

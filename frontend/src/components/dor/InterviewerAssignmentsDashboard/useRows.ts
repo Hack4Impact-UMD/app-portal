@@ -27,7 +27,7 @@ export type AssignedInterviewRow = {
   responseId: string;
 };
 
-export const interviewerAssignmentRowsQueryRoot = [
+const interviewerAssignmentRowsQueryRoot = [
   "interviewer-assignment-rows",
 ] as const;
 

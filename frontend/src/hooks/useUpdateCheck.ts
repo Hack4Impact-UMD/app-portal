@@ -10,7 +10,7 @@ const localCommit: string = import.meta.env.VITE_COMMIT;
 const updateCheckRoot = "update-check" as const;
 const commitRoot = "commit" as const;
 
-export const githubQueries = {
+const githubQueries = {
   byLocalCommit: queryOptions({
     queryKey: [updateCheckRoot, localCommit] as const,
     queryFn: () => getUpdateCheck(localCommit),

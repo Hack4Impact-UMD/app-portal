@@ -9,7 +9,7 @@ import { userQueries } from "./useUsers";
 
 const applicantRoot = [...userQueries.root, "applicant"] as const;
 
-export const applicantQueries = {
+const applicantQueries = {
   root: applicantRoot,
   detail: (id: string) =>
     queryOptions({

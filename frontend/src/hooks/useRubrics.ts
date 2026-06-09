@@ -16,7 +16,7 @@ import {
 
 const rubricRoot = "rubrics" as const;
 
-export const rubricQueries = {
+const rubricQueries = {
   root: [rubricRoot] as const,
   byForm: (formId?: string) =>
     queryOptions({

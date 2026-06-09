@@ -27,7 +27,7 @@ export type AssignedAppRow = {
   responseId: string;
 };
 
-export const assignedReviewRowsQueryRoot = ["assigned-review-rows"] as const;
+const assignedReviewRowsQueryRoot = ["assigned-review-rows"] as const;
 
 export function useRows(assignments: AppReviewAssignment[], formId: string) {
   return useQuery({

@@ -13,7 +13,7 @@ export type BoardRow = {
   applicantRoles: ApplicantRole[];
 };
 
-export const boardRowsQueryRoot = ["board-rows"] as const;
+const boardRowsQueryRoot = ["board-rows"] as const;
 
 export function useRows(boardMembers: BoardUserProfile[]) {
   return useQuery({

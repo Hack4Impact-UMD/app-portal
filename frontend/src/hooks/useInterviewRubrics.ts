@@ -16,7 +16,7 @@ import {
 
 const interviewRubricRoot = "interview-rubrics" as const;
 
-export const interviewRubricQueries = {
+const interviewRubricQueries = {
   root: [interviewRubricRoot] as const,
   byForm: (formId?: string) =>
     queryOptions({

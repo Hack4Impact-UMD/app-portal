@@ -30,9 +30,7 @@ export type AssignmentRow = {
   };
 };
 
-export const reviewerApplicationRowsQueryRoot = [
-  "reviewer-application-rows",
-] as const;
+const reviewerApplicationRowsQueryRoot = ["reviewer-application-rows"] as const;
 
 export function useRows(assignments: AppReviewAssignment[], formId: string) {
   return useQuery({

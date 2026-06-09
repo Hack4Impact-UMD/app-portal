@@ -24,9 +24,7 @@ export type InterviewAssignmentRow = {
   interviewReviewData?: ApplicationInterviewData;
 };
 
-export const reviewerInterviewRowsQueryRoot = [
-  "reviewer-interview-rows",
-] as const;
+const reviewerInterviewRowsQueryRoot = ["reviewer-interview-rows"] as const;
 
 export function useRows(
   interviewAssignments: InterviewAssignment[],

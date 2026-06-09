@@ -27,9 +27,7 @@ export type AssignedAppRow = {
   responseId: string;
 };
 
-export const assignedInterviewRowsQueryRoot = [
-  "assigned-interview-rows",
-] as const;
+const assignedInterviewRowsQueryRoot = ["assigned-interview-rows"] as const;
 
 export function useRows(assignments: InterviewAssignment[], formId: string) {
   return useQuery({

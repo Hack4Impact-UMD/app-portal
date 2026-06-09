@@ -20,7 +20,7 @@ import { useAuth } from "./useAuth";
 
 const reviewDataRoot = "review-data" as const;
 
-export const reviewDataQueries = {
+const reviewDataQueries = {
   root: [reviewDataRoot] as const,
   detail: (id?: string) =>
     queryOptions({

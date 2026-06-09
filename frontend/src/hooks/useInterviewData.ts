@@ -20,7 +20,7 @@ import { useAuth } from "./useAuth";
 
 const interviewDataRoot = "interview-data" as const;
 
-export const interviewDataQueries = {
+const interviewDataQueries = {
   root: [interviewDataRoot] as const,
   detail: (id?: string) =>
     queryOptions({

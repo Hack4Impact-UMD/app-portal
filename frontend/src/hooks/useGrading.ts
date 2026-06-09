@@ -4,7 +4,7 @@ import { submitGradingJob } from "@/services/gradingService";
 
 const gradingJobRoot = "grading-jobs" as const;
 
-export const gradingJobQueries = {
+const gradingJobQueries = {
   root: [gradingJobRoot] as const,
 };
 

@@ -26,7 +26,7 @@ export type FlatInterviewerRow = {
   pendingAssignments: number;
 };
 
-export const interviewerRowsQueryRoot = ["interviewer-rows"] as const;
+const interviewerRowsQueryRoot = ["interviewer-rows"] as const;
 
 export function useRows(
   interviewers: ReviewCapableUser[],
