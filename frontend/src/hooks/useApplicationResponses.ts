@@ -1,68 +1,76 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
 
-import { getApplicationForm } from "@/services/applicationFormsService";
 import {
-  fetchOrCreateApplicationResponse,
+  fetchMyApplicationResponseAndForm,
   getAllApplicationResponsesByFormId,
   getApplicationResponseById,
   getApplicationResponses,
 } from "@/services/applicationResponsesService";
-import type { ApplicationForm, ApplicationResponse } from "@/types/types";
 
 import { useAuth } from "./useAuth";
 
-//gets the current user's application responses
+const applicationResponseRoot = "responses" as const;
+
+export const applicationResponseQueries = {
+  root: [applicationResponseRoot] as const,
+  byUser: (userId?: string) =>
+    queryOptions({
+      queryKey: [applicationResponseRoot, "user", userId] as const,
+      queryFn: userId ? () => getApplicationResponses(userId) : skipToken,
+    }),
+  byUserForm: (userId?: string, formId?: string) =>
+    queryOptions({
+      queryKey: [
+        applicationResponseRoot,
+        "user",
+        userId,
+        "form",
+        formId,
+      ] as const,
+      queryFn:
+        userId && formId
+          ? async () => fetchMyApplicationResponseAndForm(userId, formId)
+          : skipToken,
+    }),
+  byForm: (formId?: string) =>
+    queryOptions({
+      queryKey: [applicationResponseRoot, "form", formId] as const,
+      queryFn: formId
+        ? () => getAllApplicationResponsesByFormId(formId)
+        : skipToken,
+    }),
+  detail: (responseId?: string) =>
+    queryOptions({
+      queryKey: [applicationResponseRoot, "response", responseId] as const,
+      queryFn: responseId
+        ? () => getApplicationResponseById(responseId)
+        : skipToken,
+    }),
+};
+
 export function useMyApplicationResponses() {
   const { user, isAuthed, isLoading } = useAuth();
 
-  return useQuery<ApplicationResponse[]>({
-    queryKey: ["responses", "user", user?.id],
+  return useQuery({
+    ...applicationResponseQueries.byUser(user?.id),
     enabled: !isLoading && isAuthed,
-    queryFn: () => {
-      return getApplicationResponses(user!.id);
-    },
     initialData: [],
   });
 }
-
-//gets the current user's application response for the form and the form itself
 export function useMyApplicationResponseAndForm(formId?: string) {
-  const { user, isAuthed, isLoading } = useAuth();
+  const { user, isLoading, isAuthed } = useAuth();
 
-  return useQuery<{ form: ApplicationForm; response: ApplicationResponse }>({
-    queryKey: ["responses", "user", user?.id, formId],
-    enabled: !isLoading && isAuthed && formId !== undefined,
-    queryFn: async () => {
-      const form = await getApplicationForm(formId!);
-      console.log(`form found: ${form.semester}`);
-      const response = await fetchOrCreateApplicationResponse(user!.id, form);
-      console.log(`got response: ${response.id}`);
-      return {
-        form: form,
-        response: response,
-      };
-    },
+  return useQuery({
+    ...applicationResponseQueries.byUserForm(user?.id, formId),
+    enabled: !isLoading && isAuthed,
   });
 }
 
-//gets all application responses for a given form, includes in-progress submissions
+// includes in-progress submissions
 export function useAllApplicationResponsesForForm(formId: string | undefined) {
-  return useQuery<ApplicationResponse[]>({
-    queryKey: ["responses", "form", formId],
-    enabled: !!formId,
-    queryFn: () => {
-      if (!formId) throw new Error("formId is required");
-      return getAllApplicationResponsesByFormId(formId);
-    },
-  });
+  return useQuery(applicationResponseQueries.byForm(formId));
 }
 
 export function useApplicationResponse(responseId?: string) {
-  return useQuery<ApplicationResponse | undefined>({
-    queryKey: ["responses", "response", responseId],
-    enabled: !!responseId,
-    queryFn: () => {
-      return getApplicationResponseById(responseId!);
-    },
-  });
+  return useQuery(applicationResponseQueries.detail(responseId));
 }

@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -8,18 +7,8 @@ import ApplicantRolePill from "@/components/role-pill/RolePill";
 import { Button } from "@/components/ui/button";
 import { useReviewAssignments } from "@/hooks/useReviewAssignments";
 import { useReviewDataForReviewer } from "@/hooks/useReviewData";
-import { getReviewerById, reviewingFor } from "@/services/reviewersService";
-
-function useReviewerForId(reviewerId: string) {
-  return useQuery({
-    queryKey: ["reviewer", "reviewer", reviewerId],
-    enabled: !!reviewerId,
-    queryFn: async () => {
-      const user = await getReviewerById(reviewerId);
-      return user;
-    },
-  });
-}
+import { useReviewerForId } from "@/hooks/useReviewers";
+import { reviewingFor } from "@/services/reviewersService";
 
 export function ReviewerAssignmentsPage() {
   const [statusFilter, setStatusFilter] = useState<
@@ -34,17 +23,17 @@ export function ReviewerAssignmentsPage() {
     data: assignedApps,
     isPending: assignmentsPending,
     error: assignmentsError,
-  } = useReviewAssignments(formId!, reviewerId!);
+  } = useReviewAssignments(formId, reviewerId);
   const {
     data: reviewer,
     isPending: applicantPending,
     error: reviewerError,
-  } = useReviewerForId(reviewerId!);
+  } = useReviewerForId(reviewerId);
   const {
     data: reviews,
     isPending: reviewsPending,
     error: reviewsError,
-  } = useReviewDataForReviewer(formId!, reviewerId!);
+  } = useReviewDataForReviewer(formId, reviewerId);
 
   const numReviewed = useMemo(
     () =>

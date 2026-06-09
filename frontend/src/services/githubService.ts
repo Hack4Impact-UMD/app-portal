@@ -64,3 +64,21 @@ export async function getLatestDeployedCommit(): Promise<string | null> {
     return null;
   }
 }
+
+export async function getUpdateCheck(localCommit: string) {
+  if (!localCommit || localCommit === "dev") {
+    console.warn("Skipping update check (dev environment)");
+    return false;
+  }
+
+  const remoteCommit = await getLatestDeployedCommit();
+
+  if (remoteCommit && remoteCommit !== localCommit) {
+    console.log(
+      `New version available. Local: ${localCommit}, Remote: ${remoteCommit}`,
+    );
+    return true;
+  }
+
+  return false;
+}

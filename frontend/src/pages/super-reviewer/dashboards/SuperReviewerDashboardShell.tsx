@@ -9,6 +9,7 @@ import {
 import { useMemo, useState } from "react";
 import { Outlet, useParams, useLocation, NavLink } from "react-router-dom";
 
+import { qualifiedRowsQueryRoot } from "@/components/dor/QualifiedDashboard/useRows";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import {
@@ -37,7 +38,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { useApplicationForm } from "@/hooks/useApplicationForm";
+import { formQueries, useApplicationForm } from "@/hooks/useApplicationForm";
 import useSearch from "@/hooks/useSearch";
 import { setFormDecisionRelease } from "@/services/applicationFormsService";
 import {
@@ -74,7 +75,9 @@ export default function SuperReviewerDashboardShell() {
       await setFormDecisionRelease(formId, released);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["form", formId] });
+      queryClient.invalidateQueries({
+        queryKey: formQueries.detail(formId).queryKey,
+      });
     },
     onError: (err) => {
       console.log(err);
@@ -101,7 +104,7 @@ export default function SuperReviewerDashboardShell() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        predicate: (q) => q.queryKey.includes("qualified-apps-rows"),
+        queryKey: qualifiedRowsQueryRoot,
       });
     },
   });

@@ -160,7 +160,7 @@ const AppReviewPage: React.FC = () => {
     data: reviewData,
     isPending: reviewPending,
     error: reviewError,
-  } = useReviewData(reviewDataId ?? "");
+  } = useReviewData(reviewDataId);
 
   const { mutate: updateReviewData, submittedAt: lastSave } =
     useUpdateReviewData(reviewDataId ?? "");

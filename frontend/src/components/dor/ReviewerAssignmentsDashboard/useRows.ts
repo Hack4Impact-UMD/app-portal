@@ -27,10 +27,12 @@ export type AssignedAppRow = {
   responseId: string;
 };
 
+const reviewerAssignmentRowsQueryRoot = ["reviewer-assignment-rows"] as const;
+
 export function useRows(assignments: AppReviewAssignment[], formId: string) {
   return useQuery({
     queryKey: [
-      "application-assignment-rows",
+      ...reviewerAssignmentRowsQueryRoot,
       assignments.map((x) => x.id).sort(),
       formId,
     ],

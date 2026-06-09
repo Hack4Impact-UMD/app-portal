@@ -2,6 +2,8 @@ import { ApplicantRole } from "@app-portal/shared/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { qualifiedRowsQueryRoot } from "@/components/dor/QualifiedDashboard/useRows";
+import { underReviewRowsQueryRoot } from "@/components/dor/UnderReviewDashboard/useRows";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { Button } from "@/components/ui/button";
@@ -18,7 +20,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useActiveForm } from "@/hooks/useApplicationForm";
+import { applicationResponseQueries } from "@/hooks/useApplicationResponses";
+import { applicationStatusQueries } from "@/hooks/useApplicationStatus";
 import { useAuth } from "@/hooks/useAuth";
+import { userQueries } from "@/hooks/useUsers";
 import { createInternalApplicant } from "@/services/userService";
 import { displayApplicantRoleName } from "@/utils/display";
 import { generateSectionResponses } from "@/utils/dummy-response";
@@ -94,15 +99,17 @@ export default function CreateInternalApplicantDialog() {
       );
 
       // backend route creates new user, response, and status objects
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: userQueries.root });
       queryClient.invalidateQueries({
-        queryKey: ["responses", "form", appForm!.id],
+        queryKey: applicationResponseQueries.byForm(
+          data.applicationResponse.applicationFormId,
+        ).queryKey,
       });
       queryClient.invalidateQueries({
-        queryKey: ["status", data.applicationResponse.id],
+        queryKey: applicationStatusQueries.root,
       });
-      queryClient.invalidateQueries({ queryKey: ["qualified-apps-rows"] });
-      queryClient.invalidateQueries({ queryKey: ["all-apps-rows"] });
+      queryClient.invalidateQueries({ queryKey: qualifiedRowsQueryRoot });
+      queryClient.invalidateQueries({ queryKey: underReviewRowsQueryRoot });
 
       setOpen(false);
     },

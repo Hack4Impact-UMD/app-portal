@@ -1,5 +1,4 @@
-import type { DecisionConfirmation } from "@app-portal/shared/types";
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
 
 import {
   getAllDecisionConfirmationsByFormId,
@@ -8,27 +7,43 @@ import {
 
 import { useAuth } from "./useAuth";
 
+const decisionConfirmationRoot = "decision-confirmation" as const;
+
+export const decisionConfirmationQueries = {
+  root: [decisionConfirmationRoot] as const,
+  byForm: (formId?: string) =>
+    queryOptions({
+      queryKey: [decisionConfirmationRoot, "form", formId] as const,
+      queryFn: formId
+        ? () => getAllDecisionConfirmationsByFormId(formId)
+        : skipToken,
+    }),
+  byUserResponse: (userId?: string, responseId?: string) =>
+    queryOptions({
+      queryKey: [
+        decisionConfirmationRoot,
+        "user",
+        userId,
+        "response",
+        responseId,
+      ] as const,
+      queryFn:
+        userId && responseId
+          ? () => getDecisionConfirmationForResponseRole(userId, responseId)
+          : skipToken,
+    }),
+};
+
 export function useAllDecisionConfirmationsForForm(formId: string | undefined) {
-  return useQuery<DecisionConfirmation[]>({
-    queryKey: ["decision-confirmation", "form", formId],
-    enabled: !!formId,
-    queryFn: () => {
-      if (!formId) throw new Error("formId is required");
-      return getAllDecisionConfirmationsByFormId(formId);
-    },
-  });
+  return useQuery(decisionConfirmationQueries.byForm(formId));
 }
 
 export function useDecisionConfirmationForResponse(
   responseId: string | undefined,
 ) {
-  const { user } = useAuth();
-  return useQuery<DecisionConfirmation | null>({
-    queryKey: ["decision-confirmation", "response", responseId],
-    enabled: !!responseId && !!user,
-    queryFn: () => {
-      if (!responseId) throw new Error("responseId is required");
-      return getDecisionConfirmationForResponseRole(user!.id, responseId);
-    },
+  const { user, isLoading, isAuthed } = useAuth();
+  return useQuery({
+    ...decisionConfirmationQueries.byUserResponse(user?.id, responseId),
+    enabled: !isLoading && isAuthed,
   });
 }

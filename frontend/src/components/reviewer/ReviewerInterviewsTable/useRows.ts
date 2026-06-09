@@ -24,12 +24,14 @@ export type InterviewAssignmentRow = {
   interviewReviewData?: ApplicationInterviewData;
 };
 
+const reviewerInterviewRowsQueryRoot = ["reviewer-interview-rows"] as const;
+
 export function useRows(
   interviewAssignments: InterviewAssignment[],
   formId: string,
 ) {
   return useQuery({
-    queryKey: ["all-interview-assignments", formId],
+    queryKey: [...reviewerInterviewRowsQueryRoot, "form", formId],
     placeholderData: (prev) => prev,
     queryFn: async () => {
       const form = await getApplicationForm(formId);

@@ -1,28 +1,29 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 
-import { getLatestDeployedCommit } from "@/services/githubService";
+import {
+  getLatestDeployedCommit,
+  getUpdateCheck,
+} from "@/services/githubService";
 
-const localCommit = import.meta.env.VITE_COMMIT;
+const localCommit: string = import.meta.env.VITE_COMMIT;
+
+const updateCheckRoot = "update-check" as const;
+const commitRoot = "commit" as const;
+
+const githubQueries = {
+  byLocalCommit: queryOptions({
+    queryKey: [updateCheckRoot, localCommit] as const,
+    queryFn: () => getUpdateCheck(localCommit),
+  }),
+  byRemoteCommit: queryOptions({
+    queryKey: [commitRoot, "remote"] as const,
+    queryFn: getLatestDeployedCommit,
+  }),
+};
 
 export function useUpdateCheck() {
-  return useQuery<boolean>({
-    queryKey: ["update-check", localCommit],
-    queryFn: async () => {
-      if (!localCommit || localCommit === "dev") {
-        console.warn("Skipping update check (dev environment)");
-        return false;
-      }
-
-      const remoteCommit = await getLatestDeployedCommit();
-
-      if (remoteCommit && remoteCommit !== localCommit) {
-        console.log(
-          `New version available. Local: ${localCommit}, Remote: ${remoteCommit}`,
-        );
-        return true;
-      }
-      return false;
-    },
+  return useQuery({
+    ...githubQueries.byLocalCommit,
     refetchInterval: 5 * 60 * 1000,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: true,
@@ -30,8 +31,5 @@ export function useUpdateCheck() {
 }
 
 export function useRemoteCommit() {
-  return useQuery<string | null>({
-    queryKey: ["commit", "remote"],
-    queryFn: getLatestDeployedCommit,
-  });
+  return useQuery(githubQueries.byRemoteCommit);
 }

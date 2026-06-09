@@ -18,6 +18,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { DataTable } from "@/components/DataTable";
+import { underReviewRowsQueryRoot } from "@/components/dor/UnderReviewDashboard/useRows";
 import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
 import RolePill from "@/components/role-pill/RolePill";
 import SortableHeader from "@/components/tables/SortableHeader";
@@ -49,7 +50,12 @@ import { displayTimestamp } from "@/utils/dates";
 import { displayReviewStatus } from "@/utils/display";
 
 import type { QualifiedAppRow } from "./useRows";
-import { flattenRows, useRows } from "./useRows";
+import {
+  flattenRows,
+  qualifiedRowsQueryOptions,
+  qualifiedRowsQueryRoot,
+  useRows,
+} from "./useRows";
 
 function StatusSelect({
   currentStatus,
@@ -131,19 +137,14 @@ export default function QualifiedApplicationsTable({
       newStatus: ReviewStatus;
     }) => updateApplicationStatus(statusId, { status: newStatus }),
     onMutate: async ({ statusId, newStatus }) => {
-      const queryKey = [
-        "qualified-apps-rows",
-        formId,
-        applications.map((a) => a.id).sort(),
-      ];
+      const queryKey = qualifiedRowsQueryOptions(applications, formId).queryKey;
       await queryClient.cancelQueries({ queryKey });
 
-      const previousRows =
-        queryClient.getQueryData<QualifiedAppRow[]>(queryKey);
+      const previousRows = queryClient.getQueryData(queryKey);
 
-      queryClient.setQueryData<QualifiedAppRow[]>(queryKey, (old) => {
-        if (!old) return [];
-        return old.map((row: QualifiedAppRow): QualifiedAppRow => {
+      queryClient.setQueryData(queryKey, (old) => {
+        if (!old) return old;
+        return old.map((row) => {
           if (row.status?.id === statusId) {
             return {
               ...row,
@@ -174,11 +175,11 @@ export default function QualifiedApplicationsTable({
         queryClient.invalidateQueries({ queryKey: context.queryKey });
       } else {
         queryClient.invalidateQueries({
-          predicate: (q) => q.queryKey.includes("qualified-apps-rows"),
+          queryKey: qualifiedRowsQueryRoot,
         });
       }
       queryClient.invalidateQueries({
-        predicate: (q) => q.queryKey.includes("all-apps-rows"),
+        queryKey: underReviewRowsQueryRoot,
       });
     },
   });

@@ -2,7 +2,6 @@ import { ApplicantRole } from "@app-portal/shared/constants";
 import { useState } from "react";
 
 import ApplicantRolePill from "@/components/role-pill/RolePill";
-import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -17,7 +16,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useRolePreferencesForReviewer } from "@/hooks/useReviewers";
 import {
   applicantRoleColor,
   applicantRoleDarkColor,
@@ -35,29 +33,15 @@ type RoleSelectProps = {
 type RoleSearchPopoverProps = {
   reviewerId: string;
   onSelect: (role: ApplicantRole, reviewerId: string) => void;
+  rolePreferences: ApplicantRole[];
 };
 
-function RoleSearchPopover({ reviewerId, onSelect }: RoleSearchPopoverProps) {
-  const {
-    data: rolePreferences,
-    isPending,
-    error,
-  } = useRolePreferencesForReviewer(reviewerId);
+function RoleSearchPopover({
+  reviewerId,
+  onSelect,
+  rolePreferences,
+}: RoleSearchPopoverProps) {
   const roles = Object.values(ApplicantRole);
-
-  if (isPending)
-    return (
-      <div className="flex items-center justify-center p-2 w-full">
-        <Spinner />
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="flex items-center justify-center p-2 w-full">
-        <p>Failed to fetch role preferences: {error.message}</p>
-      </div>
-    );
 
   return (
     <Command>
@@ -154,7 +138,11 @@ export function RoleSelect({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-0 max-h-32">
-          <RoleSearchPopover reviewerId={reviewerId} onSelect={onAdd} />
+          <RoleSearchPopover
+            reviewerId={reviewerId}
+            onSelect={onAdd}
+            rolePreferences={rolePreferences}
+          />
         </PopoverContent>
       </Popover>
     </div>

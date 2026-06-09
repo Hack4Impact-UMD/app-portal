@@ -1,23 +1,33 @@
-import type { ApplicantRole } from "@app-portal/shared/constants";
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
 
 import {
   getAllBoardMembers,
   getApplicantRolesForBoardMember,
 } from "@/services/boardService";
-import type { BoardUserProfile } from "@/types/types";
+
+import { userQueries } from "./useUsers";
+
+const boardMemberRoot = [...userQueries.root, "board-members"] as const;
+
+export const boardMemberQueries = {
+  root: boardMemberRoot,
+  all: queryOptions({
+    queryKey: [...boardMemberRoot, "all"] as const,
+    queryFn: () => getAllBoardMembers(),
+  }),
+  roles: (boardId?: string) =>
+    queryOptions({
+      queryKey: [...boardMemberRoot, "id", boardId] as const,
+      queryFn: boardId
+        ? () => getApplicantRolesForBoardMember(boardId)
+        : skipToken,
+    }),
+};
 
 export function useAllBoardMembers() {
-  return useQuery<BoardUserProfile[]>({
-    queryKey: ["board-members"],
-    queryFn: () => getAllBoardMembers(),
-  });
+  return useQuery(boardMemberQueries.all);
 }
 
 export function useBoardRoles(boardId: string) {
-  return useQuery<ApplicantRole[]>({
-    queryKey: ["board-members", "boardId", boardId],
-    enabled: !!boardId,
-    queryFn: () => getApplicantRolesForBoardMember(boardId),
-  });
+  return useQuery(boardMemberQueries.roles(boardId));
 }

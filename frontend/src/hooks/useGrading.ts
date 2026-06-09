@@ -2,6 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { submitGradingJob } from "@/services/gradingService";
 
+const gradingJobRoot = "grading-jobs" as const;
+
+const gradingJobQueries = {
+  root: [gradingJobRoot] as const,
+};
+
 export const useSubmitGradingJob = () => {
   const queryClient = useQueryClient();
 
@@ -16,8 +22,7 @@ export const useSubmitGradingJob = () => {
       token: string;
     }) => submitGradingJob(responseId, repoURL, token),
     onSettled: () => {
-      // adding this early, ensure this is used when the queries are there
-      queryClient.invalidateQueries({ queryKey: ["grading-jobs"] });
+      queryClient.invalidateQueries({ queryKey: gradingJobQueries.root });
     },
   });
 };

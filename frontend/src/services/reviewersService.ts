@@ -25,17 +25,6 @@ export async function getReviewerById(id: string): Promise<ReviewCapableUser> {
   }
 }
 
-export async function getRolePreferencesForReviewer(
-  reviewerId: string,
-): Promise<ApplicantRole[]> {
-  const user = await getUserById(reviewerId);
-  if (REVIEW_CAPABLE_ROLES.includes(user.role)) {
-    return reviewingFor(user as ReviewCapableUser);
-  } else {
-    throw new Error("User is not review capable");
-  }
-}
-
 export async function getAllReviewers(): Promise<ReviewCapableUser[]> {
   const users = appCollection(FirestoreCollection.Users);
   const q = query(users, where("role", "in", REVIEW_CAPABLE_ROLES));

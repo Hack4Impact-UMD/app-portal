@@ -1,4 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  queryOptions,
+  skipToken,
+} from "@tanstack/react-query";
 
 import {
   getActiveForm,
@@ -10,27 +16,45 @@ import {
 } from "@/services/applicationFormsService";
 import type { ApplicationForm } from "@/types/types";
 
-export function useAllApplicationForms() {
-  return useQuery<ApplicationForm[]>({
-    queryKey: ["form", "all"],
+const formRoot = "form" as const;
+
+export const formQueries = {
+  root: [formRoot] as const,
+  all: queryOptions({
+    queryKey: [formRoot, "all"] as const,
     queryFn: () => getAllForms(),
-  });
+  }),
+  detail: (formId?: string) =>
+    queryOptions({
+      queryKey: [formRoot, "formId", formId],
+      queryFn: formId ? () => getApplicationForm(formId) : skipToken,
+    }),
+  active: queryOptions({
+    queryKey: [formRoot, "active"] as const,
+    queryFn: () => getActiveForm(),
+  }),
+  byResponse: (responseId?: string) =>
+    queryOptions({
+      queryKey: [formRoot, "responseId", responseId] as const,
+      queryFn: responseId
+        ? () => getApplicationFormForResponseId(responseId)
+        : skipToken,
+    }),
+};
+
+export function useAllApplicationForms() {
+  return useQuery(formQueries.all);
 }
 
 export function useApplicationForm(formId?: string, refetch = true) {
-  return useQuery<ApplicationForm>({
-    queryKey: ["form", formId],
-    queryFn: () => getApplicationForm(formId!),
-    enabled: formId != null,
+  return useQuery({
+    ...formQueries.detail(formId),
     refetchOnWindowFocus: refetch,
   });
 }
 
 export function useActiveForm() {
-  return useQuery<ApplicationForm>({
-    queryKey: ["form", "active"],
-    queryFn: getActiveForm,
-  });
+  return useQuery(formQueries.active);
 }
 
 export const useUploadApplicationForm = () => {
@@ -39,7 +63,7 @@ export const useUploadApplicationForm = () => {
     mutationFn: ({ form, token }: { form: ApplicationForm; token: string }) =>
       createApplicationForm(form, token),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["form", "all"] });
+      queryClient.invalidateQueries({ queryKey: formQueries.all.queryKey });
     },
   });
 };
@@ -73,7 +97,7 @@ export const useDuplicateForm = () => {
       return await createApplicationForm(newForm, token);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["form"] });
+      queryClient.invalidateQueries({ queryKey: formQueries.root });
     },
   });
 };
@@ -91,15 +115,11 @@ export function useUpdateApplicationFormDueDate() {
       await setApplicationFormDueDate(formId, dueDate);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["form"] });
+      queryClient.invalidateQueries({ queryKey: formQueries.root });
     },
   });
 }
 
 export function useApplicationFormForResponseId(responseId?: string) {
-  return useQuery<ApplicationForm>({
-    queryKey: ["form", "responseId", responseId],
-    queryFn: () => getApplicationFormForResponseId(responseId!),
-    enabled: responseId != null,
-  });
+  return useQuery(formQueries.byResponse(responseId));
 }

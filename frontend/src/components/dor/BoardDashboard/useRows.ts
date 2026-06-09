@@ -13,10 +13,12 @@ export type BoardRow = {
   applicantRoles: ApplicantRole[];
 };
 
+const boardRowsQueryRoot = ["board-rows"] as const;
+
 export function useRows(boardMembers: BoardUserProfile[]) {
   return useQuery({
     queryKey: [
-      "all-board-rows",
+      ...boardRowsQueryRoot,
       boardMembers
         .map((b) => `${b.id}-${(b.applicantRoles ?? []).sort().join(",")}`)
         .sort(),

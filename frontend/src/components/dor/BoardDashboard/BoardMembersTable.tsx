@@ -12,6 +12,7 @@ import SortableHeader from "@/components/tables/SortableHeader";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { Button } from "@/components/ui/button";
+import { boardMemberQueries } from "@/hooks/useBoardMembers";
 import { getBoardMemberById } from "@/services/boardService";
 import { setBoardApplicantRoles } from "@/services/userService";
 import type { BoardUserProfile } from "@/types/types";
@@ -49,7 +50,9 @@ export function BoardMembersTable({
       return await setBoardApplicantRoles(boardId, newRoles);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["board-members"] });
+      await queryClient.invalidateQueries({
+        queryKey: boardMemberQueries.root,
+      });
       throwSuccessToast("Successfully added role!");
     },
     onError: (error) => {
@@ -73,7 +76,9 @@ export function BoardMembersTable({
       return await setBoardApplicantRoles(boardId, newRoles);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["board-members"] });
+      await queryClient.invalidateQueries({
+        queryKey: boardMemberQueries.root,
+      });
       throwSuccessToast("Successfully removed role!");
     },
     onError: (error) => {

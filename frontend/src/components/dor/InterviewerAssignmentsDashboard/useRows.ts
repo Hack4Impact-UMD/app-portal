@@ -27,10 +27,14 @@ export type AssignedInterviewRow = {
   responseId: string;
 };
 
+const interviewerAssignmentRowsQueryRoot = [
+  "interviewer-assignment-rows",
+] as const;
+
 export function useRows(assignments: InterviewAssignment[], formId: string) {
   return useQuery({
     queryKey: [
-      "application-assignment-rows",
+      ...interviewerAssignmentRowsQueryRoot,
       assignments.map((x) => x.id).sort(),
       formId,
     ],

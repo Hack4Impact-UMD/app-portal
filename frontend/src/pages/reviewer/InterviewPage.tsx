@@ -163,7 +163,7 @@ const InterviewPage: React.FC = () => {
     data: interviewData,
     isPending: interviewPending,
     error: interviewError,
-  } = useInterviewData(interviewDataId ?? "");
+  } = useInterviewData(interviewDataId);
 
   const sectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);

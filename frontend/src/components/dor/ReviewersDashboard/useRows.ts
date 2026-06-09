@@ -28,6 +28,8 @@ export type FlatReviewerRow = {
   pendingAssignments: number;
 };
 
+export const reviewerRowsQueryRoot = ["reviewer-rows"] as const;
+
 export function useRows(
   reviewers: ReviewCapableUser[],
   assignments: AppReviewAssignment[],
@@ -35,7 +37,7 @@ export function useRows(
 ) {
   return useQuery({
     queryKey: [
-      "all-reviewers-rows",
+      ...reviewerRowsQueryRoot,
       reviewers
         .map((r) => `${r.id}-${reviewingFor(r).sort().join(",")}`)
         .sort(),

@@ -4,7 +4,7 @@ import type {
   InterviewAssignment,
   InternalApplicationStatus,
 } from "@app-portal/shared/types";
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { Timestamp } from "firebase/firestore";
 
 import { getApplicantById } from "@/services/applicantService";
@@ -39,13 +39,20 @@ export type QualifiedAppRow = {
   internal: boolean;
 };
 
-export function useRows(applications: ApplicationResponse[], formId: string) {
-  return useQuery<QualifiedAppRow[]>({
+export const qualifiedRowsQueryRoot = ["qualified-rows"] as const;
+
+export function qualifiedRowsQueryOptions(
+  applications: ApplicationResponse[],
+  formId: string,
+) {
+  return queryOptions({
     queryKey: [
-      "qualified-apps-rows",
+      ...qualifiedRowsQueryRoot,
+      "form",
       formId,
-      applications.map((x) => x.id).sort(),
-    ],
+      "responses",
+      applications.map((a) => a.id).sort(),
+    ] as const,
     placeholderData: (prev) => prev,
     queryFn: async () => {
       const form = await getApplicationForm(formId);
@@ -106,6 +113,10 @@ export function useRows(applications: ApplicationResponse[], formId: string) {
     },
     refetchOnWindowFocus: true,
   });
+}
+
+export function useRows(applications: ApplicationResponse[], formId: string) {
+  return useQuery(qualifiedRowsQueryOptions(applications, formId));
 }
 
 export function flattenRows(

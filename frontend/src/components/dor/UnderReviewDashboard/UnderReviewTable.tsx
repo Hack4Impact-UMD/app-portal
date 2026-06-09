@@ -20,6 +20,8 @@ import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { DataTable } from "@/components/DataTable";
+import { qualifiedRowsQueryRoot } from "@/components/dor/QualifiedDashboard/useRows";
+import { reviewerRowsQueryRoot } from "@/components/dor/ReviewersDashboard/useRows";
 import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import SortableHeader from "@/components/tables/SortableHeader";
@@ -46,6 +48,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { applicationStatusQueries } from "@/hooks/useApplicationStatus";
+import { reviewAssignmentQueries } from "@/hooks/useReviewAssignments";
 import {
   assignReview,
   removeReviewAssignment,
@@ -59,7 +63,12 @@ import { displayReviewStatus } from "@/utils/display";
 import { AutoAssignButton } from "./AutoAssignButton";
 import { ReviewerSelect } from "./ReviewerSelect";
 import type { ApplicationRow } from "./useRows";
-import { flattenRows, useRows } from "./useRows";
+import {
+  flattenRows,
+  underReviewRowsQueryOptions,
+  underReviewRowsQueryRoot,
+  useRows,
+} from "./useRows";
 
 type SuperReviewerApplicationsTableProps = {
   applications: ApplicationResponse[];
@@ -104,16 +113,12 @@ export default function SuperReviewerApplicationsTable({
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["all-apps-rows"],
+        queryKey: underReviewRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        queryKey: ["all-reviewers-rows"],
+        queryKey: reviewerRowsQueryRoot,
       });
-      queryClient.invalidateQueries({
-        predicate: (q) =>
-          q.queryKey.includes("assignments") ||
-          q.queryKey.includes("assignment"),
-      });
+      queryClient.invalidateQueries({ queryKey: reviewAssignmentQueries.root });
     },
   });
 
@@ -141,15 +146,13 @@ export default function SuperReviewerApplicationsTable({
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["all-apps-rows"],
+        queryKey: underReviewRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        queryKey: ["all-reviewers-rows"],
+        queryKey: reviewerRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        predicate: (q) =>
-          q.queryKey.includes("assignments") ||
-          q.queryKey.includes("assignment"),
+        queryKey: reviewAssignmentQueries.root,
       });
     },
   });
@@ -161,50 +164,49 @@ export default function SuperReviewerApplicationsTable({
       });
     },
     onMutate: async ({ status }) => {
+      const rowsOptions = underReviewRowsQueryOptions(applications, formId);
       await queryClient.cancelQueries({
-        queryKey: ["all-apps-rows"],
+        queryKey: rowsOptions.queryKey,
       });
-      const oldRows = queryClient.getQueryData([
-        "all-apps-rows",
-        applications.map((a) => a.id).sort(),
-        formId,
-      ]);
+      const oldRows = queryClient.getQueryData(rowsOptions.queryKey);
 
-      queryClient.setQueryData(
-        ["all-apps-rows", applications.map((a) => a.id).sort(), formId],
-        (old: ApplicationRow[]) =>
-          old.map((row) => {
-            if (row.status?.id === status.id) {
-              return {
-                ...row,
-                status: {
-                  ...status,
-                  isQualified: !status.isQualified,
-                },
-              };
-            } else {
-              return row;
-            }
-          }),
-      );
+      queryClient.setQueryData(rowsOptions.queryKey, (old) => {
+        if (!old) return old;
+        old?.map((row) => {
+          if (row.status?.id === status.id) {
+            return {
+              ...row,
+              status: {
+                ...status,
+                isQualified: !status.isQualified,
+              },
+            };
+          } else {
+            return row;
+          }
+        });
+      });
 
       return {
         oldRows,
+        rowsKey: rowsOptions.queryKey,
       };
     },
     onError: (error, _resp, ctx) => {
-      queryClient.setQueriesData({ queryKey: ["all-apps-rows"] }, ctx?.oldRows);
+      if (ctx?.rowsKey) {
+        queryClient.setQueryData(ctx.rowsKey, ctx.oldRows);
+      }
       throwErrorToast("Failed to update qualified status: " + error);
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["all-apps-rows"],
+        queryKey: underReviewRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        predicate: (q) => q.queryKey.includes("qualified-apps-rows"),
+        queryKey: qualifiedRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        predicate: (q) => q.queryKey.includes("qualified-statuses"),
+        queryKey: applicationStatusQueries.root,
       });
     },
   });
@@ -220,10 +222,10 @@ export default function SuperReviewerApplicationsTable({
   //   },
   //   onSettled: () => {
   //     queryClient.invalidateQueries({
-  //       queryKey: ["all-apps-rows"],
+  //       queryKey: underReviewRowsQueryRoot,
   //     });
   //     queryClient.invalidateQueries({
-  //       queryKey: ["all-reviewers-rows"],
+  //       queryKey: reviewerRowsQueryRoot,
   //     });
   //     queryClient.invalidateQueries({
   //       predicate: (q) =>
