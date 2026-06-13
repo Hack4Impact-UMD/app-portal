@@ -9,3 +9,6 @@ allowBuilds:
   esbuild: true
   protobufjs: true
   unrs-resolver: true
+overrides:
+  'vite>esbuild': 0.28.1
+  'vite>tsx': 4.22.4
