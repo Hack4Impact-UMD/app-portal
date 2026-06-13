@@ -12,3 +12,4 @@ allowBuilds:
 overrides:
   'vite>esbuild': 0.28.1
   'vite>tsx': 4.22.4
+  'monaco-editor>dompurify': 3.4.0
