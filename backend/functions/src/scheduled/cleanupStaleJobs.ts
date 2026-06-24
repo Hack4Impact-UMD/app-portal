@@ -1,26 +1,33 @@
-import { onSchedule } from "firebase-functions/v2/scheduler";
-import { db } from "../index";
+import { FirestoreCollection } from "@app-portal/shared/constants";
+import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
-import { CollectionReference, Timestamp } from "firebase-admin/firestore";
-import { GradingJobPublic, GradingJobStatus } from "../types/grading";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 
-const GRADING_JOBS_PUBLIC_COLLECTION = "grading-jobs-public";
+import { db } from "../index";
+import { GradingJobStatus } from "../types/grading";
+import { appCollection } from "../utils/firestore";
+
 const STALE_TIMEOUT_MINUTES = 30;
 
 export async function cleanupStaleJobs() {
   const cutoffTime = Timestamp.fromMillis(
-    Date.now() - STALE_TIMEOUT_MINUTES * 60 * 1000
+    Date.now() - STALE_TIMEOUT_MINUTES * 60 * 1000,
   );
 
-  const publicGradingJobsCollection = db.collection(GRADING_JOBS_PUBLIC_COLLECTION) as CollectionReference<GradingJobPublic>;
+  const publicGradingJobsCollection = appCollection(
+    FirestoreCollection.GradingJobsPublic,
+  );
 
   const staleJobs = await publicGradingJobsCollection
     .where("updated", "<", cutoffTime)
-    .where("status", "not-in", [GradingJobStatus.Completed, GradingJobStatus.Failed])
-    .get(); 
+    .where("status", "not-in", [
+      GradingJobStatus.Completed,
+      GradingJobStatus.Failed,
+    ])
+    .get();
 
   if (staleJobs.empty) {
-    logger.info("No stale jobs found"); 
+    logger.info("No stale jobs found");
     return { cleanedCount: 0, totalStaleJobs: 0 };
   }
 
@@ -31,7 +38,7 @@ export async function cleanupStaleJobs() {
   staleJobs.docs.forEach((doc) => {
     const jobData = doc.data();
     const now = Timestamp.now();
-    
+
     batch.update(doc.ref, {
       status: GradingJobStatus.Failed,
       error: `Job timed out after ${STALE_TIMEOUT_MINUTES} minutes of inactivity. Last status: ${jobData.status}`,
@@ -40,7 +47,7 @@ export async function cleanupStaleJobs() {
     });
 
     logger.info(
-      `Marking job ${doc.id} as failed (was in status: ${jobData.status}, last updated: ${jobData.updated.toDate().toISOString()})`
+      `Marking job ${doc.id} as failed (was in status: ${jobData.status}, last updated: ${jobData.updated.toDate().toISOString()})`,
     );
   });
 
@@ -54,7 +61,7 @@ export async function cleanupStaleJobs() {
 
 export const cleanupStaleJobsOnSchedule = onSchedule(
   "*/10 * * * *",
-  async (event) => {
+  async () => {
     logger.info("Starting scheduled stale job cleanup...");
 
     try {
@@ -62,5 +69,5 @@ export const cleanupStaleJobsOnSchedule = onSchedule(
     } catch (error) {
       logger.error("Error during stale job cleanup:", error);
     }
-  }
+  },
 );
