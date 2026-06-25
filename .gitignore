@@ -4,3 +4,4 @@ node_modules
 CLAUDE.md
 /rubric
 .flame.json
+.vscode
