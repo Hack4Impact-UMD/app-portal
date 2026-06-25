@@ -12,6 +12,7 @@ import * as admin from "firebase-admin";
 import { onRequest } from "firebase-functions/v2/https";
 
 import app from "./app";
+import { cleanupStaleJobsOnSchedule } from "./scheduled/cleanupStaleJobs";
 // import { uploadMockData } from "./utils/mockData";
 
 admin.initializeApp();
@@ -31,3 +32,5 @@ export const api = onRequest(
   { region: process.env.GCP_REGION || "us-east4" },
   app,
 );
+
+export { cleanupStaleJobsOnSchedule };

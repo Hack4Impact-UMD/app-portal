@@ -9,7 +9,9 @@ import { appCollection } from "../utils/firestore";
 
 const STALE_TIMEOUT_MINUTES = 30;
 
-export async function cleanupStaleJobs() {
+// this is defined separately from the cronjob
+// in case we want to write a route for this logic
+async function cleanupStaleJobs() {
   const cutoffTime = Timestamp.fromMillis(
     Date.now() - STALE_TIMEOUT_MINUTES * 60 * 1000,
   );
