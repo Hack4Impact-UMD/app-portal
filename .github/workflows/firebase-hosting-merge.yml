@@ -46,4 +46,4 @@ jobs:
         run: pnpm build
 
       - name: Deploy to Firebase
-        run: firebase --project "$GCP_PROJECT_ID" --non-interactive deploy
+        run: firebase deploy
