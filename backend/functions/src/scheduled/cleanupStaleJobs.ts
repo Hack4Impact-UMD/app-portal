@@ -62,7 +62,7 @@ async function cleanupStaleJobs() {
 }
 
 export const cleanupStaleJobsOnSchedule = onSchedule(
-  "*/10 * * * *",
+  { schedule: "*/10 * * * *", region: process.env.GCP_REGION || "us-east4" },
   async () => {
     logger.info("Starting scheduled stale job cleanup...");
 
