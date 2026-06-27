@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
@@ -26,6 +27,7 @@ export default function SubmitGradingJobDialog({
 }) {
   const { mutate: submitGradingJob, isPending } = useSubmitGradingJob();
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [responseId, setResponseId] = useState("");
   const [repoURL, setRepoURL] = useState("");
 
@@ -62,6 +64,7 @@ export default function SubmitGradingJobDialog({
             `Grading job queued successfully! Job ID: ${jobId}`,
           );
           onOpenChange(false);
+          navigate(`/autograder/${jobId}`);
         },
         onError: (error) => {
           throwErrorToast("Failed to submit grading job: " + error.message);

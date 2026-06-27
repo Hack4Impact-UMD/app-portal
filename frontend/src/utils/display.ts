@@ -1,5 +1,9 @@
 import type { ReviewStatus } from "@app-portal/shared/constants";
-import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
+import {
+  ApplicantRole,
+  GradingJobStatus,
+  PermissionRole,
+} from "@app-portal/shared/constants";
 
 export function displayUserRoleName(role: PermissionRole) {
   if (role === PermissionRole.SuperReviewer) return "Super Reviewer";
@@ -68,3 +72,28 @@ export function applicantRoleDarkColor(role: ApplicantRole) {
   else if (role === ApplicantRole.Designer) return "#4C2337";
   else return "#000000";
 }
+
+export function displayGradingJobStatus(status: GradingJobStatus) {
+  if (status === GradingJobStatus.Queued) return "Queued";
+  else if (status === GradingJobStatus.Pending) return "Pending";
+  else if (status === GradingJobStatus.Cloning) return "Clone repository";
+  else if (status === GradingJobStatus.Installing)
+    return "Install dependencies";
+  else if (status === GradingJobStatus.Building) return "Build assessment";
+  else if (status === GradingJobStatus.Serving) return "Serve app";
+  else if (status === GradingJobStatus.Testing) return "Run public tests";
+  else if (status === GradingJobStatus.Completed) return "Completed";
+  else return "Failed";
+}
+
+export const gradingJobEmoji: Record<GradingJobStatus, string> = {
+  [GradingJobStatus.Queued]: "📥",
+  [GradingJobStatus.Pending]: "⏳",
+  [GradingJobStatus.Cloning]: "🌱",
+  [GradingJobStatus.Installing]: "📦",
+  [GradingJobStatus.Building]: "🏗️",
+  [GradingJobStatus.Serving]: "🚀",
+  [GradingJobStatus.Testing]: "🧪",
+  [GradingJobStatus.Completed]: "✅",
+  [GradingJobStatus.Failed]: "❌",
+};
