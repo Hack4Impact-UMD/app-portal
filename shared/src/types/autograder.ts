@@ -10,18 +10,18 @@ export const TestResultSchema = z.object({
   stdout: z.string(),
   stderr: z.string(),
   errors: z.array(z.string()),
-  durationMs: z.int(),
-  points: z.int(),
+  durationMs: z.int().nonnegative(),
+  points: z.int().nonnegative(),
 });
 
 export const SuiteResultSchema = z.object({
   suiteName: z.string().nonempty(),
-  passed: z.int(),
-  failed: z.int(),
-  total: z.int(),
-  durationMs: z.int(),
-  points: z.int(),
-  totalPoints: z.int(),
+  passed: z.int().nonnegative(),
+  failed: z.int().nonnegative(),
+  total: z.int().nonnegative(),
+  durationMs: z.int().nonnegative(),
+  points: z.int().nonnegative(),
+  totalPoints: z.int().nonnegative(),
 });
 
 // ⚠️ should not be used on its own!!!!
@@ -31,14 +31,14 @@ export const GradingJobPublicBaseSchema = z.object({
   responseId: z.string().nonempty(),
   repoURL: z.string().nonempty(),
   status: z.enum(GradingJobStatus),
-  score: z.float64(),
-  totalTests: z.int(),
-  completedTests: z.int(),
+  score: z.float64().nonnegative(),
+  totalTests: z.int().nonnegative(),
+  completedTests: z.int().nonnegative(),
   error: z.string().optional(),
-  cloneDurationMs: z.int().optional(),
-  installDurationMs: z.int().optional(),
-  buildDurationMs: z.int().optional(),
-  testingDurationMs: z.int().optional(),
+  cloneDurationMs: z.int().nonnegative().optional(),
+  installDurationMs: z.int().nonnegative().optional(),
+  buildDurationMs: z.int().nonnegative().optional(),
+  testingDurationMs: z.int().nonnegative().optional(),
   suiteResults: z.record(z.string(), SuiteResultSchema),
   publicTests: z.record(z.string(), z.record(z.string(), TestResultSchema)),
 });
