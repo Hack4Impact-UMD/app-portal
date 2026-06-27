@@ -27,14 +27,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.1
           cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Install Firebase CLI
-        run: pnpm i -g firebase-tools@15.20.0
+        run: pnpm i -g firebase-tools
 
       - name: Create GAC File
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_H4I_APPLICATIONS }}' > $GOOGLE_APPLICATION_CREDENTIALS

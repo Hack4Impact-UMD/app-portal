@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.1
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -32,4 +32,3 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_H4I_APPLICATIONS }}
           projectId: h4i-applications
-          firebaseToolsVersion: 15.20.0
