@@ -1,7 +1,10 @@
 import {
   FirestoreCollection,
+  GradingJobStatus,
   PermissionRole,
 } from "@app-portal/shared/constants";
+import type { GradingJobDataInternal } from "@app-portal/shared/types";
+import { submitGradingJobSchema } from "@app-portal/shared/types";
 import type { Response, Request } from "express";
 import { Router } from "express";
 import { Timestamp } from "firebase-admin/firestore";
@@ -16,7 +19,7 @@ import {
 } from "../middleware/authentication";
 import { validateSchema } from "../middleware/validation";
 import type { ApplicationResponse } from "../models/appResponse";
-import { submitGradingJobSchema, GradingJobStatus } from "../types/grading";
+import type { GradingJobPublic } from "../models/autograder";
 import { publishGradingTask } from "../utils/cloudTasks";
 import { appCollection } from "../utils/firestore";
 
@@ -113,7 +116,7 @@ router.post(
         }
 
         // create: job docs and cloud tasks job
-        const publicJob = {
+        const publicJob: GradingJobPublic = {
           id: jobId,
           responseId,
           repoURL,
@@ -123,10 +126,11 @@ router.post(
           completedTests: 0,
           started: now,
           updated: now,
+          suiteResults: {},
           publicTests: {},
         };
 
-        const internalJob = {
+        const internalJob: GradingJobDataInternal = {
           id: jobId,
           testRepo,
           buildLog: "",

@@ -4,6 +4,7 @@ import type {
   ApplicationReviewData,
   AppReviewAssignment,
   DecisionConfirmation,
+  GradingJobDataInternal,
   InternalApplicationStatus,
   InterviewAssignment,
   RoleReviewRubric,
@@ -13,11 +14,8 @@ import type { CollectionReference } from "firebase-admin/firestore";
 import { db } from "..";
 import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
+import type { GradingJobPublic } from "../models/autograder";
 import type { UserProfile } from "../models/user";
-import type {
-  GradingJobDataInternal,
-  GradingJobPublic,
-} from "../types/grading";
 
 type ServerCollectionData = {
   [FirestoreCollection.Users]: UserProfile;
