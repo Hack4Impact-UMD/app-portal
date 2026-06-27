@@ -32,3 +32,4 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_H4I_APPLICATIONS }}
           projectId: h4i-applications
+          firebaseToolsVersion: 15.20.0
