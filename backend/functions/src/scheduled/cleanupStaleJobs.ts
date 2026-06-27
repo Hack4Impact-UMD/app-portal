@@ -1,10 +1,12 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
+import {
+  FirestoreCollection,
+  GradingJobStatus,
+} from "@app-portal/shared/constants";
 import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 
 import { db } from "../index";
-import { GradingJobStatus } from "../types/grading";
 import { appCollection } from "../utils/firestore";
 
 const STALE_TIMEOUT_MINUTES = 30;

@@ -58,3 +58,15 @@ export enum ReviewStatus {
   Denied = "denied",
   Waitlisted = "waitlist",
 }
+
+export enum GradingJobStatus {
+  Queued = "queued",
+  Pending = "pending",
+  Cloning = "cloning",
+  Installing = "installing",
+  Building = "building",
+  Serving = "serving",
+  Testing = "testing",
+  Completed = "completed",
+  Failed = "failed",
+}
