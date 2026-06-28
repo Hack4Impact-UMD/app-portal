@@ -17,11 +17,13 @@ import {
   hasRoles,
   getUserById,
 } from "../middleware/authentication";
+import { gradingRateLimiter } from "../middleware/rateLimiter";
 import { validateSchema } from "../middleware/validation";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { GradingJobPublic } from "../models/autograder";
-import { publishGradingTask } from "../utils/cloudTasks";
+import { GradingTaskPayload, publishGradingTask } from "../utils/cloudTasks";
 import { appCollection } from "../utils/firestore";
+import axios from "axios";
 
 const router = Router();
 
@@ -35,6 +37,7 @@ router.post(
       PermissionRole.SuperReviewer,
     ]),
     validateSchema(submitGradingJobSchema),
+    gradingRateLimiter,
   ],
   async (req: Request, res: Response) => {
     try {
@@ -153,15 +156,25 @@ router.post(
       }
 
       logger.info(`Created Firestore documents for job ${jobId}`);
-
-      const taskName = await publishGradingTask({
+      const payload: GradingTaskPayload = {
         jobId,
         responseId,
         repoURL,
         testRepo,
-      });
+      }
 
-      logger.info(`Successfully published task ${taskName} for job ${jobId}`);
+      if (process.env.FUNCTIONS_EMULATOR === "true") {
+        // no await here bc we want to exit early, leave the job running
+        axios.post(process.env.PROFESSOR_URL ?? "http://localhost:8000/grade", payload).then(() => {
+          logger.info(`Successfully made grading request locally for job ${jobId}`)
+        }).catch(err => {
+          logger.info(`Failed to make grading request locally for job ${jobId}: ${err}`)
+        })
+      } else {
+        const taskName = await publishGradingTask(payload);
+
+        logger.info(`Successfully published task ${taskName} for job ${jobId}`);
+      }
 
       return res.status(200).json({
         status: "success",
