@@ -22,7 +22,8 @@ import { gradingRateLimiter } from "../middleware/rateLimiter";
 import { validateSchema } from "../middleware/validation";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { GradingJobPublic } from "../models/autograder";
-import { GradingTaskPayload, publishGradingTask } from "../utils/cloudTasks";
+import type { GradingTaskPayload} from "../utils/cloudTasks";
+import { publishGradingTask } from "../utils/cloudTasks";
 import { appCollection } from "../utils/firestore";
 
 const router = Router();
