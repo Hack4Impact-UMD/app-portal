@@ -56,22 +56,61 @@ const colors = {
 const children = [];
 let shuttingDown = false;
 
-function shutdown(code) {
+// Time to wait for graceful (SIGTERM) shutdown before force-killing.
+const GRACE_MS = 8000;
+
+// Signal a child's entire process group. Each child is spawned detached, so it
+// is its own group leader (pgid === pid) and `-pid` targets the whole tree —
+// this reaches grandchildren like vite and the emulator's Java processes, which
+// a plain child.kill() would orphan (leaving their ports bound).
+function signalTree(child, signal) {
+  if (child.pid === undefined || child.exitCode !== null || child.signalCode !== null) return;
+  try {
+    process.kill(-child.pid, signal);
+  } catch {
+    // Group already gone (or platform without group kill) — fall back to the
+    // direct child so we at least try.
+    try {
+      child.kill(signal);
+    } catch {
+      /* already dead */
+    }
+  }
+}
+
+function whenExited(child) {
+  if (child.exitCode !== null || child.signalCode !== null) return Promise.resolve();
+  return new Promise((resolve) => child.once("close", resolve));
+}
+
+async function shutdown(code) {
   if (shuttingDown) return;
   shuttingDown = true;
-  for (const child of children) {
-    if (!child.killed) child.kill("SIGTERM");
+
+  // Ask every process tree to stop, then wait for them to actually exit.
+  for (const child of children) signalTree(child, "SIGTERM");
+
+  const timedOut = await Promise.race([
+    Promise.all(children.map(whenExited)).then(() => false),
+    new Promise((resolve) => setTimeout(() => resolve(true), GRACE_MS)),
+  ]);
+
+  if (timedOut) {
+    // Force-kill anything still alive so no ports stay bound.
+    for (const child of children) signalTree(child, "SIGKILL");
+    await Promise.all(children.map(whenExited));
   }
+
   process.exit(code);
 }
 
-process.on("SIGINT", () => shutdown(0));
-process.on("SIGTERM", () => shutdown(0));
+process.on("SIGINT", () => void shutdown(0));
+process.on("SIGTERM", () => void shutdown(0));
 
 function start({ name, command, args, readyPattern }) {
   const color = colors[name] ?? "";
   const prefix = `${color}[${name}]${colors.reset} `;
-  const child = spawn(command, args, { cwd: repoRoot, env: process.env });
+  const child = spawn(command, args, { cwd: repoRoot, env: process.env, detached: true });
   children.push(child);
 
   let ready = false;
