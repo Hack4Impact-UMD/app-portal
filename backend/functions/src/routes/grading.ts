@@ -5,6 +5,7 @@ import {
 } from "@app-portal/shared/constants";
 import type { GradingJobDataInternal } from "@app-portal/shared/types";
 import { submitGradingJobSchema } from "@app-portal/shared/types";
+import axios from "axios";
 import type { Response, Request } from "express";
 import { Router } from "express";
 import { Timestamp } from "firebase-admin/firestore";
@@ -23,7 +24,6 @@ import type { ApplicationResponse } from "../models/appResponse";
 import type { GradingJobPublic } from "../models/autograder";
 import { GradingTaskPayload, publishGradingTask } from "../utils/cloudTasks";
 import { appCollection } from "../utils/firestore";
-import axios from "axios";
 
 const router = Router();
 
@@ -161,15 +161,25 @@ router.post(
         responseId,
         repoURL,
         testRepo,
-      }
+      };
 
       if (process.env.FUNCTIONS_EMULATOR === "true") {
         // no await here bc we want to exit early, leave the job running
-        axios.post(process.env.PROFESSOR_URL ?? "http://localhost:8000/grade", payload).then(() => {
-          logger.info(`Successfully made grading request locally for job ${jobId}`)
-        }).catch(err => {
-          logger.info(`Failed to make grading request locally for job ${jobId}: ${err}`)
-        })
+        axios
+          .post(
+            process.env.PROFESSOR_URL ?? "http://localhost:8000/grade",
+            payload,
+          )
+          .then(() => {
+            logger.info(
+              `Successfully made grading request locally for job ${jobId}`,
+            );
+          })
+          .catch((err) => {
+            logger.info(
+              `Failed to make grading request locally for job ${jobId}: ${err}`,
+            );
+          });
       } else {
         const taskName = await publishGradingTask(payload);
 

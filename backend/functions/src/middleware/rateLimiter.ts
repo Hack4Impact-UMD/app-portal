@@ -33,7 +33,9 @@ export async function gradingRateLimiter(
       FirestoreCollection.GradingJobsPublic,
     );
 
-    const windowStart = Timestamp.fromMillis(Date.now() - RATE_LIMITER_WINDOW_MS);
+    const windowStart = Timestamp.fromMillis(
+      Date.now() - RATE_LIMITER_WINDOW_MS,
+    );
 
     const recentJobsSnapshot = await gradingJobsPublicCollection
       .where("responseId", "==", responseId)
