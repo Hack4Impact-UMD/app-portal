@@ -13,6 +13,20 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "grading-jobs-public",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "responseId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "started",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
