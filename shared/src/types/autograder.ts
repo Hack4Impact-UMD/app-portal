@@ -56,24 +56,6 @@ export const GradingJobDataInternalSchema = z.object({
 export const submitGradingJobSchema = GradingJobPublicBaseSchema.pick({
   responseId: true,
   repoURL: true,
-}).extend({
-  repoURL: z.url().refine((val) => {
-    try {
-      const url = new URL(val);
-      const allowedHosts = ["github.com", "www.github.com"];
-      const path = url.pathname.split("/").filter(Boolean);
-
-      return (
-        url.protocol === "https:" &&
-        allowedHosts.includes(url.hostname) &&
-        path.length === 2 &&
-        url.search === "" &&
-        url.hash === ""
-      );
-    } catch {
-      return false;
-    }
-  }, "Repo URL must follow the format: https://github.com/USER/REPO"),
 });
 
 export type TestResult = z.infer<typeof TestResultSchema>;

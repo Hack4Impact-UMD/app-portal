@@ -8,7 +8,7 @@ import { submitGradingJobSchema } from "@app-portal/shared/types";
 import axios from "axios";
 import type { Response, Request } from "express";
 import { Router } from "express";
-import { Timestamp } from "firebase-admin/firestore";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { v4 as uuidv4 } from "uuid";
 
@@ -30,6 +30,7 @@ import type { GradingJobPublic } from "../models/autograder";
 import type { GradingTaskPayload } from "../utils/cloudTasks";
 import { publishGradingTask } from "../utils/cloudTasks";
 import { appCollection } from "../utils/firestore";
+import { ApplicationForm } from "../models/appForm";
 
 const router = Router();
 
@@ -66,10 +67,14 @@ router.post(
       const gradingJobsInternalCollection = appCollection(
         FirestoreCollection.GradingJobsInternal,
       );
+      const formsCollection = appCollection(
+        FirestoreCollection.ApplicationForms
+      )
 
       const responseDoc = await applicationResponseCollection
         .doc(responseId)
         .get();
+
 
       if (!responseDoc.exists) {
         logger.warn(`Response ${responseId} not found`);
@@ -82,6 +87,20 @@ router.post(
           `Attempted to retrieve response with id: ${responseId} unsuccessfully`,
         );
         return res.status(404).send("Application response not found");
+      }
+
+      const formDoc = await formsCollection.doc(responseData.applicationFormId).get()
+
+      if (!formDoc.exists) {
+        logger.warn(`Form ${responseData.applicationFormId} not found`)
+        return res.status(404).send("Form not found")
+      }
+
+      const form: ApplicationForm | undefined = formDoc.data()
+
+      if (!form) {
+        logger.warn(`Could not read form ${responseData.applicationFormId}`)
+        return res.status(404).send()
       }
 
       const isOwner = responseData.userId === userId;
@@ -103,7 +122,12 @@ router.post(
 
       const jobId = uuidv4();
       const now = Timestamp.now();
-      const testRepo = "https://github.com/Hack4Impact-UMD/FAKE_REPO"; // TODO: replace with real repo
+      const testRepo = form.assessmentTestRepoPath; // TODO: replace with real repo
+
+      if (!testRepo) {
+        logger.warn(`Form ${form.id} does not specify a test repo`);
+        return res.status(404).send()
+      }
 
       // NOTE: cloud tasks publishing is outside this transaction right now, so docs may be created and left even if publish fails
       const txResult = await db.runTransaction(async (transaction) => {
@@ -184,9 +208,9 @@ router.post(
           .status(429)
           .send(
             `Too many grading jobs submitted for this application. ` +
-              `You can submit another request in about ${retryInMinutes} ` +
-              `minute${retryInMinutes === 1 ? "" : "s"} ` +
-              `(after ${new Date(retryAtMs).toISOString()}).`,
+            `You can submit another request in about ${retryInMinutes} ` +
+            `minute${retryInMinutes === 1 ? "" : "s"} ` +
+            `(after ${new Date(retryAtMs).toISOString()}).`,
           );
       }
 
