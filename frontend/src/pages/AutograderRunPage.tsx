@@ -9,38 +9,22 @@ import { displayGradingJobStatus, gradingJobEmoji } from "@/utils/display";
 
 export default function AutograderRunPage() {
   const { jobId } = useParams();
-  const {
-    data: job,
-    isPending,
-    error,
-    notFound,
-  } = useGradingJobSnapshot(jobId);
+  const { data: job, isPending, error } = useGradingJobSnapshot(jobId);
 
   if (isPending) {
     return <Loading />;
   }
 
-  if (error) {
+  if (error || !job) {
     return (
       <main className="flex h-screen flex-col items-center justify-center bg-muted p-8 text-center">
         <CircleAlert className="mb-4 size-12 text-destructive" />
         <h1 className="text-3xl font-semibold text-foreground">
           Failed to load autograder job! ID: {jobId}
         </h1>
-        <p className="mt-2 max-w-md text-muted-foreground">{error.message}</p>
-      </main>
-    );
-  }
-
-  if (notFound || !job) {
-    return (
-      <main className="flex h-screen flex-col items-center justify-center bg-muted p-8 text-center">
-        <CircleAlert className="mb-4 size-12 text-destructive" />
-        <h1 className="text-3xl font-semibold text-foreground">
-          Autograder job not found! Id: {jobId}
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          The requested autograder job {jobId} does not exist.
+        <p className="mt-2 max-w-md text-muted-foreground">
+          {error?.message ??
+            "The requested autograder job could not be loaded."}
         </p>
       </main>
     );

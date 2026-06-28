@@ -1,31 +1,16 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  skipToken,
-  queryOptions,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { onSnapshot } from "firebase/firestore";
-import type { FirestoreError } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 
-import {
-  getGradingJobById,
-  gradingJobDoc,
-  submitGradingJob,
-} from "@/services/gradingService";
+import { gradingJobDoc, submitGradingJob } from "@/services/gradingService";
+import type { GradingJobPublic } from "@/types/types";
 
 const gradingJobRoot = "grading-jobs" as const;
 
-const gradingJobQueries = {
-  root: [gradingJobRoot] as const,
-  snapshot: (jobId?: string) =>
-    queryOptions({
-      queryKey: [gradingJobRoot, jobId] as const,
-      queryFn: jobId ? () => getGradingJobById(jobId) : skipToken,
-      staleTime: Infinity,
-      refetchOnWindowFocus: false,
-    }),
+type GradingJobSnapshotState = {
+  data: GradingJobPublic | null;
+  isPending: boolean;
+  error: Error | null;
 };
 
 export function useSubmitGradingJob() {
@@ -42,48 +27,59 @@ export function useSubmitGradingJob() {
       token: string;
     }) => submitGradingJob(responseId, repoURL, token),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: gradingJobQueries.root });
+      queryClient.invalidateQueries({ queryKey: [gradingJobRoot] });
     },
   });
 }
 
-// handles real-time updates on the autograder page
-// fetches intiial job with Query, uses Firestore onSnapshot for updates
-export function useGradingJobSnapshot(jobId?: string) {
-  const queryClient = useQueryClient();
-  const [listenerError, setListenerError] = useState<
-    FirestoreError | undefined
-  >();
+function createGradingJobStore(jobId?: string) {
+  let currentSnapshot: GradingJobSnapshotState = {
+    data: null,
+    isPending: !!jobId,
+    error: jobId ? null : new Error("Missing grading job ID"),
+  };
 
-  const query = useQuery(gradingJobQueries.snapshot(jobId));
+  function getSnapshot() {
+    return currentSnapshot;
+  }
 
-  useEffect(() => {
-    setListenerError(undefined);
-
-    if (!jobId) {
-      return;
-    }
+  function subscribe(callback: () => void) {
+    if (!jobId) return () => {};
 
     return onSnapshot(
       gradingJobDoc(jobId),
-      (snapshot) => {
-        queryClient.setQueryData(
-          gradingJobQueries.snapshot(jobId).queryKey,
-          () => (snapshot.exists() ? snapshot.data() : null),
-        );
+      (doc) => {
+        currentSnapshot = doc.exists()
+          ? {
+              data: doc.data(),
+              isPending: false,
+              error: null,
+            }
+          : {
+              data: null,
+              isPending: false,
+              error: new Error(`Autograder job ${jobId} does not exist.`),
+            };
+
+        callback();
       },
-      (err) => {
-        setListenerError(err);
+      (error) => {
+        currentSnapshot = {
+          data: null,
+          isPending: false,
+          error,
+        };
+        callback();
       },
     );
-  }, [jobId, queryClient]);
+  }
 
-  const error = listenerError ?? query.error;
+  return { getSnapshot, subscribe };
+}
 
-  return {
-    data: query.data,
-    isPending: query.isPending,
-    error,
-    notFound: query.data === null,
-  };
+// Handles real-time updates on the autograder page.
+export function useGradingJobSnapshot(jobId?: string) {
+  const store = useMemo(() => createGradingJobStore(jobId), [jobId]);
+
+  return useSyncExternalStore(store.subscribe, store.getSnapshot);
 }

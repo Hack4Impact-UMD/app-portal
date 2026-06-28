@@ -18,7 +18,7 @@ export const SuiteResultSchema = z.object({
   suiteName: z.string().nonempty(),
   passed: z.int().nonnegative(),
   failed: z.int().nonnegative(),
-  total: z.int().nonnegative(),
+  total: z.int().nonnegative(), // number of tests
   durationMs: z.int().nonnegative(),
   points: z.int().nonnegative(),
   totalPoints: z.int().nonnegative(),
