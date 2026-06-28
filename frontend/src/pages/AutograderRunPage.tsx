@@ -1,11 +1,13 @@
 import { CircleAlert } from "lucide-react";
 import { useParams } from "react-router-dom";
 
+import AutograderPublicTestResults from "@/components/autograder/AutograderPublicTestResults";
 import AutograderRunSummary from "@/components/autograder/AutograderRunSummary";
 import AutograderStepList from "@/components/autograder/AutograderStepList";
 import Loading from "@/components/Loading";
 import { useGradingJobSnapshot } from "@/hooks/useGrading";
 import { displayGradingJobStatus, gradingJobEmoji } from "@/utils/display";
+import { isTerminalGradingJobStatus } from "@/utils/grading";
 
 export default function AutograderRunPage() {
   const { jobId } = useParams();
@@ -31,7 +33,7 @@ export default function AutograderRunPage() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-muted px-8 py-6">
+    <main className="min-h-[calc(100vh-4rem)] bg-muted px-8 pb-12 pt-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <header className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -63,7 +65,22 @@ export default function AutograderRunPage() {
             updated={job.updated}
           />
 
-          <AutograderStepList status={job.status} />
+          <div className="flex flex-col gap-6">
+            <AutograderStepList
+              status={job.status}
+              cloneDurationMs={job.cloneDurationMs}
+              installDurationMs={job.installDurationMs}
+              buildDurationMs={job.buildDurationMs}
+              testingDurationMs={job.testingDurationMs}
+            />
+
+            {isTerminalGradingJobStatus(job.status) && (
+              <AutograderPublicTestResults
+                suiteResults={job.suiteResults}
+                publicTests={job.publicTests}
+              />
+            )}
+          </div>
         </div>
       </div>
     </main>

@@ -81,10 +81,14 @@ export function displayGradingJobStatus(status: GradingJobStatus) {
     return "Install dependencies";
   else if (status === GradingJobStatus.Building) return "Build assessment";
   else if (status === GradingJobStatus.Serving) return "Serve app";
-  else if (status === GradingJobStatus.Testing) return "Run public tests";
+  else if (status === GradingJobStatus.Testing) return "Run tests";
   else if (status === GradingJobStatus.Completed) return "Completed";
   else if (status === GradingJobStatus.Failed) return "Failed";
   else return "Unknown";
+}
+
+export function displayDurationMs(durationMs: number) {
+  return `${(durationMs / 1000).toFixed(1)}s`;
 }
 
 export const gradingJobEmoji: Record<GradingJobStatus, string> = {
