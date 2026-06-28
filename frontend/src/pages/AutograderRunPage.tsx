@@ -1,56 +1,11 @@
-import type { GradingJobStatus } from "@app-portal/shared/constants";
-import { Circle, CircleAlert, LoaderCircle } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import { useParams } from "react-router-dom";
 
 import AutograderRunSummary from "@/components/autograder/AutograderRunSummary";
+import AutograderStepList from "@/components/autograder/AutograderStepList";
 import Loading from "@/components/Loading";
 import { useGradingJobSnapshot } from "@/hooks/useGrading";
 import { displayGradingJobStatus, gradingJobEmoji } from "@/utils/display";
-import {
-  gradingJobRunnableStatuses,
-  isTerminalGradingJobStatus,
-} from "@/utils/grading";
-
-type StepDisplayStatus = "complete" | "active" | "pending";
-
-function getStepDisplayStatus(
-  stepStatus: GradingJobStatus,
-  currentStatus: GradingJobStatus,
-): StepDisplayStatus {
-  if (isTerminalGradingJobStatus(currentStatus)) return "complete";
-
-  const stepIndex = gradingJobRunnableStatuses.indexOf(stepStatus);
-  const currentIndex = gradingJobRunnableStatuses.indexOf(currentStatus);
-
-  if (stepIndex < currentIndex) return "complete";
-  if (stepIndex === currentIndex) return "active";
-  return "pending";
-}
-
-function StepIcon({
-  stepStatus,
-  displayStatus,
-}: {
-  stepStatus: GradingJobStatus;
-  displayStatus: StepDisplayStatus;
-}) {
-  if (displayStatus === "complete") {
-    return (
-      <span
-        aria-hidden
-        className="flex size-7 items-center justify-center text-lg"
-      >
-        {gradingJobEmoji[stepStatus]}
-      </span>
-    );
-  }
-
-  if (displayStatus === "active") {
-    return <LoaderCircle className="size-5 animate-spin text-blue" />;
-  }
-
-  return <Circle className="size-5 text-muted-foreground" />;
-}
 
 export default function AutograderRunPage() {
   const { jobId } = useParams();
@@ -124,42 +79,7 @@ export default function AutograderRunPage() {
             updated={job.updated}
           />
 
-          <div className="flex flex-col gap-6">
-            <section className="overflow-hidden rounded-md border bg-background shadow-xs">
-              <div className="border-b bg-background px-5 py-4">
-                <h2 className="text-lg font-semibold text-foreground">Steps</h2>
-              </div>
-
-              <div className="divide-y">
-                {gradingJobRunnableStatuses.map((stepStatus) => {
-                  const displayStatus = getStepDisplayStatus(
-                    stepStatus,
-                    job.status,
-                  );
-
-                  return (
-                    <div
-                      key={stepStatus}
-                      className="flex items-center gap-3 px-5 py-4"
-                    >
-                      <StepIcon
-                        stepStatus={stepStatus}
-                        displayStatus={displayStatus}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-foreground">
-                          {displayGradingJobStatus(stepStatus)}
-                        </p>
-                        <p className="text-sm capitalize text-muted-foreground">
-                          {displayStatus}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          </div>
+          <AutograderStepList status={job.status} />
         </div>
       </div>
     </main>
