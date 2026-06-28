@@ -80,6 +80,7 @@ export const ApplicationFormBaseSchema = z.object({
   decisionLetter: DecisionLetterSchema.optional(),
   scoreWeights: ScoreWeightsSchema,
   interviewScoreWeights: ScoreWeightsSchema,
+  assessmentTestRepoPath: z.string().optional(),
 });
 export type TextQuestion = z.infer<typeof TextQuestionSchema>;
 export type OptionQuestion = z.infer<typeof OptionQuestionSchema>;

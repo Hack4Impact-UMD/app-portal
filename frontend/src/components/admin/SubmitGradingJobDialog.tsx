@@ -100,10 +100,10 @@ export default function SubmitGradingJobDialog({
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="repo-url">Repository URL</Label>
+            <Label htmlFor="repo-url">Repository Path</Label>
             <Input
               id="repo-url"
-              placeholder="https://github.com/username/repo"
+              placeholder="username/repo"
               value={repoURL}
               onChange={(e) => setRepoURL(e.target.value)}
             />
