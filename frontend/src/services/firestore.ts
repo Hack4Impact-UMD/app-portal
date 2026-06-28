@@ -15,6 +15,7 @@ import { db } from "@/config/firebase";
 import type {
   ApplicationForm,
   ApplicationResponse,
+  GradingJobPublic,
   UserProfile,
 } from "@/types/types";
 
@@ -30,6 +31,7 @@ type ClientCollectionData = {
   [FirestoreCollection.InterviewData]: ApplicationInterviewData;
   [FirestoreCollection.ReviewAssignments]: AppReviewAssignment;
   [FirestoreCollection.InterviewAssignments]: InterviewAssignment;
+  [FirestoreCollection.GradingJobsPublic]: GradingJobPublic;
 };
 
 export function appCollection<C extends keyof ClientCollectionData>(name: C) {

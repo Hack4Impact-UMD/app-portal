@@ -1,5 +1,4 @@
 import { GradingJobStatus } from "@app-portal/shared/constants";
-import { Timestamp } from "firebase/firestore";
 import {
   Circle,
   CircleAlert,
@@ -9,25 +8,12 @@ import {
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 
+import Loading from "@/components/Loading";
 import { Progress } from "@/components/ui/progress";
-import type { GradingJobPublic } from "@/types/types";
+import { useGradingJobSnapshot } from "@/hooks/useGrading";
 import { displayGradingJobStatus, gradingJobEmoji } from "@/utils/display";
 
 const gradingJobStatuses = Object.values(GradingJobStatus);
-
-const fakeJob: GradingJobPublic = {
-  id: "746c5437-a43f-4c10-8485-b96b61c6d0da",
-  responseId: "response-id-pending",
-  repoURL: "https://github.com/example/repo",
-  status: GradingJobStatus.Serving,
-  score: 72,
-  totalTests: 25,
-  completedTests: 12,
-  suiteResults: {},
-  publicTests: {},
-  started: Timestamp.now(),
-  updated: Timestamp.now(),
-};
 
 type StepDisplayStatus = "complete" | "active" | "pending";
 const terminalStatuses = [GradingJobStatus.Completed, GradingJobStatus.Failed];
@@ -71,19 +57,38 @@ function StepIcon({
 
 export default function AutograderRunPage() {
   const { jobId } = useParams();
-  const job = jobId === fakeJob.id ? fakeJob : undefined;
-  const hasTerminalStatus =
-    job !== undefined && terminalStatuses.includes(job.status);
+  const {
+    data: job,
+    isPending,
+    error,
+    notFound,
+  } = useGradingJobSnapshot(jobId);
 
-  if (!job) {
+  if (isPending) {
+    return <Loading />;
+  }
+
+  if (error) {
     return (
       <main className="flex h-screen flex-col items-center justify-center bg-muted p-8 text-center">
         <CircleAlert className="mb-4 size-12 text-destructive" />
         <h1 className="text-3xl font-semibold text-foreground">
-          Autograder job not found
+          Failed to load autograder job! ID: {jobId}
+        </h1>
+        <p className="mt-2 max-w-md text-muted-foreground">{error.message}</p>
+      </main>
+    );
+  }
+
+  if (notFound || !job) {
+    return (
+      <main className="flex h-screen flex-col items-center justify-center bg-muted p-8 text-center">
+        <CircleAlert className="mb-4 size-12 text-destructive" />
+        <h1 className="text-3xl font-semibold text-foreground">
+          Autograder job not found! Id: {jobId}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          The requested autograder job does not exist.
+          The requested autograder job {jobId} does not exist.
         </p>
       </main>
     );
@@ -121,10 +126,14 @@ export default function AutograderRunPage() {
                 <div className="mb-2 flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Overall score</span>
                   <span className="font-medium">
-                    {hasTerminalStatus ? job.score : "Pending"}
+                    {terminalStatuses.includes(job.status)
+                      ? job.score
+                      : "Pending"}
                   </span>
                 </div>
-                <Progress value={hasTerminalStatus ? job.score : 20} />
+                <Progress
+                  value={terminalStatuses.includes(job.status) ? job.score : 20}
+                />
               </div>
 
               <dl className="space-y-4 text-sm">
@@ -151,18 +160,12 @@ export default function AutograderRunPage() {
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Job ID</dt>
-                  <dd className="mt-1 flex items-center gap-2">
-                    <span className="break-all font-mono text-xs">
-                      {job.id}
-                    </span>
-                  </dd>
+                  <dd className="mt-1 break-all font-mono text-xs">{job.id}</dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Response ID</dt>
-                  <dd className="mt-1 flex items-center gap-2">
-                    <span className="break-all font-mono text-xs">
-                      {job.responseId}
-                    </span>
+                  <dd className="mt-1 break-all font-mono text-xs">
+                    {job.responseId}
                   </dd>
                 </div>
               </dl>
