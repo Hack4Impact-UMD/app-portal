@@ -6,9 +6,25 @@ import { logger } from "firebase-functions";
 import { appCollection } from "../utils/firestore";
 
 // Maximum number of grading jobs allowed per response within the rate limit window.
-const RATE_LIMITER_MAX_JOBS = 5;
+export const RATE_LIMITER_MAX_JOBS = 5;
 // Length of the rate limit window in milliseconds (30 minutes).
-const RATE_LIMITER_WINDOW_MS = 30 * 60 * 1000;
+export const RATE_LIMITER_WINDOW_MS = 30 * 60 * 1000;
+
+// Given the start times (ms) of the jobs currently in the window, returns when
+// the caller may retry. The caller is over the cap by (count - MAX_JOBS + 1)
+// jobs, so the count drops below the cap RATE_LIMITER_WINDOW_MS after the job at
+// index (count - MAX_JOBS) (sorted oldest-first) started.
+export function computeRetryAfter(startedMs: number[]) {
+  const sorted = [...startedMs].sort((a, b) => a - b);
+  const unblockIndex = sorted.length - RATE_LIMITER_MAX_JOBS;
+  const retryAtMs = sorted[unblockIndex] + RATE_LIMITER_WINDOW_MS;
+  const retryInSeconds = Math.max(
+    0,
+    Math.ceil((retryAtMs - Date.now()) / 1000),
+  );
+  const retryInMinutes = Math.ceil(retryInSeconds / 60);
+  return { retryAtMs, retryInSeconds, retryInMinutes };
+}
 
 // Limits how many grading jobs may be submitted for a single response within a
 // rolling time window. Must be used after validateSchema so req.body.responseId
@@ -48,17 +64,9 @@ export async function gradingRateLimiter(
           `(${recentJobsSnapshot.size} jobs in the last 30 minutes)`,
       );
 
-      // The user can submit again once the oldest job in the window ages out of
-      // it, i.e. RATE_LIMITER_WINDOW_MS after that job started.
-      const oldestStartedMs = Math.min(
-        ...recentJobsSnapshot.docs.map((doc) => doc.data().started.toMillis()),
+      const { retryAtMs, retryInSeconds, retryInMinutes } = computeRetryAfter(
+        recentJobsSnapshot.docs.map((doc) => doc.data().started.toMillis()),
       );
-      const retryAtMs = oldestStartedMs + RATE_LIMITER_WINDOW_MS;
-      const retryInSeconds = Math.max(
-        0,
-        Math.ceil((retryAtMs - Date.now()) / 1000),
-      );
-      const retryInMinutes = Math.ceil(retryInSeconds / 60);
 
       res.set("Retry-After", String(retryInSeconds));
       res

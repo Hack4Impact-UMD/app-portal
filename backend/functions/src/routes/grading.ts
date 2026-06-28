@@ -18,11 +18,16 @@ import {
   hasRoles,
   getUserById,
 } from "../middleware/authentication";
-import { gradingRateLimiter } from "../middleware/rateLimiter";
+import {
+  computeRetryAfter,
+  gradingRateLimiter,
+  RATE_LIMITER_MAX_JOBS,
+  RATE_LIMITER_WINDOW_MS,
+} from "../middleware/rateLimiter";
 import { validateSchema } from "../middleware/validation";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { GradingJobPublic } from "../models/autograder";
-import type { GradingTaskPayload} from "../utils/cloudTasks";
+import type { GradingTaskPayload } from "../utils/cloudTasks";
 import { publishGradingTask } from "../utils/cloudTasks";
 import { appCollection } from "../utils/firestore";
 
@@ -101,7 +106,7 @@ router.post(
       const testRepo = "https://github.com/Hack4Impact-UMD/FAKE_REPO"; // TODO: replace with real repo
 
       // NOTE: cloud tasks publishing is outside this transaction right now, so docs may be created and left even if publish fails
-      const duplicateFound = await db.runTransaction(async (transaction) => {
+      const txResult = await db.runTransaction(async (transaction) => {
         // validation: exit if user has existing running job
         const existingJobsSnapshot = await transaction.get(
           gradingJobsPublicCollection.where("responseId", "==", responseId),
@@ -116,7 +121,18 @@ router.post(
         });
 
         if (runningJobs.length > 0) {
-          return true;
+          return { type: "duplicate" as const };
+        }
+
+        // rate limit: enforce atomically here as a backstop against concurrent
+        // submits that could both pass the preflight middleware check
+        const windowStart = now.toMillis() - RATE_LIMITER_WINDOW_MS;
+        const recentStartedMs = existingJobsSnapshot.docs
+          .map((doc) => doc.data().started.toMillis())
+          .filter((startedMs) => startedMs >= windowStart);
+
+        if (recentStartedMs.length >= RATE_LIMITER_MAX_JOBS) {
+          return { type: "rate_limited" as const, recentStartedMs };
         }
 
         // create: job docs and cloud tasks job
@@ -146,14 +162,32 @@ router.post(
         transaction.set(gradingJobsPublicCollection.doc(jobId), publicJob);
         transaction.set(gradingJobsInternalCollection.doc(jobId), internalJob);
 
-        return false;
+        return { type: "created" as const };
       });
 
-      if (duplicateFound) {
+      if (txResult.type === "duplicate") {
         logger.info(`Found existing running job for response ${responseId}`);
         return res
           .status(409)
           .send("A grading job is already in progress for this application.");
+      }
+
+      if (txResult.type === "rate_limited") {
+        logger.warn(
+          `Rate limit hit for response ${responseId} during transaction`,
+        );
+        const { retryAtMs, retryInSeconds, retryInMinutes } = computeRetryAfter(
+          txResult.recentStartedMs,
+        );
+        res.set("Retry-After", String(retryInSeconds));
+        return res
+          .status(429)
+          .send(
+            `Too many grading jobs submitted for this application. ` +
+              `You can submit another request in about ${retryInMinutes} ` +
+              `minute${retryInMinutes === 1 ? "" : "s"} ` +
+              `(after ${new Date(retryAtMs).toISOString()}).`,
+          );
       }
 
       logger.info(`Created Firestore documents for job ${jobId}`);
@@ -176,13 +210,37 @@ router.post(
               `Successfully made grading request locally for job ${jobId}`,
             );
           })
-          .catch((err) => {
-            logger.info(
+          .catch(async (err) => {
+            logger.error(
               `Failed to make grading request locally for job ${jobId}: ${err}`,
             );
+            // mark the job failed so it doesn't stay stuck in Queued and count
+            // against the response's rate limit on subsequent retries
+            await gradingJobsPublicCollection
+              .doc(jobId)
+              .update({
+                status: GradingJobStatus.Failed,
+                updated: Timestamp.now(),
+              })
+              .catch((updateErr) => {
+                logger.error(
+                  `Failed to mark job ${jobId} as failed: ${updateErr}`,
+                );
+              });
           });
       } else {
-        const taskName = await publishGradingTask(payload);
+        let taskName: string;
+        try {
+          taskName = await publishGradingTask(payload);
+        } catch (err) {
+          // mark the job failed so it doesn't stay stuck in Queued and count
+          // against the response's rate limit on subsequent retries
+          await gradingJobsPublicCollection.doc(jobId).update({
+            status: GradingJobStatus.Failed,
+            updated: Timestamp.now(),
+          });
+          throw err;
+        }
 
         logger.info(`Successfully published task ${taskName} for job ${jobId}`);
       }
