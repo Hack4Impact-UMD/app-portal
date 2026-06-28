@@ -1,10 +1,12 @@
 import { GradingJobStatus } from "@app-portal/shared/constants";
 import {
+  CheckCircle2,
   Circle,
   CircleAlert,
   ExternalLink,
   Github,
   LoaderCircle,
+  XCircle,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 
@@ -13,21 +15,64 @@ import { Progress } from "@/components/ui/progress";
 import { useGradingJobSnapshot } from "@/hooks/useGrading";
 import { displayGradingJobStatus, gradingJobEmoji } from "@/utils/display";
 
-const gradingJobStatuses = Object.values(GradingJobStatus);
-
 type StepDisplayStatus = "complete" | "active" | "pending";
 const terminalStatuses = [GradingJobStatus.Completed, GradingJobStatus.Failed];
+const runnableGradingJobStatuses = Object.values(GradingJobStatus).filter(
+  (status) => !terminalStatuses.includes(status),
+);
+
+function isTerminalStatus(status: GradingJobStatus) {
+  return terminalStatuses.includes(status);
+}
 
 function getStepDisplayStatus(
   stepStatus: GradingJobStatus,
   currentStatus: GradingJobStatus,
 ): StepDisplayStatus {
-  const stepIndex = gradingJobStatuses.indexOf(stepStatus);
-  const currentIndex = gradingJobStatuses.indexOf(currentStatus);
+  if (isTerminalStatus(currentStatus)) return "complete";
+
+  const stepIndex = runnableGradingJobStatuses.indexOf(stepStatus);
+  const currentIndex = runnableGradingJobStatuses.indexOf(currentStatus);
 
   if (stepIndex < currentIndex) return "complete";
   if (stepIndex === currentIndex) return "active";
   return "pending";
+}
+
+function RunStatus({ status }: { status: GradingJobStatus }) {
+  const completed = status === GradingJobStatus.Completed;
+  const failed = status === GradingJobStatus.Failed;
+  const Icon = completed ? CheckCircle2 : failed ? XCircle : LoaderCircle;
+  const iconClass = completed
+    ? "text-green-700"
+    : failed
+      ? "text-destructive"
+      : "text-blue";
+
+  return (
+    <div>
+      <dt className="flex items-center gap-2 text-muted-foreground">
+        Run status
+        <Icon
+          className={`size-4 shrink-0 ${iconClass} ${isTerminalStatus(status) ? "" : "animate-spin"}`}
+        />
+      </dt>
+      <dd className="mt-1">
+        <div className="font-medium text-foreground">
+          {isTerminalStatus(status)
+            ? displayGradingJobStatus(status)
+            : "Autograder running"}
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {completed
+            ? "The run finished successfully."
+            : failed
+              ? "The run ended before producing a successful result."
+              : "This page will update automatically as each step finishes."}
+        </p>
+      </dd>
+    </div>
+  );
 }
 
 function StepIcon({
@@ -95,7 +140,7 @@ export default function AutograderRunPage() {
   }
 
   return (
-    <main className="min-h-full bg-muted px-8 py-6">
+    <main className="min-h-[calc(100vh-4rem)] bg-muted px-8 py-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <header className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -110,18 +155,23 @@ export default function AutograderRunPage() {
           </div>
 
           <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm font-medium text-foreground shadow-xs">
-            <span aria-hidden>{gradingJobEmoji[job.status]}</span>
+            <span>Status: </span>
             {displayGradingJobStatus(job.status)}
+            <span aria-hidden>{gradingJobEmoji[job.status]}</span>
           </div>
         </header>
 
         <div className="grid grid-cols-[20rem_minmax(0,1fr)] gap-6">
-          <aside className="rounded-md border bg-background p-5 shadow-xs">
+          <aside className="sticky top-20 self-start rounded-md border bg-background p-5 shadow-xs">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold text-foreground">Summary</h2>
             </div>
 
             <div className="mt-5 space-y-5">
+              <dl className="text-sm">
+                <RunStatus status={job.status} />
+              </dl>
+
               <div>
                 <div className="mb-2 flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Overall score</span>
@@ -137,12 +187,6 @@ export default function AutograderRunPage() {
               </div>
 
               <dl className="space-y-4 text-sm">
-                <div>
-                  <dt className="text-muted-foreground">Status</dt>
-                  <dd className="mt-1 font-medium">
-                    {displayGradingJobStatus(job.status)}
-                  </dd>
-                </div>
                 <div>
                   <dt className="text-muted-foreground">Repository</dt>
                   <dd className="mt-1 flex min-w-0 items-center gap-2">
@@ -172,40 +216,42 @@ export default function AutograderRunPage() {
             </div>
           </aside>
 
-          <section className="rounded-md border bg-background shadow-xs">
-            <div className="border-b px-5 py-4">
-              <h2 className="text-lg font-semibold text-foreground">Steps</h2>
-            </div>
+          <div className="flex flex-col gap-6">
+            <section className="overflow-hidden rounded-md border bg-background shadow-xs">
+              <div className="border-b bg-background px-5 py-4">
+                <h2 className="text-lg font-semibold text-foreground">Steps</h2>
+              </div>
 
-            <div className="divide-y">
-              {gradingJobStatuses.map((stepStatus) => {
-                const displayStatus = getStepDisplayStatus(
-                  stepStatus,
-                  job.status,
-                );
+              <div className="divide-y">
+                {runnableGradingJobStatuses.map((stepStatus) => {
+                  const displayStatus = getStepDisplayStatus(
+                    stepStatus,
+                    job.status,
+                  );
 
-                return (
-                  <div
-                    key={stepStatus}
-                    className="flex items-center gap-3 px-5 py-4"
-                  >
-                    <StepIcon
-                      stepStatus={stepStatus}
-                      displayStatus={displayStatus}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-foreground">
-                        {displayGradingJobStatus(stepStatus)}
-                      </p>
-                      <p className="text-sm capitalize text-muted-foreground">
-                        {displayStatus}
-                      </p>
+                  return (
+                    <div
+                      key={stepStatus}
+                      className="flex items-center gap-3 px-5 py-4"
+                    >
+                      <StepIcon
+                        stepStatus={stepStatus}
+                        displayStatus={displayStatus}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-foreground">
+                          {displayGradingJobStatus(stepStatus)}
+                        </p>
+                        <p className="text-sm capitalize text-muted-foreground">
+                          {displayStatus}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
         </div>
       </div>
     </main>

@@ -83,7 +83,8 @@ export function displayGradingJobStatus(status: GradingJobStatus) {
   else if (status === GradingJobStatus.Serving) return "Serve app";
   else if (status === GradingJobStatus.Testing) return "Run public tests";
   else if (status === GradingJobStatus.Completed) return "Completed";
-  else return "Failed";
+  else if (status === GradingJobStatus.Failed) return "Failed";
+  else return "Unknown";
 }
 
 export const gradingJobEmoji: Record<GradingJobStatus, string> = {
