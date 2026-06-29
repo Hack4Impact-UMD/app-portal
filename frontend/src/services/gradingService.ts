@@ -33,6 +33,10 @@ export function gradingJobDoc(id: string) {
   return doc(appCollection(FirestoreCollection.GradingJobsPublic), id);
 }
 
+export function gradingJobDocInternal(id: string) {
+  return doc(appCollection(FirestoreCollection.GradingJobsInternal), id)
+}
+
 export async function getGradingJobById(id: string) {
   const docRef = gradingJobDoc(id);
   const snapshot = await getDoc(docRef);
