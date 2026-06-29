@@ -3,6 +3,7 @@
     "private": true,
     "packageManager": "pnpm@10.33.0",
     "scripts": {
+        "dev": "node scripts/dev.mjs",
         "build": "pnpm -r build",
         "checks": "concurrently \"pnpm format:check:all\" \"pnpm lint:all\" \"pnpm typecheck\" \"pnpm knip\"",
         "typecheck": "pnpm -r typecheck",
