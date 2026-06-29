@@ -34,7 +34,7 @@ export function gradingJobDoc(id: string) {
 }
 
 export function gradingJobDocInternal(id: string) {
-  return doc(appCollection(FirestoreCollection.GradingJobsInternal), id)
+  return doc(appCollection(FirestoreCollection.GradingJobsInternal), id);
 }
 
 export async function getGradingJobById(id: string) {

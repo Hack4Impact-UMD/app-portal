@@ -7,7 +7,7 @@ import type {
   InternalApplicationStatus,
   InterviewAssignment,
   RoleReviewRubric,
-  GradingJobDataInternal
+  GradingJobDataInternal,
 } from "@app-portal/shared/types";
 import type { CollectionReference } from "firebase/firestore";
 import { collection } from "firebase/firestore";
