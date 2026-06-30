@@ -25,7 +25,7 @@ import {
   RATE_LIMITER_WINDOW_MS,
 } from "../middleware/rateLimiter";
 import { validateSchema } from "../middleware/validation";
-import type { ApplicationForm } from "../models/appForm";
+import { ApplicationFormSchema } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { GradingJobPublic } from "../models/autograder";
 import type { GradingTaskPayload } from "../utils/cloudTasks";
@@ -97,12 +97,17 @@ router.post(
         return res.status(404).send("Form not found");
       }
 
-      const form: ApplicationForm | undefined = formDoc.data();
+      const formResult = ApplicationFormSchema.safeParse(formDoc.data());
 
-      if (!form) {
-        logger.warn(`Could not read form ${responseData.applicationFormId}`);
-        return res.status(404).send();
+      if (!formResult.success) {
+        logger.error(
+          `Invalid form ${responseData.applicationFormId} while submitting grading job`,
+          formResult.error,
+        );
+        return res.status(500).send("Invalid application form data");
       }
+
+      const form = formResult.data;
 
       const isOwner = responseData.userId === userId;
       const isAdmin = [
@@ -123,11 +128,13 @@ router.post(
 
       const jobId = uuidv4();
       const now = Timestamp.now();
-      const testRepo = form.assessmentTestRepoPath; // TODO: replace with real repo
+      const testRepo = form.assessmentTestRepoPath;
 
       if (!testRepo) {
-        logger.warn(`Form ${form.id} does not specify a test repo`);
-        return res.status(404).send();
+        logger.warn(`Form ${form.id} is not configured for autograding`);
+        return res
+          .status(400)
+          .send("Application form is not configured for autograding");
       }
 
       // NOTE: cloud tasks publishing is outside this transaction right now, so docs may be created and left even if publish fails

@@ -1,7 +1,7 @@
 import { GradingJobStatus } from "@app-portal/shared/constants";
 import { CheckCircle2, Circle, LoaderCircle } from "lucide-react";
 
-import { displayDurationMs, displayGradingJobStatus } from "@/utils/display";
+import { displayDurationMs, gradingJobStatusLabels } from "@/utils/display";
 import {
   gradingJobRunnableStatuses,
   isTerminalGradingJobStatus,
@@ -80,7 +80,7 @@ export default function AutograderStepList({
               <StepIcon displayStatus={displayStatus} />
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-foreground">
-                  {displayGradingJobStatus(stepStatus)}
+                  {gradingJobStatusLabels[stepStatus]}
                 </p>
                 <p className="text-sm capitalize text-muted-foreground">
                   {displayStatus}

@@ -10,7 +10,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { useApplicantForResponse } from "@/hooks/useApplicants";
 import { displayTimestamp } from "@/utils/dates";
-import { displayGradingJobStatus } from "@/utils/display";
+import { gradingJobStatusLabels } from "@/utils/display";
 import { isTerminalGradingJobStatus } from "@/utils/grading";
 
 type AutograderRunSummaryProps = {
@@ -39,7 +39,7 @@ function RunStatus({ status }: { status: GradingJobStatus }) {
       <dd className="mt-1">
         <div className="flex items-center gap-2 font-medium text-foreground">
           {isTerminalGradingJobStatus(status)
-            ? displayGradingJobStatus(status)
+            ? gradingJobStatusLabels[status]
             : "Autograder running"}
           <Icon
             className={`size-4 shrink-0 ${iconClass} ${isTerminalGradingJobStatus(status) ? "" : "animate-spin"}`}
@@ -100,7 +100,7 @@ export default function AutograderRunSummary({
                 {finished ? score : "Pending"}
               </span>
             </div>
-            <Progress value={finished ? score : 20} />
+            <Progress value={finished ? score : 0} />
           </div>
 
           <dl className="space-y-2.5 text-sm">

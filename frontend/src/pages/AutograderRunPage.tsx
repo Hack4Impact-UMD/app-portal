@@ -6,7 +6,7 @@ import AutograderRunSummary from "@/components/autograder/AutograderRunSummary";
 import AutograderStepList from "@/components/autograder/AutograderStepList";
 import Loading from "@/components/Loading";
 import { useGradingJobSnapshot } from "@/hooks/useGrading";
-import { displayGradingJobStatus, gradingJobEmoji } from "@/utils/display";
+import { gradingJobEmoji, gradingJobStatusLabels } from "@/utils/display";
 import { isTerminalGradingJobStatus } from "@/utils/grading";
 
 export default function AutograderRunPage() {
@@ -49,7 +49,7 @@ export default function AutograderRunPage() {
 
           <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm font-medium text-foreground shadow-xs">
             <span>Status: </span>
-            {displayGradingJobStatus(job.status)}
+            {gradingJobStatusLabels[job.status]}
             <span aria-hidden>{gradingJobEmoji[job.status]}</span>
           </div>
         </header>

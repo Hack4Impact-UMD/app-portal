@@ -73,19 +73,17 @@ export function applicantRoleDarkColor(role: ApplicantRole) {
   else return "#000000";
 }
 
-export function displayGradingJobStatus(status: GradingJobStatus) {
-  if (status === GradingJobStatus.Queued) return "Queued";
-  else if (status === GradingJobStatus.Pending) return "Pending";
-  else if (status === GradingJobStatus.Cloning) return "Clone repository";
-  else if (status === GradingJobStatus.Installing)
-    return "Install dependencies";
-  else if (status === GradingJobStatus.Building) return "Build assessment";
-  else if (status === GradingJobStatus.Serving) return "Serve app";
-  else if (status === GradingJobStatus.Testing) return "Run tests";
-  else if (status === GradingJobStatus.Completed) return "Completed";
-  else if (status === GradingJobStatus.Failed) return "Failed";
-  else return "Unknown";
-}
+export const gradingJobStatusLabels: Record<GradingJobStatus, string> = {
+  [GradingJobStatus.Queued]: "Queued",
+  [GradingJobStatus.Pending]: "Pending",
+  [GradingJobStatus.Cloning]: "Clone repository",
+  [GradingJobStatus.Installing]: "Install dependencies",
+  [GradingJobStatus.Building]: "Build assessment",
+  [GradingJobStatus.Serving]: "Serve app",
+  [GradingJobStatus.Testing]: "Run tests",
+  [GradingJobStatus.Completed]: "Completed",
+  [GradingJobStatus.Failed]: "Failed",
+};
 
 export function displayDurationMs(durationMs: number) {
   return `${(durationMs / 1000).toFixed(1)}s`;
