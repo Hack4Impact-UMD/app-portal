@@ -4,9 +4,10 @@ import type {
   SuiteResults,
   TestResult,
 } from "@app-portal/shared/types";
-import Ansi from "ansi-to-react";
-import { CheckCircle2, ChevronDown, XCircle } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
+import AutograderLogBlock from "@/components/autograder/AutograderLogBlock";
+import AutograderStatusIcon from "@/components/autograder/AutograderStatusIcon";
 import { displayDurationMs } from "@/utils/display";
 
 type AutograderPublicTestResultsProps = {
@@ -44,22 +45,6 @@ function groupSuiteResults(
   }));
 }
 
-function LogBlock({ output }: { output: string }) {
-  if (!output) return null;
-
-  return (
-    <pre className="whitespace-pre-wrap rounded-md border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs leading-5 text-foreground">
-      <Ansi>{output}</Ansi>
-    </pre>
-  );
-}
-
-function SuiteIcon({ passed }: { passed: boolean }) {
-  if (passed) return <CheckCircle2 className="size-5 text-green-700" />;
-
-  return <XCircle className="size-5 text-destructive" />;
-}
-
 function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   const passed = getSuitePassed(suite);
   const tests = Object.entries(suite.tests);
@@ -70,7 +55,7 @@ function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   if (!hasTestLogs) {
     return (
       <div className="flex items-center gap-3 px-5 py-4">
-        <SuiteIcon passed={passed} />
+        <AutograderStatusIcon status={passed ? "complete" : "failed"} />
         <div className="min-w-0 flex-1">
           <p className="font-medium text-foreground">{suite.suiteName}</p>
           <p className="text-sm text-muted-foreground">{suiteSummary}</p>
@@ -89,7 +74,7 @@ function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   return (
     <details className="group/suite px-5 py-4" open>
       <summary className="flex cursor-pointer list-none items-center gap-3">
-        <SuiteIcon passed={passed} />
+        <AutograderStatusIcon status={passed ? "complete" : "failed"} />
         <div className="min-w-0 flex-1">
           <p className="font-medium text-foreground">{suite.suiteName}</p>
           <p className="text-sm text-muted-foreground">{suiteSummary}</p>
@@ -159,10 +144,10 @@ function TestLogBlock({ test }: { test: TestResult }) {
       </summary>
 
       <div className="mt-2 space-y-2">
-        <LogBlock output={test.stdout} />
-        <LogBlock output={test.stderr} />
+        <AutograderLogBlock output={test.stdout} />
+        <AutograderLogBlock output={test.stderr} />
         {test.errors.length > 0 && (
-          <LogBlock
+          <AutograderLogBlock
             output={test.errors.map((error) => `- ${error}`).join("\n")}
           />
         )}

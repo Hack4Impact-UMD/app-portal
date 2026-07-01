@@ -1,6 +1,6 @@
 import { GradingJobStatus } from "@app-portal/shared/constants";
-import { CheckCircle2, Circle, LoaderCircle } from "lucide-react";
 
+import AutograderStatusIcon from "@/components/autograder/AutograderStatusIcon";
 import { displayDurationMs, gradingJobStatusLabels } from "@/utils/display";
 import {
   gradingJobRunnableStatuses,
@@ -38,18 +38,6 @@ function getStepDuration(
   return durations[stepStatus];
 }
 
-function StepIcon({ displayStatus }: { displayStatus: StepDisplayStatus }) {
-  if (displayStatus === "complete") {
-    return <CheckCircle2 className="size-5 text-green-700" />;
-  }
-
-  if (displayStatus === "active") {
-    return <LoaderCircle className="size-5 animate-spin text-blue" />;
-  }
-
-  return <Circle className="size-5 text-muted-foreground" />;
-}
-
 export default function AutograderStepList({
   status,
   cloneDurationMs,
@@ -77,7 +65,7 @@ export default function AutograderStepList({
 
           return (
             <div key={stepStatus} className="flex items-center gap-3 px-5 py-4">
-              <StepIcon displayStatus={displayStatus} />
+              <AutograderStatusIcon status={displayStatus} />
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-foreground">
                   {gradingJobStatusLabels[stepStatus]}

@@ -42,6 +42,7 @@ export const GradingJobPublicBaseSchema = z.object({
   totalTests: z.int().nonnegative(),
   completedTests: z.int().nonnegative(),
   error: z.string().optional(),
+  errorStep: z.enum(GradingJobStatus).optional(),
   cloneDurationMs: z.int().nonnegative().optional(),
   installDurationMs: z.int().nonnegative().optional(),
   buildDurationMs: z.int().nonnegative().optional(),
