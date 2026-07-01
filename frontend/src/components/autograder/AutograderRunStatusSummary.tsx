@@ -10,6 +10,7 @@ import { isTerminalGradingJobStatus } from "@/utils/grading";
 type AutograderRunStatusSummaryProps = {
   status: GradingJobStatus;
   score: number;
+  maxScore: number;
   started: Timestamp;
   updated: Timestamp;
 };
@@ -47,10 +48,13 @@ function RunStatus({ status }: { status: GradingJobStatus }) {
 export default function AutograderRunStatusSummary({
   status,
   score,
+  maxScore,
   started,
   updated,
 }: AutograderRunStatusSummaryProps) {
   const finished = isTerminalGradingJobStatus(status);
+  const scoreLabel = `${score}/${maxScore}`;
+  const scoreProgressValue = Math.min((score / maxScore) * 100, 100);
 
   return (
     <section className="rounded-md border bg-background p-3 shadow-xs">
@@ -66,9 +70,11 @@ export default function AutograderRunStatusSummary({
         <div>
           <div className="mb-2 flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Overall score</span>
-            <span className="font-medium">{finished ? score : "Pending"}</span>
+            <span className="font-medium">
+              {finished ? scoreLabel : "Pending"}
+            </span>
           </div>
-          <Progress value={finished ? score : 0} />
+          <Progress value={finished ? scoreProgressValue : 0} />
         </div>
 
         <dl className="space-y-2.5 text-sm">

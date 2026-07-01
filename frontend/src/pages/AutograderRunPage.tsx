@@ -3,8 +3,9 @@ import { CircleAlert } from "lucide-react";
 import { useParams } from "react-router-dom";
 
 import AutograderPublicTestResults from "@/components/autograder/AutograderPublicTestResults";
-import AutograderRunSummary from "@/components/autograder/AutograderRunSummary";
+import AutograderRunStatusSummary from "@/components/autograder/AutograderRunStatusSummary";
 import AutograderStepList from "@/components/autograder/AutograderStepList";
+import AutograderSubmissionSummary from "@/components/autograder/AutograderSubmissionSummary";
 import Loading from "@/components/Loading";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -12,6 +13,15 @@ import {
   useGradingJobSnapshot,
 } from "@/hooks/useGrading";
 import { gradingJobEmoji, gradingJobStatusLabels } from "@/utils/display";
+
+function getMaxScore(job: {
+  suiteResults: Record<string, { totalPoints: number }>;
+}) {
+  return Object.values(job.suiteResults).reduce(
+    (total, suite) => total + suite.totalPoints,
+    0,
+  );
+}
 
 export default function AutograderRunPage() {
   const { jobId } = useParams();
@@ -44,6 +54,8 @@ export default function AutograderRunPage() {
     );
   }
 
+  const maxScore = getMaxScore(job);
+
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-muted px-8 pb-12 pt-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -67,15 +79,20 @@ export default function AutograderRunPage() {
         </header>
 
         <div className="grid grid-cols-[20rem_minmax(0,1fr)] gap-6">
-          <AutograderRunSummary
-            status={job.status}
-            score={job.score}
-            repoURL={job.repoURL}
-            jobId={job.id}
-            responseId={job.responseId}
-            started={job.started}
-            updated={job.updated}
-          />
+          <aside className="sticky top-20 flex self-start flex-col gap-3">
+            <AutograderRunStatusSummary
+              status={job.status}
+              score={job.score}
+              maxScore={maxScore}
+              started={job.started}
+              updated={job.updated}
+            />
+            <AutograderSubmissionSummary
+              repoURL={job.repoURL}
+              jobId={job.id}
+              responseId={job.responseId}
+            />
+          </aside>
 
           <div className="flex flex-col gap-6">
             <AutograderStepList
