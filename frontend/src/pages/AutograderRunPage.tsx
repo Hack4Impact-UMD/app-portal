@@ -1,3 +1,4 @@
+import { GradingJobStatus } from "@app-portal/shared/constants";
 import { CircleAlert } from "lucide-react";
 import { useParams } from "react-router-dom";
 
@@ -7,7 +8,6 @@ import AutograderStepList from "@/components/autograder/AutograderStepList";
 import Loading from "@/components/Loading";
 import { useGradingJobSnapshot } from "@/hooks/useGrading";
 import { gradingJobEmoji, gradingJobStatusLabels } from "@/utils/display";
-import { isTerminalGradingJobStatus } from "@/utils/grading";
 
 export default function AutograderRunPage() {
   const { jobId } = useParams();
@@ -68,13 +68,14 @@ export default function AutograderRunPage() {
           <div className="flex flex-col gap-6">
             <AutograderStepList
               status={job.status}
+              errorStep={job.errorStep}
               cloneDurationMs={job.cloneDurationMs}
               installDurationMs={job.installDurationMs}
               buildDurationMs={job.buildDurationMs}
               testingDurationMs={job.testingDurationMs}
             />
 
-            {isTerminalGradingJobStatus(job.status) && (
+            {job.status === GradingJobStatus.Completed && (
               <AutograderPublicTestResults
                 suiteResults={job.suiteResults}
                 publicTests={job.publicTests}

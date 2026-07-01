@@ -1,16 +1,13 @@
 import { GradingJobStatus } from "@app-portal/shared/constants";
 
+import type { AutograderStatusIconStatus } from "@/components/autograder/AutograderStatusIcon";
 import AutograderStatusIcon from "@/components/autograder/AutograderStatusIcon";
 import { displayDurationMs, gradingJobStatusLabels } from "@/utils/display";
-import {
-  gradingJobRunnableStatuses,
-  isTerminalGradingJobStatus,
-} from "@/utils/grading";
-
-type StepDisplayStatus = "complete" | "active" | "pending";
+import { gradingJobRunnableStatuses } from "@/utils/grading";
 
 type AutograderStepListProps = {
   status: GradingJobStatus;
+  errorStep?: GradingJobStatus;
   cloneDurationMs?: number;
   installDurationMs?: number;
   buildDurationMs?: number;
@@ -20,12 +17,23 @@ type AutograderStepListProps = {
 function getStepDisplayStatus(
   stepStatus: GradingJobStatus,
   currentStatus: GradingJobStatus,
-): StepDisplayStatus {
-  if (isTerminalGradingJobStatus(currentStatus)) return "complete";
+  errorStep?: GradingJobStatus,
+): AutograderStatusIconStatus {
+  if (currentStatus === GradingJobStatus.Completed) return "complete";
 
   const stepIndex = gradingJobRunnableStatuses.indexOf(stepStatus);
-  const currentIndex = gradingJobRunnableStatuses.indexOf(currentStatus);
 
+  if (currentStatus === GradingJobStatus.Failed) {
+    const errorStepIndex = errorStep
+      ? gradingJobRunnableStatuses.indexOf(errorStep)
+      : -1;
+
+    if (stepIndex < errorStepIndex) return "complete";
+    if (stepIndex === errorStepIndex) return "failed";
+    return "pending";
+  }
+
+  const currentIndex = gradingJobRunnableStatuses.indexOf(currentStatus);
   if (stepIndex < currentIndex) return "complete";
   if (stepIndex === currentIndex) return "active";
   return "pending";
@@ -40,6 +48,7 @@ function getStepDuration(
 
 export default function AutograderStepList({
   status,
+  errorStep,
   cloneDurationMs,
   installDurationMs,
   buildDurationMs,
@@ -60,7 +69,11 @@ export default function AutograderStepList({
 
       <div className="divide-y">
         {gradingJobRunnableStatuses.map((stepStatus) => {
-          const displayStatus = getStepDisplayStatus(stepStatus, status);
+          const displayStatus = getStepDisplayStatus(
+            stepStatus,
+            status,
+            errorStep,
+          );
           const durationMs = getStepDuration(stepStatus, stepDurations);
 
           return (
