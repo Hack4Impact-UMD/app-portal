@@ -1,4 +1,4 @@
-import { GradingJobStatus } from "@app-portal/shared/constants";
+import { GradingJobStatus, PermissionRole } from "@app-portal/shared/constants";
 import { CircleAlert } from "lucide-react";
 import { useParams } from "react-router-dom";
 
@@ -6,18 +6,30 @@ import AutograderPublicTestResults from "@/components/autograder/AutograderPubli
 import AutograderRunSummary from "@/components/autograder/AutograderRunSummary";
 import AutograderStepList from "@/components/autograder/AutograderStepList";
 import Loading from "@/components/Loading";
-import { useGradingJobSnapshot } from "@/hooks/useGrading";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  useGradingJobInternalSnapshot,
+  useGradingJobSnapshot,
+} from "@/hooks/useGrading";
 import { gradingJobEmoji, gradingJobStatusLabels } from "@/utils/display";
 
 export default function AutograderRunPage() {
   const { jobId } = useParams();
-  const { data: job, isPending, error } = useGradingJobSnapshot(jobId);
+  const { user } = useAuth();
+  const canReadInternalJob = !!user && user.role !== PermissionRole.Applicant;
 
-  if (isPending) {
+  const { data: job, isPending, error } = useGradingJobSnapshot(jobId);
+  const {
+    data: internalJob,
+    isPending: isInternalJobPending,
+    error: internalJobError,
+  } = useGradingJobInternalSnapshot(jobId, canReadInternalJob);
+
+  if (isPending || (canReadInternalJob && isInternalJobPending)) {
     return <Loading />;
   }
 
-  if (error || !job) {
+  if (error || !job || (canReadInternalJob && internalJobError)) {
     return (
       <main className="flex h-screen flex-col items-center justify-center bg-muted p-8 text-center">
         <CircleAlert className="mb-4 size-12 text-destructive" />
@@ -69,6 +81,15 @@ export default function AutograderRunPage() {
             <AutograderStepList
               status={job.status}
               errorStep={job.errorStep}
+              logs={
+                internalJob
+                  ? {
+                      [GradingJobStatus.Installing]: internalJob.installLog,
+                      [GradingJobStatus.Building]: internalJob.buildLog,
+                      [GradingJobStatus.Testing]: internalJob.playwrightLog,
+                    }
+                  : undefined
+              }
               cloneDurationMs={job.cloneDurationMs}
               installDurationMs={job.installDurationMs}
               buildDurationMs={job.buildDurationMs}

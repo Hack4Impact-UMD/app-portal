@@ -4,10 +4,9 @@ import type {
   SuiteResults,
   TestResult,
 } from "@app-portal/shared/types";
-import { ChevronDown } from "lucide-react";
 
+import AutograderExpandableRow from "@/components/autograder/AutograderExpandableRow";
 import AutograderLogBlock from "@/components/autograder/AutograderLogBlock";
-import AutograderStatusIcon from "@/components/autograder/AutograderStatusIcon";
 import { displayDurationMs } from "@/utils/display";
 
 type AutograderPublicTestResultsProps = {
@@ -52,107 +51,57 @@ function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   const suiteStatus = passed ? "Passed" : "Failed";
   const suiteSummary = `${suite.result.passed}/${suite.result.total} passed - ${suite.result.points}/${suite.result.totalPoints} pts - ${displayDurationMs(suite.result.durationMs)}`;
 
-  if (!hasTestLogs) {
-    return (
-      <div className="flex items-center gap-3 px-5 py-4">
-        <AutograderStatusIcon status={passed ? "complete" : "failed"} />
-        <div className="min-w-0 flex-1">
-          <p className="font-medium text-foreground">{suite.suiteName}</p>
-          <p className="text-sm text-muted-foreground">{suiteSummary}</p>
-        </div>
-        <span
-          className={`shrink-0 text-xs font-medium ${
-            passed ? "text-green-700" : "text-destructive"
-          }`}
-        >
-          {suiteStatus}
-        </span>
-      </div>
-    );
-  }
-
   return (
-    <details className="group/suite px-5 py-4" open>
-      <summary className="flex cursor-pointer list-none items-center gap-3">
-        <AutograderStatusIcon status={passed ? "complete" : "failed"} />
-        <div className="min-w-0 flex-1">
-          <p className="font-medium text-foreground">{suite.suiteName}</p>
-          <p className="text-sm text-muted-foreground">{suiteSummary}</p>
-        </div>
-        <span
-          className={`shrink-0 text-xs font-medium ${
-            passed ? "text-green-700" : "text-destructive"
-          }`}
-        >
-          {suiteStatus}
-        </span>
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground transition-colors hover:bg-slate-200">
-          <ChevronDown className="size-5 transition-transform group-open/suite:rotate-180" />
-        </span>
-      </summary>
-
-      <div className="mt-3 rounded-md bg-blue/5">
-        {tests.map(([testName, test]) => (
-          <TestLogBlock key={`${suite.suiteName}-${testName}`} test={test} />
-        ))}
-      </div>
-    </details>
+    <AutograderExpandableRow
+      className="px-5 py-4"
+      contentClassName="rounded-md bg-blue/5"
+      status={passed ? "complete" : "failed"}
+      rightLabel={suiteStatus}
+      subtitle={suiteSummary}
+      title={suite.suiteName}
+    >
+      {hasTestLogs
+        ? tests.map(([testName, test]) => (
+            <TestLogBlock key={`${suite.suiteName}-${testName}`} test={test} />
+          ))
+        : undefined}
+    </AutograderExpandableRow>
   );
 }
 
 function TestLogBlock({ test }: { test: TestResult }) {
+  const testStatus = test.passed ? "Passed" : "Failed";
+  const subtitle = `${test.suite} - ${displayDurationMs(test.durationMs)}`;
+
   if (test.passed) {
     return (
-      <div className="border-b border-blue/10 px-3 py-3 last:border-b-0">
-        <div className="flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <p className="font-medium text-foreground">{test.testName}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {test.suite} - {displayDurationMs(test.durationMs)}
-            </p>
-          </div>
-          <span className="shrink-0 text-xs font-medium text-green-700">
-            Passed
-          </span>
-        </div>
-      </div>
+      <AutograderExpandableRow
+        className="border-b border-blue/10 px-3 py-3 last:border-b-0"
+        status="complete"
+        rightLabel={testStatus}
+        subtitle={subtitle}
+        title={test.testName}
+      />
     );
   }
 
   return (
-    <details
-      className="group/test border-b border-blue/10 px-3 py-3 last:border-b-0"
-      open
+    <AutograderExpandableRow
+      className="border-b border-blue/10 px-3 py-3 last:border-b-0"
+      contentClassName="mt-2 space-y-2"
+      status="failed"
+      rightLabel={testStatus}
+      subtitle={subtitle}
+      title={test.testName}
     >
-      <summary className="flex cursor-pointer list-none items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className="font-medium text-foreground">{test.testName}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {test.suite} - {displayDurationMs(test.durationMs)}
-              </p>
-            </div>
-            <span className="shrink-0 text-xs font-medium text-destructive">
-              Failed
-            </span>
-          </div>
-        </div>
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground transition-colors hover:bg-slate-200">
-          <ChevronDown className="size-4 transition-transform group-open/test:rotate-180" />
-        </span>
-      </summary>
-
-      <div className="mt-2 space-y-2">
-        <AutograderLogBlock output={test.stdout} />
-        <AutograderLogBlock output={test.stderr} />
-        {test.errors.length > 0 && (
-          <AutograderLogBlock
-            output={test.errors.map((error) => `- ${error}`).join("\n")}
-          />
-        )}
-      </div>
-    </details>
+      <AutograderLogBlock output={test.stdout} />
+      <AutograderLogBlock output={test.stderr} />
+      {test.errors.length > 0 && (
+        <AutograderLogBlock
+          output={test.errors.map((error) => `- ${error}`).join("\n")}
+        />
+      )}
+    </AutograderExpandableRow>
   );
 }
 

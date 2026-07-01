@@ -1,13 +1,15 @@
 import { GradingJobStatus } from "@app-portal/shared/constants";
 
+import AutograderExpandableRow from "@/components/autograder/AutograderExpandableRow";
+import AutograderLogBlock from "@/components/autograder/AutograderLogBlock";
 import type { AutograderStatusIconStatus } from "@/components/autograder/AutograderStatusIcon";
-import AutograderStatusIcon from "@/components/autograder/AutograderStatusIcon";
 import { displayDurationMs, gradingJobStatusLabels } from "@/utils/display";
 import { gradingJobRunnableStatuses } from "@/utils/grading";
 
 type AutograderStepListProps = {
   status: GradingJobStatus;
   errorStep?: GradingJobStatus;
+  logs?: Partial<Record<GradingJobStatus, string>>;
   cloneDurationMs?: number;
   installDurationMs?: number;
   buildDurationMs?: number;
@@ -46,9 +48,14 @@ function getStepDuration(
   return durations[stepStatus];
 }
 
+function displayStepStatus(status: AutograderStatusIconStatus) {
+  return status[0].toUpperCase() + status.slice(1);
+}
+
 export default function AutograderStepList({
   status,
   errorStep,
+  logs,
   cloneDurationMs,
   installDurationMs,
   buildDurationMs,
@@ -75,22 +82,23 @@ export default function AutograderStepList({
             errorStep,
           );
           const durationMs = getStepDuration(stepStatus, stepDurations);
+          const logOutput = logs?.[stepStatus];
+          const stepStatusLabel = displayStepStatus(displayStatus);
+          const subtitle =
+            durationMs !== undefined
+              ? `${stepStatusLabel} - ${displayDurationMs(durationMs)}`
+              : stepStatusLabel;
 
           return (
-            <div key={stepStatus} className="flex items-center gap-3 px-5 py-4">
-              <AutograderStatusIcon status={displayStatus} />
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-foreground">
-                  {gradingJobStatusLabels[stepStatus]}
-                </p>
-                <p className="text-sm capitalize text-muted-foreground">
-                  {displayStatus}
-                  {durationMs !== undefined
-                    ? ` - ${displayDurationMs(durationMs)}`
-                    : ""}
-                </p>
-              </div>
-            </div>
+            <AutograderExpandableRow
+              key={stepStatus}
+              className="px-5 py-4"
+              status={displayStatus}
+              title={gradingJobStatusLabels[stepStatus]}
+              subtitle={subtitle}
+            >
+              {logOutput && <AutograderLogBlock output={logOutput} />}
+            </AutograderExpandableRow>
           );
         })}
       </div>
