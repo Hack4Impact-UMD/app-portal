@@ -5,13 +5,13 @@ import type {
   TestResult,
 } from "@app-portal/shared/types";
 import Ansi from "ansi-to-react";
-import { CheckCircle2, ChevronDown, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, Circle, ClipboardList, XCircle } from "lucide-react";
 
 import { displayDurationMs } from "@/utils/display";
 
 type AutograderPublicTestResultsProps = {
   suiteResults: SuiteResults;
-  publicTests: PublicTests;
+  tests: PublicTests;
 };
 
 // view model for combined SuiteResult and PublicTests
@@ -25,12 +25,13 @@ function getSuitePassed(suite: SuiteTestLogs) {
   return suite.result.failed === 0;
 }
 
+function getSuitePending(suite: SuiteTestLogs) {
+  const testsArr = Object.values(suite.tests);
+  return testsArr.length > 0 && testsArr.every((test) => test.pending);
+}
+
 function getPublicTestLogs(publicTests: PublicTests, suiteName: string) {
-  return Object.fromEntries(
-    Object.entries(publicTests[suiteName] ?? {}).filter(
-      ([, test]) => !test.pending,
-    ),
-  );
+  return publicTests[suiteName] ?? {};
 }
 
 function groupSuiteResults(
@@ -44,69 +45,77 @@ function groupSuiteResults(
   }));
 }
 
-function LogBlock({ output }: { output: string }) {
+function StatusIcon({
+  passed,
+  className = "size-4",
+}: {
+  passed: boolean;
+  className?: string;
+}) {
+  if (passed) return <CheckCircle2 className={`${className} text-green-700`} />;
+
+  return <XCircle className={`${className} text-destructive`} />;
+}
+
+function LabeledLogBlock({
+  label,
+  output,
+}: {
+  label: string;
+  output: string;
+}) {
   if (!output) return null;
 
   return (
-    <pre className="whitespace-pre-wrap rounded-md border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs leading-5 text-foreground">
-      <Ansi>{output}</Ansi>
-    </pre>
+    <div>
+      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <pre className="whitespace-pre-wrap rounded-sm border border-slate-200 bg-slate-50 px-2.5 py-2 font-mono text-xs leading-5 text-foreground">
+        <Ansi>{output}</Ansi>
+      </pre>
+    </div>
   );
-}
-
-function SuiteIcon({ passed }: { passed: boolean }) {
-  if (passed) return <CheckCircle2 className="size-5 text-green-700" />;
-
-  return <XCircle className="size-5 text-destructive" />;
 }
 
 function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   const passed = getSuitePassed(suite);
+  const pending = getSuitePending(suite);
   const tests = Object.entries(suite.tests);
   const hasTestLogs = tests.length > 0;
-  const suiteStatus = passed ? "Passed" : "Failed";
-  const suiteSummary = `${suite.result.passed}/${suite.result.total} passed - ${suite.result.points}/${suite.result.totalPoints} pts - ${displayDurationMs(suite.result.durationMs)}`;
+  const suiteSummary = `${suite.result.passed}/${suite.result.total} passed · ${suite.result.points}/${suite.result.totalPoints} pts · ${displayDurationMs(suite.result.durationMs)}`;
+  const accent = pending
+    ? "border-l-2 border-l-gray-300"
+    : passed
+      ? "border-l-2 border-l-green-600"
+      : "border-l-2 border-l-destructive";
 
   if (!hasTestLogs) {
     return (
-      <div className="flex items-center gap-3 px-5 py-4">
-        <SuiteIcon passed={passed} />
+      <div className={`flex items-center gap-3 px-4 py-3 ${accent}`}>
         <div className="min-w-0 flex-1">
-          <p className="font-medium text-foreground">{suite.suiteName}</p>
+          <p className="text-base font-semibold text-foreground">
+            {suite.suiteName}
+          </p>
           <p className="text-sm text-muted-foreground">{suiteSummary}</p>
         </div>
-        <span
-          className={`shrink-0 text-xs font-medium ${
-            passed ? "text-green-700" : "text-destructive"
-          }`}
-        >
-          {suiteStatus}
-        </span>
       </div>
     );
   }
 
   return (
-    <details className="group/suite px-5 py-4" open>
-      <summary className="flex cursor-pointer list-none items-center gap-3">
-        <SuiteIcon passed={passed} />
+    <details className={`group/suite ${accent}`} open>
+      <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3">
         <div className="min-w-0 flex-1">
-          <p className="font-medium text-foreground">{suite.suiteName}</p>
+          <p className="text-base font-semibold text-foreground">
+            {suite.suiteName}
+          </p>
           <p className="text-sm text-muted-foreground">{suiteSummary}</p>
         </div>
-        <span
-          className={`shrink-0 text-xs font-medium ${
-            passed ? "text-green-700" : "text-destructive"
-          }`}
-        >
-          {suiteStatus}
-        </span>
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground transition-colors hover:bg-slate-200">
-          <ChevronDown className="size-5 transition-transform group-open/suite:rotate-180" />
-        </span>
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open/suite:rotate-180" />
       </summary>
 
-      <div className="mt-3 rounded-md bg-blue/5">
+      <div className="divide-y divide-border/60 border-t bg-muted/60">
         {tests.map(([testName, test]) => (
           <TestLogBlock key={`${suite.suiteName}-${testName}`} test={test} />
         ))}
@@ -116,53 +125,53 @@ function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
 }
 
 function TestLogBlock({ test }: { test: TestResult }) {
+  if (test.pending) {
+    return (
+      <div className="flex items-center gap-3 bg-gray-100 px-3 py-2.5">
+        <Circle className="size-4 shrink-0 text-muted-foreground" />
+        <p className="min-w-0 flex-1 truncate text-sm text-foreground">
+          {test.testName}
+        </p>
+        <span className="shrink-0 text-sm text-muted-foreground">
+          Pending
+        </span>
+      </div>
+    );
+  }
+
   if (test.passed) {
     return (
-      <div className="border-b border-blue/10 px-3 py-3 last:border-b-0">
-        <div className="flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <p className="font-medium text-foreground">{test.testName}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {test.suite} - {displayDurationMs(test.durationMs)}
-            </p>
-          </div>
-          <span className="shrink-0 text-xs font-medium text-green-700">
-            Passed
-          </span>
-        </div>
+      <div className="flex items-center gap-3 border-l-4 border-l-green-600 bg-green-50/60 px-3 py-2.5">
+        <StatusIcon passed />
+        <p className="min-w-0 flex-1 truncate text-sm text-foreground">
+          {test.testName}
+        </p>
+        <span className="shrink-0 text-sm text-muted-foreground">
+          {test.points} pts · {displayDurationMs(test.durationMs)}
+        </span>
       </div>
     );
   }
 
   return (
-    <details
-      className="group/test border-b border-blue/10 px-3 py-3 last:border-b-0"
-      open
-    >
+    <details className="group/test bg-destructive/10 px-3 py-2.5" open>
       <summary className="flex cursor-pointer list-none items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className="font-medium text-foreground">{test.testName}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {test.suite} - {displayDurationMs(test.durationMs)}
-              </p>
-            </div>
-            <span className="shrink-0 text-xs font-medium text-destructive">
-              Failed
-            </span>
-          </div>
-        </div>
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground transition-colors hover:bg-slate-200">
-          <ChevronDown className="size-4 transition-transform group-open/test:rotate-180" />
+        <StatusIcon passed={false} />
+        <p className="min-w-0 flex-1 truncate text-sm text-foreground">
+          {test.testName}
+        </p>
+        <span className="shrink-0 text-sm text-muted-foreground">
+          {test.points} pts · {displayDurationMs(test.durationMs)}
         </span>
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open/test:rotate-180" />
       </summary>
 
       <div className="mt-2 space-y-2">
-        <LogBlock output={test.stdout} />
-        <LogBlock output={test.stderr} />
+        <LabeledLogBlock label="stdout" output={test.stdout} />
+        <LabeledLogBlock label="stderr" output={test.stderr} />
         {test.errors.length > 0 && (
-          <LogBlock
+          <LabeledLogBlock
+            label="Errors"
             output={test.errors.map((error) => `- ${error}`).join("\n")}
           />
         )}
@@ -173,21 +182,36 @@ function TestLogBlock({ test }: { test: TestResult }) {
 
 export default function AutograderPublicTestResults({
   suiteResults,
-  publicTests,
+  tests,
 }: AutograderPublicTestResultsProps) {
-  const suiteLogs = groupSuiteResults(suiteResults, publicTests);
+  const suiteLogs = groupSuiteResults(suiteResults, tests);
 
-  if (suiteLogs.length === 0) return null;
+  if (suiteLogs.length === 0) {
+    return (
+      <section className="flex flex-col items-center gap-2 rounded-md border bg-background px-4 py-10 text-center shadow-xs">
+        <ClipboardList className="size-6 text-muted-foreground" />
+        <p className="font-medium text-foreground">No test suites yet</p>
+        <p className="text-sm text-muted-foreground">
+          Public test results will appear here once the autograder parses the test repo.
+        </p>
+      </section>
+    );
+  }
+
+  const suitesPassed = suiteLogs.filter(getSuitePassed).length;
 
   return (
     <section className="overflow-hidden rounded-md border bg-background shadow-xs">
-      <div className="border-b bg-background px-5 py-4">
+      <div className="flex items-center justify-between gap-3 border-b bg-background px-4 py-3">
         <h2 className="text-lg font-semibold text-foreground">
           Public Test Results
         </h2>
+        <span className="shrink-0 text-sm text-muted-foreground">
+          {suitesPassed}/{suiteLogs.length} suites passed
+        </span>
       </div>
 
-      <div className="divide-y">
+      <div className="divide-y-4 divide-muted">
         {suiteLogs.map((suite) => (
           <SuiteLogDropdown key={suite.suiteName} suite={suite} />
         ))}

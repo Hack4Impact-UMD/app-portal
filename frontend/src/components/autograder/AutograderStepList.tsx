@@ -1,5 +1,5 @@
 import { GradingJobStatus } from "@app-portal/shared/constants";
-import { CheckCircle2, Circle, LoaderCircle } from "lucide-react";
+import { CheckCircle2, Circle, LoaderCircle, XCircle } from "lucide-react";
 
 import { displayDurationMs, displayGradingJobStatus } from "@/utils/display";
 import {
@@ -7,7 +7,7 @@ import {
   isTerminalGradingJobStatus,
 } from "@/utils/grading";
 
-type StepDisplayStatus = "complete" | "active" | "pending";
+type StepDisplayStatus = "complete" | "active" | "pending" | "error";
 
 type AutograderStepListProps = {
   status: GradingJobStatus;
@@ -15,13 +15,24 @@ type AutograderStepListProps = {
   installDurationMs?: number;
   buildDurationMs?: number;
   testingDurationMs?: number;
+  errorStep?: GradingJobStatus;
 };
 
 function getStepDisplayStatus(
   stepStatus: GradingJobStatus,
   currentStatus: GradingJobStatus,
+  errorStep?: GradingJobStatus,
 ): StepDisplayStatus {
-  if (isTerminalGradingJobStatus(currentStatus)) return "complete";
+  if (isTerminalGradingJobStatus(currentStatus)) {
+    if (errorStep !== undefined) {
+      const stepIndex = gradingJobRunnableStatuses.indexOf(stepStatus);
+      const errorIndex = gradingJobRunnableStatuses.indexOf(errorStep);
+      if (stepIndex < errorIndex) return "complete";
+      if (stepIndex === errorIndex) return "error";
+      return "pending";
+    }
+    return "complete";
+  }
 
   const stepIndex = gradingJobRunnableStatuses.indexOf(stepStatus);
   const currentIndex = gradingJobRunnableStatuses.indexOf(currentStatus);
@@ -47,6 +58,10 @@ function StepIcon({ displayStatus }: { displayStatus: StepDisplayStatus }) {
     return <LoaderCircle className="size-5 animate-spin text-blue" />;
   }
 
+  if (displayStatus === "error") {
+    return <XCircle className="size-5 text-red-600" />;
+  }
+
   return <Circle className="size-5 text-muted-foreground" />;
 }
 
@@ -56,6 +71,7 @@ export default function AutograderStepList({
   installDurationMs,
   buildDurationMs,
   testingDurationMs,
+  errorStep
 }: AutograderStepListProps) {
   const stepDurations = {
     [GradingJobStatus.Cloning]: cloneDurationMs,
@@ -72,7 +88,7 @@ export default function AutograderStepList({
 
       <div className="divide-y">
         {gradingJobRunnableStatuses.map((stepStatus) => {
-          const displayStatus = getStepDisplayStatus(stepStatus, status);
+          const displayStatus = getStepDisplayStatus(stepStatus, status, errorStep);
           const durationMs = getStepDuration(stepStatus, stepDurations);
 
           return (

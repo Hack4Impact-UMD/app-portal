@@ -10,17 +10,19 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { useApplicantForResponse } from "@/hooks/useApplicants";
 import { displayTimestamp } from "@/utils/dates";
-import { displayGradingJobStatus } from "@/utils/display";
+import { displayDurationMs, displayGradingJobStatus } from "@/utils/display";
 import { isTerminalGradingJobStatus } from "@/utils/grading";
 
 type AutograderRunSummaryProps = {
   status: GradingJobStatus;
   score: number;
+  maxScore: number;
   repoURL: string;
   jobId: string;
   responseId: string;
   started: Timestamp;
   updated: Timestamp;
+  durationMs?: number;
 };
 
 function RunStatus({ status }: { status: GradingJobStatus }) {
@@ -65,6 +67,8 @@ export default function AutograderRunSummary({
   responseId,
   started,
   updated,
+  maxScore,
+  durationMs
 }: AutograderRunSummaryProps) {
   const finished = isTerminalGradingJobStatus(status);
   const {
@@ -97,10 +101,13 @@ export default function AutograderRunSummary({
             <div className="mb-2 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Overall score</span>
               <span className="font-medium">
-                {finished ? score : "Pending"}
+                {finished ? score : "Pending"} / {maxScore}
               </span>
             </div>
-            <Progress value={finished ? score : 20} />
+            <Progress
+              value={finished ? (score / maxScore) * 100 : 0}
+              indeterminate={!finished}
+            />
           </div>
 
           <dl className="space-y-2.5 text-sm">
@@ -116,6 +123,14 @@ export default function AutograderRunSummary({
                 {displayTimestamp(updated)}
               </dd>
             </div>
+            {durationMs && (
+              <div>
+                <dt className="text-muted-foreground">Job Duration</dt>
+                <dd className="mt-1 font-medium text-foreground">
+                  {displayDurationMs(durationMs)}
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
       </section>

@@ -8,10 +8,12 @@ import Loading from "@/components/Loading";
 import { useGradingJobSnapshot } from "@/hooks/useGrading";
 import { displayGradingJobStatus, gradingJobEmoji } from "@/utils/display";
 import { isTerminalGradingJobStatus } from "@/utils/grading";
+import { useMemo } from "react";
 
 export default function AutograderRunPage() {
   const { jobId } = useParams();
   const { data: job, isPending, error } = useGradingJobSnapshot(jobId);
+  const maxScore = useMemo(() => Object.values(job?.suiteResults ?? {}).reduce((acc, v) => acc + v.totalPoints, 0), [job])
 
   if (isPending) {
     return <Loading />;
@@ -63,6 +65,8 @@ export default function AutograderRunPage() {
             responseId={job.responseId}
             started={job.started}
             updated={job.updated}
+            maxScore={maxScore}
+            durationMs={job.updated.toMillis() - job.started.toMillis()}
           />
 
           <div className="flex flex-col gap-6">
@@ -72,14 +76,13 @@ export default function AutograderRunPage() {
               installDurationMs={job.installDurationMs}
               buildDurationMs={job.buildDurationMs}
               testingDurationMs={job.testingDurationMs}
+              errorStep={job.errorStep}
             />
 
-            {isTerminalGradingJobStatus(job.status) && (
-              <AutograderPublicTestResults
-                suiteResults={job.suiteResults}
-                publicTests={job.publicTests}
-              />
-            )}
+            <AutograderPublicTestResults
+              suiteResults={job.suiteResults}
+              tests={job.publicTests}
+            />
           </div>
         </div>
       </div>
