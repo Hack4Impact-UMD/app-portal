@@ -4,7 +4,7 @@ import type {
   SuiteResults,
   TestResult,
 } from "@app-portal/shared/types";
-import { ClipboardList } from "lucide-react";
+import { ChevronDown, ClipboardList } from "lucide-react";
 
 import AutograderExpandableRow from "@/components/autograder/AutograderExpandableRow";
 import AutograderLogBlock from "@/components/autograder/AutograderLogBlock";
@@ -26,12 +26,13 @@ function getSuitePassed(suite: SuiteTestLogs) {
   return suite.result.failed === 0;
 }
 
+function getSuitePending(suite: SuiteTestLogs) {
+  const testsArr = Object.values(suite.tests);
+  return testsArr.length > 0 && testsArr.every((test) => test.pending);
+}
+
 function getPublicTestLogs(publicTests: PublicTests, suiteName: string) {
-  return Object.fromEntries(
-    Object.entries(publicTests[suiteName] ?? {}).filter(
-      ([, test]) => !test.pending,
-    ),
-  );
+  return publicTests[suiteName] ?? {};
 }
 
 function groupSuiteResults(
@@ -47,37 +48,77 @@ function groupSuiteResults(
 
 function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   const passed = getSuitePassed(suite);
-  const tests = Object.entries(suite.tests);
+  const pending = getSuitePending(suite);
+  const tests = Object.entries(suite.tests).filter(
+    ([, test]) => !test.pending,
+  );
   const hasTestLogs = tests.length > 0;
-  const suiteStatus = passed ? "Passed" : "Failed";
+  const suiteStatus = pending ? "Pending" : passed ? "Passed" : "Failed";
   const suiteSummary = `${suite.result.passed}/${suite.result.total} passed · ${suite.result.points}/${suite.result.totalPoints} pts · ${displayDurationMs(suite.result.durationMs)}`;
+  const accent = pending
+    ? "border-l-2 border-l-gray-300"
+    : passed
+      ? "border-l-2 border-l-green-600"
+      : "border-l-2 border-l-destructive";
+
+  const header = (
+    <div className="min-w-0 flex-1">
+      <p className="text-base font-semibold text-foreground">
+        {suite.suiteName}
+      </p>
+      <p className="text-sm text-muted-foreground">{suiteSummary}</p>
+    </div>
+  );
+
+  if (!hasTestLogs) {
+    return (
+      <div className={`flex items-center gap-3 px-5 py-4 ${accent}`}>
+        {header}
+        <span className="shrink-0 text-xs font-medium text-muted-foreground">
+          {suiteStatus}
+        </span>
+      </div>
+    );
+  }
 
   return (
-    <AutograderExpandableRow
-      className="px-5 py-4"
-      contentClassName="rounded-md bg-blue/5"
-      status={passed ? "complete" : "failed"}
-      rightLabel={suiteStatus}
-      subtitle={suiteSummary}
-      title={suite.suiteName}
-    >
-      {hasTestLogs
-        ? tests.map(([testName, test]) => (
-            <TestLogBlock key={`${suite.suiteName}-${testName}`} test={test} />
-          ))
-        : undefined}
-    </AutograderExpandableRow>
+    <details className={`group/suite ${accent}`} open={!passed}>
+      <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-4">
+        {header}
+        <span className="shrink-0 text-xs font-medium text-muted-foreground">
+          {suiteStatus}
+        </span>
+        <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform group-open/suite:rotate-180" />
+      </summary>
+
+      <div className="border-t bg-blue/5">
+        {tests.map(([testName, test]) => (
+          <TestLogBlock key={`${suite.suiteName}-${testName}`} test={test} />
+        ))}
+      </div>
+    </details>
   );
 }
 
 function TestLogBlock({ test }: { test: TestResult }) {
-  const testStatus = test.passed ? "Passed" : "Failed";
+  const testStatus = test.pending ? "Pending" : test.passed ? "Passed" : "Failed";
   const subtitle = `${test.suite} · ${displayDurationMs(test.durationMs)}`;
+
+  if (test.pending) {
+    return (
+      <AutograderExpandableRow
+        className="border-b border-blue/10 bg-gray-100 px-3 py-3 last:border-b-0"
+        status="pending"
+        rightLabel={testStatus}
+        title={test.testName}
+      />
+    );
+  }
 
   if (test.passed) {
     return (
       <AutograderExpandableRow
-        className="border-b border-blue/10 px-3 py-3 last:border-b-0"
+        className="border-b border-blue/10 border-l-4 border-l-green-600 bg-green-50/60 px-3 py-3 last:border-b-0"
         status="complete"
         rightLabel={testStatus}
         subtitle={subtitle}
@@ -88,7 +129,7 @@ function TestLogBlock({ test }: { test: TestResult }) {
 
   return (
     <AutograderExpandableRow
-      className="border-b border-blue/10 px-3 py-3 last:border-b-0"
+      className="border-b border-blue/10 bg-destructive/10 px-3 py-3 last:border-b-0"
       contentClassName="mt-2 space-y-2"
       status="failed"
       rightLabel={testStatus}
@@ -138,7 +179,7 @@ export default function AutograderPublicTestResults({
         </span>
       </div>
 
-      <div className="divide-y">
+      <div className="divide-y-4 divide-muted">
         {suiteLogs.map((suite) => (
           <SuiteLogDropdown key={suite.suiteName} suite={suite} />
         ))}
