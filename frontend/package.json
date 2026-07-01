@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsc -b",
     "lint": "oxlint .",
     "lint:ci": "oxlint . --format=github",
     "lint:fix": "oxlint . --fix",

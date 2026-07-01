@@ -1,5 +1,5 @@
 import type {
-  PublicTests,
+  Tests,
   SuiteResult,
   SuiteResults,
   TestResult,
@@ -10,16 +10,17 @@ import AutograderExpandableRow from "@/components/autograder/AutograderExpandabl
 import AutograderLogBlock from "@/components/autograder/AutograderLogBlock";
 import { displayDurationMs } from "@/utils/display";
 
-type AutograderPublicTestResultsProps = {
+type AutograderTestResults = {
   suiteResults: SuiteResults;
-  publicTests: PublicTests;
+  publicTests: Tests;
+  internal: boolean;
 };
 
-// view model for combined SuiteResult and PublicTests
+// view model for combined SuiteResult and Tests
 type SuiteTestLogs = {
   suiteName: string;
   result: SuiteResult;
-  tests: PublicTests[string];
+  tests: Tests[string];
 };
 
 function getSuitePassed(suite: SuiteTestLogs) {
@@ -31,13 +32,13 @@ function getSuitePending(suite: SuiteTestLogs) {
   return testsArr.length > 0 && testsArr.every((test) => test.pending);
 }
 
-function getPublicTestLogs(publicTests: PublicTests, suiteName: string) {
+function getPublicTestLogs(publicTests: Tests, suiteName: string) {
   return publicTests[suiteName] ?? {};
 }
 
 function groupSuiteResults(
   suiteResults: SuiteResults,
-  publicTests: PublicTests,
+  publicTests: Tests,
 ): SuiteTestLogs[] {
   return Object.entries(suiteResults).map(([suiteName, result]) => ({
     suiteName,
@@ -49,17 +50,10 @@ function groupSuiteResults(
 function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   const passed = getSuitePassed(suite);
   const pending = getSuitePending(suite);
-  const tests = Object.entries(suite.tests).filter(
-    ([, test]) => !test.pending,
-  );
+  const tests = Object.entries(suite.tests).filter(([, test]) => !test.pending);
   const hasTestLogs = tests.length > 0;
   const suiteStatus = pending ? "Pending" : passed ? "Passed" : "Failed";
   const suiteSummary = `${suite.result.passed}/${suite.result.total} passed · ${suite.result.points}/${suite.result.totalPoints} pts · ${displayDurationMs(suite.result.durationMs)}`;
-  const accent = pending
-    ? "border-l-2 border-l-gray-300"
-    : passed
-      ? "border-l-2 border-l-green-600"
-      : "border-l-2 border-l-destructive";
 
   const header = (
     <div className="min-w-0 flex-1">
@@ -72,7 +66,7 @@ function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
 
   if (!hasTestLogs) {
     return (
-      <div className={`flex items-center gap-3 px-5 py-4 ${accent}`}>
+      <div className={`flex items-center gap-3 px-5 py-4`}>
         {header}
         <span className="shrink-0 text-xs font-medium text-muted-foreground">
           {suiteStatus}
@@ -82,7 +76,7 @@ function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   }
 
   return (
-    <details className={`group/suite ${accent}`} open={!passed}>
+    <details className={`group/suite`} open={!passed}>
       <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-4">
         {header}
         <span className="shrink-0 text-xs font-medium text-muted-foreground">
@@ -101,13 +95,17 @@ function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
 }
 
 function TestLogBlock({ test }: { test: TestResult }) {
-  const testStatus = test.pending ? "Pending" : test.passed ? "Passed" : "Failed";
+  const testStatus = test.pending
+    ? "Pending"
+    : test.passed
+      ? "Passed"
+      : "Failed";
   const subtitle = `${test.suite} · ${displayDurationMs(test.durationMs)}`;
 
   if (test.pending) {
     return (
       <AutograderExpandableRow
-        className="border-b border-blue/10 bg-gray-100 px-3 py-3 last:border-b-0"
+        className="border-b border-blue/10 bg-gray-100 py-1 px-3 last:border-b-0"
         status="pending"
         rightLabel={testStatus}
         title={test.testName}
@@ -118,7 +116,7 @@ function TestLogBlock({ test }: { test: TestResult }) {
   if (test.passed) {
     return (
       <AutograderExpandableRow
-        className="border-b border-blue/10 border-l-4 border-l-green-600 bg-green-50/60 px-3 py-3 last:border-b-0"
+        className="border-b border-blue/10 border-l-2 border-l-green-600 bg-green-50/60 py-1 px-3 last:border-b-0"
         status="complete"
         rightLabel={testStatus}
         subtitle={subtitle}
@@ -129,7 +127,7 @@ function TestLogBlock({ test }: { test: TestResult }) {
 
   return (
     <AutograderExpandableRow
-      className="border-b border-blue/10 bg-destructive/10 px-3 py-3 last:border-b-0"
+      className="border-b border-blue/10 border-l-2 border-l-destructive bg-destructive/10 px-3 py-1 last:border-b-0"
       contentClassName="mt-2 space-y-2"
       status="failed"
       rightLabel={testStatus}
@@ -148,10 +146,11 @@ function TestLogBlock({ test }: { test: TestResult }) {
   );
 }
 
-export default function AutograderPublicTestResults({
+export default function AutoGraderTestResults({
   suiteResults,
   publicTests,
-}: AutograderPublicTestResultsProps) {
+  internal,
+}: AutograderTestResults) {
   const suiteLogs = groupSuiteResults(suiteResults, publicTests);
 
   if (suiteLogs.length === 0) {
@@ -160,7 +159,8 @@ export default function AutograderPublicTestResults({
         <ClipboardList className="size-6 text-muted-foreground" />
         <p className="font-medium text-foreground">No test suites yet</p>
         <p className="text-sm text-muted-foreground">
-          Public test results will appear here once the autograder parses the test repo.
+          Test results will appear here once the autograder parses the test
+          repo.
         </p>
       </section>
     );
@@ -171,9 +171,16 @@ export default function AutograderPublicTestResults({
   return (
     <section className="overflow-hidden rounded-md border bg-background shadow-xs">
       <div className="flex items-center justify-between gap-3 border-b bg-background px-4 py-3">
-        <h2 className="text-lg font-semibold text-foreground">
-          Public Test Results
-        </h2>
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">
+            Test Results
+          </h2>
+          {!internal && (
+            <span className="text-muted-fg text-sm italic">
+              Only showing public tests
+            </span>
+          )}
+        </div>
         <span className="shrink-0 text-sm text-muted-foreground">
           {suitesPassed}/{suiteLogs.length} suites passed
         </span>

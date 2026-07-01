@@ -24,7 +24,7 @@ export const SuiteResultSchema = z.object({
   totalPoints: z.int().nonnegative(),
 });
 
-export const PublicTestsSchema = z.record(
+export const TestsSchema = z.record(
   z.string(),
   z.record(z.string(), TestResultSchema),
 );
@@ -48,7 +48,7 @@ export const GradingJobPublicBaseSchema = z.object({
   buildDurationMs: z.int().nonnegative().optional(),
   testingDurationMs: z.int().nonnegative().optional(),
   suiteResults: SuiteResultsSchema,
-  publicTests: PublicTestsSchema,
+  publicTests: TestsSchema,
 });
 
 export const GradingJobDataInternalSchema = z.object({
@@ -68,7 +68,7 @@ export const submitGradingJobSchema = GradingJobPublicBaseSchema.pick({
 
 export type TestResult = z.infer<typeof TestResultSchema>;
 export type SuiteResult = z.infer<typeof SuiteResultSchema>;
-export type PublicTests = z.infer<typeof PublicTestsSchema>;
+export type Tests = z.infer<typeof TestsSchema>;
 export type SuiteResults = z.infer<typeof SuiteResultsSchema>;
 export type GradingJobPublicBase = z.infer<typeof GradingJobPublicBaseSchema>;
 export type GradingJobDataInternal = z.infer<

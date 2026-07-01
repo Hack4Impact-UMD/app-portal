@@ -2,7 +2,7 @@ import { GradingJobStatus, PermissionRole } from "@app-portal/shared/constants";
 import { CircleAlert } from "lucide-react";
 import { useParams } from "react-router-dom";
 
-import AutograderPublicTestResults from "@/components/autograder/AutograderPublicTestResults";
+import AutograderTestResults from "@/components/autograder/AutograderPublicTestResults";
 import AutograderRunStatusSummary from "@/components/autograder/AutograderRunStatusSummary";
 import AutograderStepList from "@/components/autograder/AutograderStepList";
 import AutograderSubmissionSummary from "@/components/autograder/AutograderSubmissionSummary";
@@ -114,12 +114,11 @@ export default function AutograderRunPage() {
               testingDurationMs={job.testingDurationMs}
             />
 
-            {job.status === GradingJobStatus.Completed && (
-              <AutograderPublicTestResults
-                suiteResults={job.suiteResults}
-                publicTests={job.publicTests}
-              />
-            )}
+            <AutograderTestResults
+              suiteResults={job.suiteResults}
+              publicTests={internalJob?.tests ?? job.publicTests}
+              internal={!!internalJob}
+            />
           </div>
         </div>
       </div>
