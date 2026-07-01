@@ -1,14 +1,22 @@
+import type { GradingJobDataInternal } from "@app-portal/shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { DocumentReference } from "firebase/firestore";
 import { onSnapshot } from "firebase/firestore";
 import { useMemo, useSyncExternalStore } from "react";
 
-import { gradingJobDoc, submitGradingJob } from "@/services/gradingService";
+import {
+  gradingJobDoc,
+  gradingJobDocInternal,
+  submitGradingJob,
+} from "@/services/gradingService";
 import type { GradingJobPublic } from "@/types/types";
 
 const gradingJobRoot = "grading-jobs" as const;
 
-type GradingJobSnapshotState = {
-  data: GradingJobPublic | null;
+type GradingJobSnapshotData = GradingJobPublic | GradingJobDataInternal;
+
+type GradingJobSnapshotState<T extends GradingJobSnapshotData> = {
+  data: T | null;
   isPending: boolean;
   error: Error | null;
 };
@@ -32,11 +40,15 @@ export function useSubmitGradingJob() {
   });
 }
 
-function createGradingJobStore(jobId?: string) {
-  let currentSnapshot: GradingJobSnapshotState = {
+function createGradingJobStore<T extends GradingJobSnapshotData>(
+  getDocRef: (jobId: string) => DocumentReference<T>,
+  jobId: string | undefined,
+  enabled: boolean,
+) {
+  let currentSnapshot: GradingJobSnapshotState<T> = {
     data: null,
-    isPending: !!jobId,
-    error: jobId ? null : new Error("Missing grading job ID"),
+    isPending: !!jobId && enabled,
+    error: !jobId && enabled ? new Error("Missing grading job ID") : null,
   };
 
   function getSnapshot() {
@@ -44,10 +56,10 @@ function createGradingJobStore(jobId?: string) {
   }
 
   function subscribe(callback: () => void) {
-    if (!jobId) return () => {};
+    if (!jobId || !enabled) return () => {};
 
     return onSnapshot(
-      gradingJobDoc(jobId),
+      getDocRef(jobId),
       (doc) => {
         currentSnapshot = doc.exists()
           ? {
@@ -77,9 +89,23 @@ function createGradingJobStore(jobId?: string) {
   return { getSnapshot, subscribe };
 }
 
-// Handles real-time updates on the autograder page.
 export function useGradingJobSnapshot(jobId?: string) {
-  const store = useMemo(() => createGradingJobStore(jobId), [jobId]);
+  const store = useMemo(
+    () => createGradingJobStore(gradingJobDoc, jobId, true),
+    [jobId],
+  );
+
+  return useSyncExternalStore(store.subscribe, store.getSnapshot);
+}
+
+export function useGradingJobInternalSnapshot(
+  jobId: string | undefined,
+  enabled: boolean,
+) {
+  const store = useMemo(
+    () => createGradingJobStore(gradingJobDocInternal, jobId, enabled),
+    [enabled, jobId],
+  );
 
   return useSyncExternalStore(store.subscribe, store.getSnapshot);
 }

@@ -4,7 +4,7 @@ import { z } from "zod";
 
 // ⚠️ do not edit this type!!!
 // edit the ApplicationFormBaseSchema in shared instead!!!
-const ApplicationFormSchema = ApplicationFormBaseSchema.extend({
+export const ApplicationFormSchema = ApplicationFormBaseSchema.extend({
   dueDate: z.custom<Timestamp>((d) => d instanceof Timestamp),
 });
 

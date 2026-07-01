@@ -1,6 +1,6 @@
 import { GradingJobStatus } from "@app-portal/shared/constants";
 
-export const gradingJobTerminalStatuses = [
+const gradingJobTerminalStatuses = [
   GradingJobStatus.Completed,
   GradingJobStatus.Failed,
 ];

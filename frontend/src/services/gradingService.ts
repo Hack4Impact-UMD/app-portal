@@ -1,10 +1,9 @@
 import { FirestoreCollection } from "@app-portal/shared/constants";
 import axios from "axios";
-import { doc, getDoc } from "firebase/firestore";
+import { doc } from "firebase/firestore";
 
 import { API_URL } from "@/config/firebase";
 import { appCollection } from "@/services/firestore";
-import type { GradingJobPublic } from "@/types/types";
 
 import { getAppCheckToken } from "./appCheckService";
 
@@ -35,10 +34,4 @@ export function gradingJobDoc(id: string) {
 
 export function gradingJobDocInternal(id: string) {
   return doc(appCollection(FirestoreCollection.GradingJobsInternal), id);
-}
-
-export async function getGradingJobById(id: string) {
-  const docRef = gradingJobDoc(id);
-  const snapshot = await getDoc(docRef);
-  return snapshot.exists() ? (snapshot.data() as GradingJobPublic) : null;
 }
