@@ -56,8 +56,8 @@ export default function AutograderRunStatusSummary({
 }: AutograderRunStatusSummaryProps) {
   const finished = isTerminalGradingJobStatus(status);
   const scoreLabel = `${score}/${maxScore}`;
-  const scoreProgressValue = Math.min((score / maxScore) * 100, 100);
-
+  const scoreProgressValue =
+    maxScore > 0 ? Math.min((score / maxScore) * 100, 100) : 0;
   return (
     <section className="rounded-md border bg-background p-3 shadow-xs">
       <div className="flex items-center justify-between gap-3">

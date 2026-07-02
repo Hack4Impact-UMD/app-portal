@@ -50,7 +50,7 @@ function groupSuiteResults(
 function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   const passed = getSuitePassed(suite);
   const pending = getSuitePending(suite);
-  const tests = Object.entries(suite.tests).filter(([, test]) => !test.pending);
+  const tests = Object.entries(suite.tests);
   const hasTestLogs = tests.length > 0;
   const suiteStatus = pending ? "Pending" : passed ? "Passed" : "Failed";
   const suiteSummary = `${suite.result.passed}/${suite.result.total} passed · ${suite.result.points}/${suite.result.totalPoints} pts · ${displayDurationMs(suite.result.durationMs)}`;
@@ -176,7 +176,7 @@ export default function AutoGraderTestResults({
             Test Results
           </h2>
           {!internal && (
-            <span className="text-muted-fg text-sm italic">
+            <span className="text-muted-foreground text-sm italic">
               Only showing public tests
             </span>
           )}

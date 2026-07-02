@@ -61,6 +61,7 @@ export default function AutograderExpandableRow({
         className="group flex w-full cursor-pointer items-center gap-3 text-left"
         onClick={() => setManualOpen((open) => !(open ?? shouldAutoOpen))}
         type="button"
+        aria-expanded={isOpen}
       >
         {rowContent}
         <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground transition-colors group-hover:bg-slate-200">
