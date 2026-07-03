@@ -1,5 +1,8 @@
-import { ExternalLink } from "lucide-react";
+import { CheckIcon, ClipboardIcon, ExternalLink } from "lucide-react";
+import { useState } from "react";
 
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { Button } from "@/components/ui/button";
 import { useApplicantForResponse } from "@/hooks/useApplicants";
 
 type AutograderSubmissionSummaryProps = {
@@ -18,6 +21,20 @@ export default function AutograderSubmissionSummary({
     isPending: isApplicantPending,
     error: applicantError,
   } = useApplicantForResponse(responseId);
+
+  const [repoCopied, setRepoCopied] = useState(false);
+  const repoLink = `https://github.com/${repoURL}`;
+
+  const handleCopyRepo = async () => {
+    try {
+      await navigator.clipboard.writeText(repoLink);
+      setRepoCopied(true);
+      setTimeout(() => setRepoCopied(false), 1500);
+    } catch {
+      throwErrorToast("Failed to copy");
+      setRepoCopied(false);
+    }
+  };
 
   const applicantName = applicant
     ? `${applicant.firstName} ${applicant.lastName}`
@@ -39,16 +56,30 @@ export default function AutograderSubmissionSummary({
         </div>
         <div>
           <dt className="text-muted-foreground">Repository</dt>
-          <dd className="mt-1 flex min-w-0 items-center">
+          <dd className="mt-1 flex min-w-0 items-center gap-2">
             <a
-              href={repoURL}
+              href={repoLink}
               target="_blank"
               rel="noreferrer"
               className="flex min-w-0 items-center gap-1 font-medium text-blue hover:underline"
             >
-              <span className="truncate">{repoURL}</span>
+              <span className="truncate">github.com/{repoURL}</span>
               <ExternalLink className="size-3 shrink-0" />
             </a>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="size-6 shrink-0"
+              onClick={handleCopyRepo}
+              title="Copy repository link"
+            >
+              {repoCopied ? (
+                <CheckIcon className="size-3" />
+              ) : (
+                <ClipboardIcon className="size-3" />
+              )}
+            </Button>
           </dd>
         </div>
         <div>

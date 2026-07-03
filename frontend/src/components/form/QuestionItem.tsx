@@ -17,6 +17,7 @@ import FileUpload from "./FileUpload";
 import LongFormInput from "./LongFormInput";
 import MultiSelectGroup from "./MultiSelectGroup";
 import OneLineInput from "./OneLineInput";
+import AssessmentSubmit from "./AssessmentSubmit";
 
 interface QuestionItemProps {
   question: ApplicationQuestion;
@@ -82,6 +83,20 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
     (key: string) => applicantRoleColor(key as ApplicantRole),
     [],
   );
+
+  if (question.questionType === QuestionType.AssessmentSubmit) {
+    return <AssessmentSubmit
+      disabled={disabled}
+      question={question.questionText}
+      isRequired={!question.optional}
+      errorMessage={errorMessage}
+      label={question.secondaryText}
+      value={""}
+      onChange={handleChange}
+      placeholderText={"https://github.com/you/assessment"}
+      responseId={responseId}
+    />
+  }
 
   if (question.questionType === QuestionType.ShortAnswer) {
     return (
@@ -201,6 +216,7 @@ const areEqual = (
     prevProps.responseId !== nextProps.responseId ||
     prevProps.errorMessage !== nextProps.errorMessage ||
     prevProps.question.questionId !== nextProps.question.questionId ||
+    prevProps.question.questionType !== nextProps.question.questionType ||
     prevProps.onChangeResponse !== nextProps.onChangeResponse ||
     prevProps.onRoleSelect !== nextProps.onRoleSelect
   ) {

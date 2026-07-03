@@ -1,10 +1,17 @@
 import type { GradingJobDataInternal } from "@app-portal/shared/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  skipToken,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { DocumentReference } from "firebase/firestore";
 import { onSnapshot } from "firebase/firestore";
 import { useMemo, useSyncExternalStore } from "react";
 
 import {
+  getJobsForApplicationResponse,
   gradingJobDoc,
   gradingJobDocInternal,
   submitGradingJob,
@@ -12,6 +19,21 @@ import {
 import type { GradingJobPublic } from "@/types/types";
 
 const gradingJobRoot = "grading-jobs" as const;
+
+const gradingJobQueries = {
+  root: [gradingJobRoot] as const,
+  byResponse: (responseId?: string) =>
+    queryOptions({
+      queryKey: [gradingJobRoot, "response", responseId] as const,
+      queryFn: responseId
+        ? () => getJobsForApplicationResponse(responseId)
+        : skipToken,
+    }),
+};
+
+export function useJobsForApplicationResponse(responseId?: string) {
+  return useQuery(gradingJobQueries.byResponse(responseId));
+}
 
 type GradingJobSnapshotData = GradingJobPublic | GradingJobDataInternal;
 
@@ -44,6 +66,7 @@ function createGradingJobStore<T extends GradingJobSnapshotData>(
   getDocRef: (jobId: string) => DocumentReference<T>,
   jobId: string | undefined,
   enabled: boolean,
+  onData?: (data: T) => void,
 ) {
   let currentSnapshot: GradingJobSnapshotState<T> = {
     data: null,
@@ -73,6 +96,10 @@ function createGradingJobStore<T extends GradingJobSnapshotData>(
               error: new Error(`Autograder job ${jobId} does not exist.`),
             };
 
+        if (doc.exists()) {
+          onData?.(doc.data());
+        }
+
         callback();
       },
       (error) => {
@@ -90,9 +117,19 @@ function createGradingJobStore<T extends GradingJobSnapshotData>(
 }
 
 export function useGradingJobSnapshot(jobId?: string) {
+  const queryClient = useQueryClient();
+
   const store = useMemo(
-    () => createGradingJobStore(gradingJobDoc, jobId, true),
-    [jobId],
+    () =>
+      createGradingJobStore(gradingJobDoc, jobId, true, (job) => {
+        // Jobs are graded asynchronously with no push notification to the
+        // frontend when grading finishes, so re-fetch the jobs-for-response
+        // list on every update to this job to keep "best score" in sync.
+        queryClient.invalidateQueries({
+          queryKey: [gradingJobRoot, "response", job.responseId],
+        });
+      }),
+    [jobId, queryClient],
   );
 
   return useSyncExternalStore(store.subscribe, store.getSnapshot);

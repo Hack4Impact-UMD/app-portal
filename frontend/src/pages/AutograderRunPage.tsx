@@ -2,6 +2,7 @@ import { GradingJobStatus, PermissionRole } from "@app-portal/shared/constants";
 import { CircleAlert } from "lucide-react";
 import { useParams } from "react-router-dom";
 
+import AutograderJobHistoryList from "@/components/autograder/AutograderJobHistoryList";
 import AutograderTestResults from "@/components/autograder/AutograderPublicTestResults";
 import AutograderRunStatusSummary from "@/components/autograder/AutograderRunStatusSummary";
 import AutograderStepList from "@/components/autograder/AutograderStepList";
@@ -12,16 +13,11 @@ import {
   useGradingJobInternalSnapshot,
   useGradingJobSnapshot,
 } from "@/hooks/useGrading";
-import { gradingJobEmoji, gradingJobStatusLabels } from "@/utils/display";
-
-function getMaxScore(job: {
-  suiteResults: Record<string, { totalPoints: number }>;
-}) {
-  return Object.values(job.suiteResults).reduce(
-    (total, suite) => total + suite.totalPoints,
-    0,
-  );
-}
+import {
+  getGradingJobMaxScore,
+  gradingJobEmoji,
+  gradingJobStatusLabels,
+} from "@/utils/display";
 
 export default function AutograderRunPage() {
   const { jobId } = useParams();
@@ -54,7 +50,7 @@ export default function AutograderRunPage() {
     );
   }
 
-  const maxScore = getMaxScore(job);
+  const maxScore = getGradingJobMaxScore(job);
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-muted px-8 pb-12 pt-6">
@@ -93,6 +89,10 @@ export default function AutograderRunPage() {
               jobId={job.id}
               responseId={job.responseId}
             />
+            <AutograderJobHistoryList
+              responseId={job.responseId}
+              currentJobId={job.id}
+            />
           </aside>
 
           <div className="flex flex-col gap-6">
@@ -102,10 +102,10 @@ export default function AutograderRunPage() {
               logs={
                 internalJob
                   ? {
-                      [GradingJobStatus.Installing]: internalJob.installLog,
-                      [GradingJobStatus.Building]: internalJob.buildLog,
-                      [GradingJobStatus.Testing]: internalJob.playwrightLog,
-                    }
+                    [GradingJobStatus.Installing]: internalJob.installLog,
+                    [GradingJobStatus.Building]: internalJob.buildLog,
+                    [GradingJobStatus.Testing]: internalJob.playwrightLog,
+                  }
                   : undefined
               }
               cloneDurationMs={job.cloneDurationMs}
@@ -119,9 +119,15 @@ export default function AutograderRunPage() {
               publicTests={internalJob?.tests ?? job.publicTests}
               internal={!!internalJob}
             />
+
+            <div className="text-sm bg-amber-50 p-2 text-muted-foreground rounded border border-amber-300">
+              <p className="">Your submission was automatically graded by <a href="https://github.com/Hack4Impact-UMD/professor" target="_blank" className="underline text-blue">Professor</a>! This is not your final score, we take into consideration other factors like code quality, style, and visuals when evaluating techical assessment submissions.</p>
+
+              <p className="mt-1">Professor is a new project, so there may be bugs. If you experience any issues, please let us know (click your profile &gt; About &gt; Report an Issue).</p>
+            </div>
           </div>
         </div>
       </div>
-    </main>
+    </main >
   );
 }

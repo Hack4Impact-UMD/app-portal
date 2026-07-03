@@ -1,0 +1,162 @@
+import React, { memo, useMemo, useState } from "react";
+import { twMerge } from "tailwind-merge";
+
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  useJobsForApplicationResponse,
+  useSubmitGradingJob,
+} from "@/hooks/useGrading";
+import { extractGithubRepoPath, isValidGithubRepoUrl } from "@/utils/grading";
+
+import FormMarkdown from "./FormMarkdown";
+import { Button } from "../ui/button";
+import AutograderJobCard from "../autograder/AutograderJobCard";
+import { SendIcon } from "lucide-react";
+
+interface AssessmentSubmitProps {
+  question: string;
+  label?: string;
+  isRequired?: boolean;
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+  minWords?: number;
+  maxWords?: number;
+  disabled?: boolean;
+  errorMessage?: string;
+  placeholderText?: string;
+  responseId?: string;
+}
+
+const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
+  question,
+  label,
+  isRequired,
+  onChange,
+  className = "",
+  disabled,
+  errorMessage,
+  placeholderText = "",
+  responseId
+}) => {
+  const { token } = useAuth();
+  const [lastJobId, setLastJobId] = useState<string | null>(null)
+  const [repoUrl, setRepoUrl] = useState("");
+  const [urlError, setUrlError] = useState<string | null>(null);
+
+  const { data: jobs, isPending, error } = useJobsForApplicationResponse(responseId)
+  const { mutate: submitGradingJob, isPending: isSubmitting } = useSubmitGradingJob();
+
+  const bestJob = useMemo(() => {
+    if (!jobs || jobs.length === 0) return null;
+
+    // jobs are ordered most recent first, so ties keep the most recent job
+    return jobs.reduce((best, current) =>
+      current.score > best.score ? current : best,
+    );
+  }, [jobs]);
+
+  const handleSubmit = async () => {
+    const trimmedUrl = repoUrl.trim();
+
+    if (!isValidGithubRepoUrl(trimmedUrl)) {
+      setUrlError("Enter a valid GitHub URL, e.g. https://github.com/you/repo");
+      return;
+    }
+
+    const repoPath = extractGithubRepoPath(trimmedUrl);
+    if (!repoPath) {
+      setUrlError("Enter a valid GitHub URL, e.g. https://github.com/you/repo");
+      return;
+    }
+
+    if (!responseId) {
+      throwErrorToast("Missing application response ID");
+      return;
+    }
+
+    if (!token) {
+      throwErrorToast("Authentication token not available");
+      return;
+    }
+
+    setUrlError(null);
+
+    submitGradingJob(
+      {
+        responseId,
+        repoURL: repoPath,
+        token: (await token()) ?? "",
+      },
+      {
+        onSuccess: (jobId) => {
+          setLastJobId(jobId);
+          onChange(jobId);
+        },
+        onError: (submitError) => {
+          throwErrorToast("Failed to submit grading job: " + submitError.message);
+        },
+      },
+    );
+  };
+
+  return (
+    <main
+      className={twMerge(
+        "flex flex-col hover:brightness-95 transition",
+        className,
+      )}
+    >
+      <span className="mb-2 text-xl font-normal">
+        {question}
+        {isRequired && <span className="text-red-600 ml-px">*</span>}
+        {!isRequired && <span className="font-light text-xs"> (Optional)</span>}
+      </span>
+
+      <FormMarkdown>{label}</FormMarkdown>
+
+      <div className="flex flex-col gap-2">
+
+        {!isPending && !error && (
+          !jobs || jobs.length === 0 ? (
+            <p className="text-sm bg-white border px-2 py-1 rounded text-muted-foreground">
+              No job submissions yet. Submit your repo to see your preliminary score.
+            </p>
+          ) : (
+            bestJob && <AutograderJobCard header="Best Score" jobId={bestJob.id} />
+          )
+        )}
+
+        {lastJobId && lastJobId !== bestJob?.id && (
+          <AutograderJobCard header="Latest Run" jobId={lastJobId} />
+        )}
+        <div className="w-full flex flex-row gap-1">
+          <Input
+            className={twMerge(
+              "grow mt-auto p-2 w-full bg-white rounded-md outline outline-black border-2 disabled:cursor-not-allowed disabled:opacity-100 disabled:bg-[#f3f4f6]",
+            )}
+            required={isRequired}
+            value={repoUrl}
+            onChange={(e) => {
+              setRepoUrl(e.target.value);
+              if (urlError) setUrlError(null);
+            }}
+            disabled={disabled || isSubmitting}
+            placeholder={placeholderText || "Enter your response..."}
+          />
+
+          <Button onClick={handleSubmit} disabled={disabled || isSubmitting}>
+            Submit <SendIcon />
+          </Button>
+        </div>
+        {urlError && <p className="text-red-600 text-sm">{urlError}</p>}
+      </div>
+
+      {errorMessage && <p className="text-red-600">{errorMessage}</p>}
+    </main>
+  );
+};
+
+export default memo(AssessmentSubmit);

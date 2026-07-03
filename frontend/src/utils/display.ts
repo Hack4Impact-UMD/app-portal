@@ -100,3 +100,12 @@ export const gradingJobEmoji: Record<GradingJobStatus, string> = {
   [GradingJobStatus.Completed]: "✅",
   [GradingJobStatus.Failed]: "❌",
 };
+
+export function getGradingJobMaxScore(job: {
+  suiteResults: Record<string, { totalPoints: number }>;
+}) {
+  return Object.values(job.suiteResults).reduce(
+    (total, suite) => total + suite.totalPoints,
+    0,
+  );
+}

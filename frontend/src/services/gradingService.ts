@@ -1,6 +1,6 @@
 import { FirestoreCollection } from "@app-portal/shared/constants";
 import axios from "axios";
-import { doc } from "firebase/firestore";
+import { doc, getDoc, getDocs, orderBy, query, where } from "firebase/firestore";
 
 import { API_URL } from "@/config/firebase";
 import { appCollection } from "@/services/firestore";
@@ -34,4 +34,17 @@ export function gradingJobDoc(id: string) {
 
 export function gradingJobDocInternal(id: string) {
   return doc(appCollection(FirestoreCollection.GradingJobsInternal), id);
+}
+
+export async function getJobsForApplicationResponse(responseId: string) {
+  const jobs = appCollection(FirestoreCollection.GradingJobsPublic)
+  const q = query(
+    jobs,
+    where("responseId", "==", responseId),
+    orderBy("started", "desc")
+  );
+
+  const snap = await getDocs(q)
+
+  return snap.docs.map(d => d.data())
 }
