@@ -16,9 +16,11 @@ export default function AutograderJobHistoryList({
   responseId,
   currentJobId,
 }: AutograderJobHistoryListProps) {
-  const { data: jobs, isPending, error } = useJobsForApplicationResponse(
-    responseId,
-  );
+  const {
+    data: jobs,
+    isPending,
+    error,
+  } = useJobsForApplicationResponse(responseId);
 
   return (
     <section className="rounded-md border bg-background p-3 shadow-xs">
@@ -35,9 +37,7 @@ export default function AutograderJobHistoryList({
       )}
 
       {jobs && jobs.length === 0 && (
-        <p className="mt-2 text-sm text-muted-foreground">
-          No previous runs.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">No previous runs.</p>
       )}
 
       {jobs && jobs.length > 0 && (
@@ -56,10 +56,11 @@ export default function AutograderJobHistoryList({
               <li key={job.id}>
                 <Link
                   to={`/autograder/${job.id}`}
-                  className={`flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted ${job.id === currentJobId
-                    ? "bg-muted font-medium text-foreground"
-                    : "text-muted-foreground"
-                    }`}
+                  className={`flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted ${
+                    job.id === currentJobId
+                      ? "bg-muted font-medium text-foreground"
+                      : "text-muted-foreground"
+                  }`}
                 >
                   <span className="flex min-w-0 items-center gap-2">
                     <AutograderStatusIcon
@@ -71,7 +72,11 @@ export default function AutograderJobHistoryList({
                     </span>
                   </span>
                   <span className="shrink-0 font-mono text-xs">
-                    {failed ? "Failed" : finished ? `${job.score}/${maxScore}` : "..."}
+                    {failed
+                      ? "Failed"
+                      : finished
+                        ? `${job.score}/${maxScore}`
+                        : "..."}
                   </span>
                 </Link>
               </li>

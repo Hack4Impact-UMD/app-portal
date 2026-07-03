@@ -12,12 +12,12 @@ import {
   displayApplicantRoleNameNoEmoji,
 } from "@/utils/display";
 
+import AssessmentSubmit from "./AssessmentSubmit";
 import ChoiceGroup from "./ChoiceGroup";
 import FileUpload from "./FileUpload";
 import LongFormInput from "./LongFormInput";
 import MultiSelectGroup from "./MultiSelectGroup";
 import OneLineInput from "./OneLineInput";
-import AssessmentSubmit from "./AssessmentSubmit";
 
 interface QuestionItemProps {
   question: ApplicationQuestion;
@@ -85,17 +85,19 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
   );
 
   if (question.questionType === QuestionType.AssessmentSubmit) {
-    return <AssessmentSubmit
-      disabled={disabled}
-      question={question.questionText}
-      isRequired={!question.optional}
-      errorMessage={errorMessage}
-      label={question.secondaryText}
-      value={""}
-      onChange={handleChange}
-      placeholderText={"https://github.com/you/assessment"}
-      responseId={responseId}
-    />
+    return (
+      <AssessmentSubmit
+        disabled={disabled}
+        question={question.questionText}
+        isRequired={!question.optional}
+        errorMessage={errorMessage}
+        label={question.secondaryText}
+        value={""}
+        onChange={handleChange}
+        placeholderText={"https://github.com/you/assessment"}
+        responseId={responseId}
+      />
+    );
   }
 
   if (question.questionType === QuestionType.ShortAnswer) {

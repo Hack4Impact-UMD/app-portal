@@ -102,10 +102,10 @@ export default function AutograderRunPage() {
               logs={
                 internalJob
                   ? {
-                    [GradingJobStatus.Installing]: internalJob.installLog,
-                    [GradingJobStatus.Building]: internalJob.buildLog,
-                    [GradingJobStatus.Testing]: internalJob.playwrightLog,
-                  }
+                      [GradingJobStatus.Installing]: internalJob.installLog,
+                      [GradingJobStatus.Building]: internalJob.buildLog,
+                      [GradingJobStatus.Testing]: internalJob.playwrightLog,
+                    }
                   : undefined
               }
               cloneDurationMs={job.cloneDurationMs}
@@ -121,13 +121,29 @@ export default function AutograderRunPage() {
             />
 
             <div className="text-sm bg-amber-50 p-2 text-muted-foreground rounded border border-amber-300">
-              <p className="">Your submission was automatically graded by <a href="https://github.com/Hack4Impact-UMD/professor" target="_blank" className="underline text-blue">Professor</a>! This is not your final score, we take into consideration other factors like code quality, style, and visuals when evaluating techical assessment submissions.</p>
+              <p className="">
+                Your submission was automatically graded by{" "}
+                <a
+                  href="https://github.com/Hack4Impact-UMD/professor"
+                  target="_blank"
+                  className="underline text-blue"
+                >
+                  Professor
+                </a>
+                ! This is not your final score, we take into consideration other
+                factors like code quality, style, and visuals when evaluating
+                techical assessment submissions.
+              </p>
 
-              <p className="mt-1">Professor is a new project, so there may be bugs. If you experience any issues, please let us know (click your profile &gt; About &gt; Report an Issue).</p>
+              <p className="mt-1">
+                Professor is a new project, so there may be bugs. If you
+                experience any issues, please let us know (click your profile
+                &gt; About &gt; Report an Issue).
+              </p>
             </div>
           </div>
         </div>
       </div>
-    </main >
+    </main>
   );
 }

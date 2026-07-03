@@ -37,17 +37,18 @@ export const RoleSelectQuestionSchema = ApplicationQuestionBaseSchema.extend({
   questionType: z.literal(QuestionType.RoleSelect),
 });
 
-export const AssessmentSubmitQuestionSchema = ApplicationQuestionBaseSchema.extend({
-  questionType: z.literal(QuestionType.AssessmentSubmit),
-  latestJobId: z.string().optional()
-});
+export const AssessmentSubmitQuestionSchema =
+  ApplicationQuestionBaseSchema.extend({
+    questionType: z.literal(QuestionType.AssessmentSubmit),
+    latestJobId: z.string().optional(),
+  });
 
 export const ApplicationQuestionSchema = z.discriminatedUnion("questionType", [
   TextQuestionSchema,
   OptionQuestionSchema,
   FileUploadQuestionSchema,
   RoleSelectQuestionSchema,
-  AssessmentSubmitQuestionSchema
+  AssessmentSubmitQuestionSchema,
 ]);
 
 export const ApplicationSectionSchema = z.object({
@@ -94,6 +95,7 @@ export type FileUploadQuestion = z.infer<typeof FileUploadQuestionSchema>;
 export type RoleSelectQuestion = z.infer<typeof RoleSelectQuestionSchema>;
 export type ApplicationQuestion = z.infer<typeof ApplicationQuestionSchema>;
 export type ApplicationSection = z.infer<typeof ApplicationSectionSchema>;
-export type AssessmentSubmitQuestion = z.infer<typeof AssessmentSubmitQuestionSchema>
+export type AssessmentSubmitQuestion = z.infer<
+  typeof AssessmentSubmitQuestionSchema
+>;
 export type ApplicationFormBase = z.infer<typeof ApplicationFormBaseSchema>;
-

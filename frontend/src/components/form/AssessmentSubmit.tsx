@@ -1,7 +1,10 @@
+import { SendIcon } from "lucide-react";
 import React, { memo, useMemo, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
+import AutograderJobCard from "@/components/autograder/AutograderJobCard";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -11,9 +14,6 @@ import {
 import { extractGithubRepoPath, isValidGithubRepoUrl } from "@/utils/grading";
 
 import FormMarkdown from "./FormMarkdown";
-import { Button } from "../ui/button";
-import AutograderJobCard from "../autograder/AutograderJobCard";
-import { SendIcon } from "lucide-react";
 
 interface AssessmentSubmitProps {
   question: string;
@@ -39,15 +39,20 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
   disabled,
   errorMessage,
   placeholderText = "",
-  responseId
+  responseId,
 }) => {
   const { token } = useAuth();
-  const [lastJobId, setLastJobId] = useState<string | null>(null)
+  const [lastJobId, setLastJobId] = useState<string | null>(null);
   const [repoUrl, setRepoUrl] = useState("");
   const [urlError, setUrlError] = useState<string | null>(null);
 
-  const { data: jobs, isPending, error } = useJobsForApplicationResponse(responseId)
-  const { mutate: submitGradingJob, isPending: isSubmitting } = useSubmitGradingJob();
+  const {
+    data: jobs,
+    isPending,
+    error,
+  } = useJobsForApplicationResponse(responseId);
+  const { mutate: submitGradingJob, isPending: isSubmitting } =
+    useSubmitGradingJob();
 
   const bestJob = useMemo(() => {
     if (!jobs || jobs.length === 0) return null;
@@ -96,7 +101,9 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
           onChange(jobId);
         },
         onError: (submitError) => {
-          throwErrorToast("Failed to submit grading job: " + submitError.message);
+          throwErrorToast(
+            "Failed to submit grading job: " + submitError.message,
+          );
         },
       },
     );
@@ -118,16 +125,18 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
       <FormMarkdown>{label}</FormMarkdown>
 
       <div className="flex flex-col gap-2">
-
-        {!isPending && !error && (
-          !jobs || jobs.length === 0 ? (
+        {!isPending &&
+          !error &&
+          (!jobs || jobs.length === 0 ? (
             <p className="text-sm bg-white border px-2 py-1 rounded text-muted-foreground">
-              No job submissions yet. Submit your repo to see your preliminary score.
+              No job submissions yet. Submit your repo to see your preliminary
+              score.
             </p>
           ) : (
-            bestJob && <AutograderJobCard header="Best Score" jobId={bestJob.id} />
-          )
-        )}
+            bestJob && (
+              <AutograderJobCard header="Best Score" jobId={bestJob.id} />
+            )
+          ))}
 
         {lastJobId && lastJobId !== bestJob?.id && (
           <AutograderJobCard header="Latest Run" jobId={lastJobId} />

@@ -25,7 +25,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { ApplicationForm } from "@/types/types";
 
 const decisionLetterVariants = ["accepted", "waitlist"] as const;
-const noop = () => { };
+const noop = () => {};
 const capitalize = (str: string) =>
   str.substring(0, 1).toUpperCase() + str.substring(1);
 
@@ -99,7 +99,7 @@ export default function FormBuilderPage() {
 
       const confirmed = window.confirm(
         `Are you sure you want to upload this application form?\n\n` +
-        `This will update the form with ID '${parsedForm.id}' in Firestore.`,
+          `This will update the form with ID '${parsedForm.id}' in Firestore.`,
       );
 
       if (!confirmed || !token) return;

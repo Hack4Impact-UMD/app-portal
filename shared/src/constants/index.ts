@@ -39,7 +39,7 @@ export enum QuestionType {
   MultipleSelect = "multiple-select",
   FileUpload = "file-upload",
   RoleSelect = "role-select",
-  AssessmentSubmit = "tech-assessment"
+  AssessmentSubmit = "tech-assessment",
 }
 
 export enum ApplicationStatus {

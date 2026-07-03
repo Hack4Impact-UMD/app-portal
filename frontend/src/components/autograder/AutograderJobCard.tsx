@@ -1,7 +1,15 @@
-import { AlertTriangle, ChevronRight, Clock, FolderGit2, Timer } from "lucide-react";
+import { GradingJobStatus } from "@app-portal/shared/constants";
+import {
+  AlertTriangle,
+  ChevronRight,
+  Clock,
+  FolderGit2,
+  Timer,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 import AutograderStatusIcon from "@/components/autograder/AutograderStatusIcon";
+import Spinner from "@/components/Spinner";
 import { useGradingJobSnapshot } from "@/hooks/useGrading";
 import { cn } from "@/lib/utils";
 import { displayTimestamp } from "@/utils/dates";
@@ -11,9 +19,6 @@ import {
   gradingJobStatusLabels,
 } from "@/utils/display";
 import { isTerminalGradingJobStatus } from "@/utils/grading";
-import { GradingJobStatus } from "@app-portal/shared/constants";
-
-import Spinner from "../Spinner";
 
 type AutograderJobCardProps = {
   jobId: string;
@@ -23,7 +28,7 @@ type AutograderJobCardProps = {
 export default function AutograderJobCard({
   jobId,
   className,
-  header
+  header,
 }: AutograderJobCardProps) {
   const { data: job, isPending, error } = useGradingJobSnapshot(jobId);
 
@@ -89,9 +94,7 @@ export default function AutograderJobCard({
             status={iconStatus}
             className="size-4 shrink-0"
           />
-          <span className="truncate">
-            {gradingJobStatusLabels[job.status]}
-          </span>
+          <span className="truncate">{gradingJobStatusLabels[job.status]}</span>
         </span>
 
         {failed ? (
