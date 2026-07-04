@@ -66,9 +66,6 @@ export default function SubmitGradingJobDialog({
           onOpenChange(false);
           navigate(`/autograder/${jobId}`);
         },
-        onError: (error) => {
-          throwErrorToast("Failed to submit grading job: " + error.message);
-        },
       },
     );
   };

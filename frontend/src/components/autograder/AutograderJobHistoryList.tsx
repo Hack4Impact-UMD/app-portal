@@ -1,7 +1,15 @@
 import { GradingJobStatus } from "@app-portal/shared/constants";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import AutograderStatusIcon from "@/components/autograder/AutograderStatusIcon";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useJobsForApplicationResponse } from "@/hooks/useGrading";
 import { displayTimestamp } from "@/utils/dates";
 import { getGradingJobMaxScore } from "@/utils/display";
@@ -12,6 +20,8 @@ type AutograderJobHistoryListProps = {
   currentJobId: string;
 };
 
+type SortOption = "recent" | "score";
+
 export default function AutograderJobHistoryList({
   responseId,
   currentJobId,
@@ -21,10 +31,34 @@ export default function AutograderJobHistoryList({
     isPending,
     error,
   } = useJobsForApplicationResponse(responseId);
+  const [sortOption, setSortOption] = useState<SortOption>("recent");
+
+  const sortedJobs = useMemo(() => {
+    if (!jobs) return jobs;
+    return [...jobs].sort((a, b) =>
+      sortOption === "score"
+        ? b.score - a.score
+        : b.started.toMillis() - a.started.toMillis(),
+    );
+  }, [jobs, sortOption]);
 
   return (
     <section className="rounded-md border bg-background p-3 shadow-xs">
-      <h2 className="text-lg font-semibold text-foreground">Job History</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold text-foreground">Job History</h2>
+        <Select
+          value={sortOption}
+          onValueChange={(value) => setSortOption(value as SortOption)}
+        >
+          <SelectTrigger size="sm" className="text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="recent">Most recent</SelectItem>
+            <SelectItem value="score">Highest score</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {isPending && (
         <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
@@ -36,13 +70,13 @@ export default function AutograderJobHistoryList({
         </p>
       )}
 
-      {jobs && jobs.length === 0 && (
+      {sortedJobs && sortedJobs.length === 0 && (
         <p className="mt-2 text-sm text-muted-foreground">No previous runs.</p>
       )}
 
-      {jobs && jobs.length > 0 && (
+      {sortedJobs && sortedJobs.length > 0 && (
         <ul className="mt-2 flex flex-col gap-1 max-h-64 overflow-y-scroll">
-          {jobs.map((job) => {
+          {sortedJobs.map((job) => {
             const finished = isTerminalGradingJobStatus(job.status);
             const failed = job.status === GradingJobStatus.Failed;
             const iconStatus = failed

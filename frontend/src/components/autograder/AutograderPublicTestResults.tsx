@@ -76,7 +76,7 @@ function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   }
 
   return (
-    <details className={`group/suite`} open={!passed}>
+    <details className={`group/suite`} open={true}>
       <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-4">
         {header}
         <span className="shrink-0 text-xs font-medium text-muted-foreground">

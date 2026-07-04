@@ -1,3 +1,4 @@
+import { GradingJobStatus } from "@app-portal/shared/constants";
 import { SendIcon } from "lucide-react";
 import React, { memo, useMemo, useState } from "react";
 import { twMerge } from "tailwind-merge";
@@ -11,7 +12,11 @@ import {
   useJobsForApplicationResponse,
   useSubmitGradingJob,
 } from "@/hooks/useGrading";
-import { extractGithubRepoPath, isValidGithubRepoUrl } from "@/utils/grading";
+import {
+  extractGithubRepoPath,
+  isTerminalGradingJobStatus,
+  isValidGithubRepoUrl,
+} from "@/utils/grading";
 
 import FormMarkdown from "./FormMarkdown";
 
@@ -63,6 +68,8 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
     );
   }, [jobs]);
 
+  const latestJob = jobs?.[0];
+
   const handleSubmit = async () => {
     const trimmedUrl = repoUrl.trim();
 
@@ -100,11 +107,6 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
           setLastJobId(jobId);
           onChange(jobId);
         },
-        onError: (submitError) => {
-          throwErrorToast(
-            "Failed to submit grading job: " + submitError.message,
-          );
-        },
       },
     );
   };
@@ -126,11 +128,14 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
 
       <div className="flex flex-col gap-2">
         {!isPending &&
-          !error &&
-          (!jobs || jobs.length === 0 ? (
+          (error ? (
+            <p className="text-sm bg-white border px-2 py-1 rounded text-red-600">
+              Failed to load grading job submissions. Please try again.
+            </p>
+          ) : !jobs || jobs.length === 0 ? (
             <p className="text-sm bg-white border px-2 py-1 rounded text-muted-foreground">
-              No job submissions yet. Submit your repo to see your preliminary
-              score.
+              No grading job submissions yet. Submit your repo to see your
+              preliminary score.
             </p>
           ) : (
             bestJob && (
@@ -156,7 +161,16 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
             placeholder={placeholderText || "Enter your response..."}
           />
 
-          <Button onClick={handleSubmit} disabled={disabled || isSubmitting}>
+          <Button
+            onClick={handleSubmit}
+            disabled={
+              !isTerminalGradingJobStatus(
+                latestJob?.status ?? GradingJobStatus.Completed,
+              ) ||
+              disabled ||
+              isSubmitting
+            }
+          >
             Submit <SendIcon />
           </Button>
         </div>

@@ -1,26 +1,49 @@
-import { CheckIcon, ClipboardIcon, ExternalLink } from "lucide-react";
+import type { GradingJobStatus} from "@app-portal/shared/constants";
+import { PermissionRole } from "@app-portal/shared/constants";
+import {
+  CheckIcon,
+  ClipboardIcon,
+  ExternalLink,
+  RotateCwIcon,
+} from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Button } from "@/components/ui/button";
 import { useApplicantForResponse } from "@/hooks/useApplicants";
+import { useAuth } from "@/hooks/useAuth";
+import { useSubmitGradingJob } from "@/hooks/useGrading";
+import { isTerminalGradingJobStatus } from "@/utils/grading";
 
 type AutograderSubmissionSummaryProps = {
   repoURL: string;
   jobId: string;
   responseId: string;
+  status: GradingJobStatus;
 };
 
 export default function AutograderSubmissionSummary({
   repoURL,
   jobId,
   responseId,
+  status,
 }: AutograderSubmissionSummaryProps) {
   const {
     data: applicant,
     isPending: isApplicantPending,
     error: applicantError,
   } = useApplicantForResponse(responseId);
+  const { user, token } = useAuth();
+  const navigate = useNavigate();
+  const { mutate: submitGradingJob, isPending: isRerunning } =
+    useSubmitGradingJob();
+
+  const canRerun =
+    !!user &&
+    (user.role === PermissionRole.Board ||
+      user.role === PermissionRole.SuperReviewer ||
+      (user.role === PermissionRole.Applicant && user.id === applicant?.id));
 
   const [repoCopied, setRepoCopied] = useState(false);
   const repoLink = `https://github.com/${repoURL}`;
@@ -36,6 +59,26 @@ export default function AutograderSubmissionSummary({
     }
   };
 
+  const handleRerun = async () => {
+    if (!token) {
+      throwErrorToast("Authentication token not available");
+      return;
+    }
+
+    submitGradingJob(
+      {
+        responseId,
+        repoURL,
+        token: (await token()) ?? "",
+      },
+      {
+        onSuccess: (newJobId) => {
+          navigate(`/autograder/${newJobId}`);
+        },
+      },
+    );
+  };
+
   const applicantName = applicant
     ? `${applicant.firstName} ${applicant.lastName}`
     : isApplicantPending
@@ -48,6 +91,17 @@ export default function AutograderSubmissionSummary({
     <section className="rounded-md border bg-background p-3 shadow-xs">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-foreground">Submission</h2>
+        {canRerun && (
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleRerun}
+            disabled={!isTerminalGradingJobStatus(status) || isRerunning}
+          >
+            <RotateCwIcon className="size-3.5" />
+            {isRerunning ? "Re-running..." : "Re-run job"}
+          </Button>
+        )}
       </div>
       <dl className="mt-3 space-y-2.5 text-sm">
         <div>

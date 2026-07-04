@@ -6,10 +6,13 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import axios from "axios";
 import type { DocumentReference } from "firebase/firestore";
 import { onSnapshot } from "firebase/firestore";
 import { useMemo, useSyncExternalStore } from "react";
 
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwWarningToast } from "@/components/toasts/WarningToast";
 import {
   getJobsForApplicationResponse,
   gradingJobDoc,
@@ -56,6 +59,17 @@ export function useSubmitGradingJob() {
       repoURL: string;
       token: string;
     }) => submitGradingJob(responseId, repoURL, token),
+    onError: (error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 429) {
+        throwWarningToast(
+          typeof error.response.data === "string"
+            ? error.response.data
+            : "Too many grading jobs submitted for this application. Please try again later.",
+        );
+        return;
+      }
+      throwErrorToast("Failed to submit grading job: " + error.message);
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [gradingJobRoot] });
     },

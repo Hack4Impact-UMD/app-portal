@@ -6,3 +6,4 @@ CLAUDE.md
 .flame.json
 .vscode
 firebase.dev.json
+tsconfig.tsbuildinfo

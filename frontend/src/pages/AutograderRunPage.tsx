@@ -88,6 +88,7 @@ export default function AutograderRunPage() {
               repoURL={job.repoURL}
               jobId={job.id}
               responseId={job.responseId}
+              status={job.status}
             />
             <AutograderJobHistoryList
               responseId={job.responseId}
