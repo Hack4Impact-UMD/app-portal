@@ -1,4 +1,4 @@
-import type { GradingJobStatus} from "@app-portal/shared/constants";
+import type { GradingJobStatus } from "@app-portal/shared/constants";
 import { PermissionRole } from "@app-portal/shared/constants";
 import {
   CheckIcon,
