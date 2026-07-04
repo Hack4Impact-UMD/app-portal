@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import { GradingJobStatus } from "../constants/index.js";
 
+const githubRepoPathPattern = /^[^/\s]+\/[^/\s]+$/;
+
 export const TestResultSchema = z.object({
   suite: z.string().nonempty(),
   testName: z.string().nonempty(),
@@ -64,6 +66,10 @@ export const GradingJobDataInternalSchema = z.object({
 export const submitGradingJobSchema = GradingJobPublicBaseSchema.pick({
   responseId: true,
   repoURL: true,
+}).extend({
+  repoURL: z
+    .string()
+    .regex(githubRepoPathPattern, "Repository must be in owner/repo format"),
 });
 
 export type TestResult = z.infer<typeof TestResultSchema>;

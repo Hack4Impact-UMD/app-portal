@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubmitGradingJob } from "@/hooks/useGrading";
+import { extractGithubRepoPath } from "@/utils/grading";
 
 export default function SubmitGradingJobDialog({
   open,
@@ -52,10 +53,18 @@ export default function SubmitGradingJobDialog({
       return;
     }
 
+    const repoPath = extractGithubRepoPath(normalizedRepoUrl);
+    if (!repoPath) {
+      throwErrorToast(
+        "Enter a valid GitHub URL, e.g. https://github.com/you/repo",
+      );
+      return;
+    }
+
     submitGradingJob(
       {
         responseId: normalizedResponseId,
-        repoURL: normalizedRepoUrl,
+        repoURL: repoPath,
         token: (await token()) ?? "",
       },
       {
@@ -97,10 +106,10 @@ export default function SubmitGradingJobDialog({
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="repo-url">Repository Path</Label>
+            <Label htmlFor="repo-url">Repository URL</Label>
             <Input
               id="repo-url"
-              placeholder="username/repo"
+              placeholder="https://github.com/username/repo"
               value={repoURL}
               onChange={(e) => setRepoURL(e.target.value)}
             />

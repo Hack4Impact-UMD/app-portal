@@ -13,9 +13,8 @@ import {
   useSubmitGradingJob,
 } from "@/hooks/useGrading";
 import {
-  extractGithubRepoPath,
   isTerminalGradingJobStatus,
-  isValidGithubRepoUrl,
+  extractGithubRepoPath,
 } from "@/utils/grading";
 
 import FormMarkdown from "./FormMarkdown";
@@ -71,14 +70,7 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
   const latestJob = jobs?.[0];
 
   const handleSubmit = async () => {
-    const trimmedUrl = repoUrl.trim();
-
-    if (!isValidGithubRepoUrl(trimmedUrl)) {
-      setUrlError("Enter a valid GitHub URL, e.g. https://github.com/you/repo");
-      return;
-    }
-
-    const repoPath = extractGithubRepoPath(trimmedUrl);
+    const repoPath = extractGithubRepoPath(repoUrl);
     if (!repoPath) {
       setUrlError("Enter a valid GitHub URL, e.g. https://github.com/you/repo");
       return;
