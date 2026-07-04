@@ -52,6 +52,14 @@ function displayStepStatus(status: AutograderStatusIconStatus) {
   return status[0].toUpperCase() + status.slice(1);
 }
 
+function getStepListStatus(
+  status: GradingJobStatus,
+): AutograderStatusIconStatus {
+  if (status === GradingJobStatus.Completed) return "complete";
+  if (status === GradingJobStatus.Failed) return "failed";
+  return "active";
+}
+
 export default function AutograderStepList({
   status,
   errorStep,
@@ -70,38 +78,42 @@ export default function AutograderStepList({
 
   return (
     <section className="overflow-hidden rounded-md border bg-background shadow-xs">
-      <div className="border-b bg-background px-5 py-4">
-        <h2 className="text-lg font-semibold text-foreground">Steps</h2>
-      </div>
+      <AutograderExpandableRow
+        className="px-5 py-4"
+        contentClassName="mt-4 -mx-5 -mb-4 border-t"
+        defaultOpen={status !== GradingJobStatus.Completed}
+        status={getStepListStatus(status)}
+        title="Grading Steps"
+      >
+        <div className="divide-y">
+          {gradingJobRunnableStatuses.map((stepStatus) => {
+            const displayStatus = getStepDisplayStatus(
+              stepStatus,
+              status,
+              errorStep,
+            );
+            const durationMs = getStepDuration(stepStatus, stepDurations);
+            const logOutput = logs?.[stepStatus];
+            const stepStatusLabel = displayStepStatus(displayStatus);
+            const subtitle =
+              durationMs !== undefined
+                ? `${stepStatusLabel} - ${displayDurationMs(durationMs)}`
+                : stepStatusLabel;
 
-      <div className="divide-y">
-        {gradingJobRunnableStatuses.map((stepStatus) => {
-          const displayStatus = getStepDisplayStatus(
-            stepStatus,
-            status,
-            errorStep,
-          );
-          const durationMs = getStepDuration(stepStatus, stepDurations);
-          const logOutput = logs?.[stepStatus];
-          const stepStatusLabel = displayStepStatus(displayStatus);
-          const subtitle =
-            durationMs !== undefined
-              ? `${stepStatusLabel} - ${displayDurationMs(durationMs)}`
-              : stepStatusLabel;
-
-          return (
-            <AutograderExpandableRow
-              key={stepStatus}
-              className="px-5 py-4"
-              status={displayStatus}
-              title={gradingJobStatusLabels[stepStatus]}
-              subtitle={subtitle}
-            >
-              {logOutput && <AutograderLogBlock output={logOutput} />}
-            </AutograderExpandableRow>
-          );
-        })}
-      </div>
+            return (
+              <AutograderExpandableRow
+                key={stepStatus}
+                className="px-5 py-4"
+                status={displayStatus}
+                title={gradingJobStatusLabels[stepStatus]}
+                subtitle={subtitle}
+              >
+                {logOutput && <AutograderLogBlock output={logOutput} />}
+              </AutograderExpandableRow>
+            );
+          })}
+        </div>
+      </AutograderExpandableRow>
     </section>
   );
 }

@@ -50,7 +50,7 @@ export default function AutograderJobHistoryList({
           value={sortOption}
           onValueChange={(value) => setSortOption(value as SortOption)}
         >
-          <SelectTrigger size="sm" className="text-xs">
+          <SelectTrigger size="sm" className="h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

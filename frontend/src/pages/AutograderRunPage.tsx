@@ -121,26 +121,39 @@ export default function AutograderRunPage() {
               internal={!!internalJob}
             />
 
-            <div className="text-sm bg-amber-50 p-2 text-muted-foreground rounded border border-amber-300">
-              <p className="">
-                Your submission was automatically graded by{" "}
-                <a
-                  href="https://github.com/Hack4Impact-UMD/professor"
-                  target="_blank"
-                  className="underline text-blue"
-                >
-                  Professor
-                </a>
-                ! This is not your final score, we take into consideration other
-                factors like code quality, style, and visuals when evaluating
-                techical assessment submissions.
-              </p>
-
-              <p className="mt-1">
-                Professor is a new project, so there may be bugs. If you
-                experience any issues, please let us know (click your profile
-                &gt; About &gt; Report an Issue).
-              </p>
+            <div className="flex items-start gap-3">
+              <img
+                src="/terra.png"
+                alt=""
+                aria-hidden="true"
+                className="size-14 shrink-0 rounded-full bg-amber-100 object-cover p-1 ring-1 ring-border"
+              />
+              <div className="relative flex-1 rounded-md border bg-amber-50 px-4 py-3 text-sm text-amber-950 shadow-xs">
+                <div className="absolute -left-1.5 top-5 size-3 rotate-45 border-b border-l bg-amber-50" />
+                <div className="space-y-1.5">
+                  <p className="font-semibold text-amber-950">
+                    Terra says: Your submission was automatically graded by{" "}
+                    <a
+                      href="https://github.com/Hack4Impact-UMD/professor"
+                      target="_blank"
+                      className="underline underline-offset-2"
+                    >
+                      Professor
+                    </a>
+                    !
+                  </p>
+                  <p className="text-amber-900">
+                    This is not your final score. We also manually evaluate
+                    assessment submissions on code quality, style, etc.
+                  </p>
+                  <p className="text-amber-900">
+                    Professor is a new project, so there may be bugs. If you
+                    experience any issues, please let us know!
+                    <br />
+                    (click your profile &gt; About &gt; Report an Issue).
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

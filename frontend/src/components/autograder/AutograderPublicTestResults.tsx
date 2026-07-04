@@ -4,7 +4,7 @@ import type {
   SuiteResults,
   TestResult,
 } from "@app-portal/shared/types";
-import { ChevronDown, ClipboardList } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 
 import AutograderExpandableRow from "@/components/autograder/AutograderExpandableRow";
 import AutograderLogBlock from "@/components/autograder/AutograderLogBlock";
@@ -54,43 +54,36 @@ function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   const hasTestLogs = tests.length > 0;
   const suiteStatus = pending ? "Pending" : passed ? "Passed" : "Failed";
   const suiteSummary = `${suite.result.passed}/${suite.result.total} passed · ${suite.result.points}/${suite.result.totalPoints} pts · ${displayDurationMs(suite.result.durationMs)}`;
-
-  const header = (
-    <div className="min-w-0 flex-1">
-      <p className="text-base font-semibold text-foreground">
-        {suite.suiteName}
-      </p>
-      <p className="text-sm text-muted-foreground">{suiteSummary}</p>
-    </div>
-  );
+  const status = pending ? "pending" : passed ? "complete" : "failed";
 
   if (!hasTestLogs) {
     return (
-      <div className={`flex items-center gap-3 px-5 py-4`}>
-        {header}
-        <span className="shrink-0 text-xs font-medium text-muted-foreground">
-          {suiteStatus}
-        </span>
-      </div>
+      <AutograderExpandableRow
+        className="px-5 py-4"
+        status={status}
+        rightLabel={suiteStatus}
+        subtitle={suiteSummary}
+        title={suite.suiteName}
+      />
     );
   }
 
   return (
-    <details className={`group/suite`} open={true}>
-      <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-4">
-        {header}
-        <span className="shrink-0 text-xs font-medium text-muted-foreground">
-          {suiteStatus}
-        </span>
-        <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform group-open/suite:rotate-180" />
-      </summary>
-
-      <div className="border-t bg-blue/5">
+    <AutograderExpandableRow
+      className="px-5 py-4"
+      contentClassName="mt-4 -mx-5 -mb-4 border-t"
+      defaultOpen
+      status={status}
+      rightLabel={suiteStatus}
+      subtitle={suiteSummary}
+      title={suite.suiteName}
+    >
+      <div className="bg-blue/5">
         {tests.map(([testName, test]) => (
           <TestLogBlock key={`${suite.suiteName}-${testName}`} test={test} />
         ))}
       </div>
-    </details>
+    </AutograderExpandableRow>
   );
 }
 
@@ -157,7 +150,9 @@ export default function AutoGraderTestResults({
     return (
       <section className="flex flex-col items-center gap-2 rounded-md border bg-background px-4 py-10 text-center shadow-xs">
         <ClipboardList className="size-6 text-muted-foreground" />
-        <p className="font-medium text-foreground">No test suites yet</p>
+        <p className="font-medium text-foreground">
+          No test results available yet.
+        </p>
         <p className="text-sm text-muted-foreground">
           Test results will appear here once the autograder parses the test
           repo.

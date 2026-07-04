@@ -1,8 +1,14 @@
 import { GradingJobStatus } from "@app-portal/shared/constants";
 import type { Timestamp } from "firebase/firestore";
+import { Info } from "lucide-react";
 
 import AutograderStatusIcon from "@/components/autograder/AutograderStatusIcon";
 import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { displayTimestamp } from "@/utils/dates";
 import { displayDurationMs, gradingJobStatusLabels } from "@/utils/display";
 import { isTerminalGradingJobStatus } from "@/utils/grading";
@@ -20,27 +26,33 @@ function RunStatus({ status }: { status: GradingJobStatus }) {
   const completed = status === GradingJobStatus.Completed;
   const failed = status === GradingJobStatus.Failed;
   const iconStatus = completed ? "complete" : failed ? "failed" : "active";
+  const description = completed
+    ? "The run finished successfully."
+    : failed
+      ? "The run ended before producing a successful result."
+      : "This page will update automatically as each step finishes.";
 
   return (
     <div>
       <dt className="text-muted-foreground">Run status</dt>
       <dd className="mt-1">
-        <div className="flex items-center gap-2 font-medium text-foreground">
-          {isTerminalGradingJobStatus(status)
-            ? gradingJobStatusLabels[status]
-            : "Autograder running"}
-          <AutograderStatusIcon
-            status={iconStatus}
-            className="size-4 shrink-0"
-          />
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 font-medium text-foreground">
+            {isTerminalGradingJobStatus(status)
+              ? gradingJobStatusLabels[status]
+              : "Autograder running"}
+            <AutograderStatusIcon
+              status={iconStatus}
+              className="size-4 shrink-0"
+            />
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="size-3.5 text-muted-foreground transition hover:text-foreground" />
+            </TooltipTrigger>
+            <TooltipContent>{description}</TooltipContent>
+          </Tooltip>
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {completed
-            ? "The run finished successfully."
-            : failed
-              ? "The run ended before producing a successful result."
-              : "This page will update automatically as each step finishes."}
-        </p>
       </dd>
     </div>
   );
@@ -83,18 +95,6 @@ export default function AutograderRunStatusSummary({
         </div>
 
         <dl className="space-y-2.5 text-sm">
-          <div>
-            <dt className="text-muted-foreground">Started</dt>
-            <dd className="mt-1 font-medium text-foreground">
-              {displayTimestamp(started)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">Last updated</dt>
-            <dd className="mt-1 font-medium text-foreground">
-              {displayTimestamp(updated)}
-            </dd>
-          </div>
           {durationMs !== undefined && (
             <div>
               <dt className="text-muted-foreground">Job Duration</dt>
@@ -103,6 +103,20 @@ export default function AutograderRunStatusSummary({
               </dd>
             </div>
           )}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <dt className="text-muted-foreground">Started</dt>
+              <dd className="mt-1 font-medium text-foreground">
+                {displayTimestamp(started)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">Last updated</dt>
+              <dd className="mt-1 font-medium text-foreground">
+                {displayTimestamp(updated)}
+              </dd>
+            </div>
+          </div>
         </dl>
       </div>
     </section>

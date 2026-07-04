@@ -1,12 +1,6 @@
 import type { GradingJobStatus } from "@app-portal/shared/constants";
 import { PermissionRole } from "@app-portal/shared/constants";
-import {
-  CheckIcon,
-  ClipboardIcon,
-  ExternalLink,
-  RotateCwIcon,
-} from "lucide-react";
-import { useState } from "react";
+import { ExternalLink, RotateCwIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
@@ -45,19 +39,7 @@ export default function AutograderSubmissionSummary({
       user.role === PermissionRole.SuperReviewer ||
       (user.role === PermissionRole.Applicant && user.id === applicant?.id));
 
-  const [repoCopied, setRepoCopied] = useState(false);
   const repoLink = `https://github.com/${repoURL}`;
-
-  const handleCopyRepo = async () => {
-    try {
-      await navigator.clipboard.writeText(repoLink);
-      setRepoCopied(true);
-      setTimeout(() => setRepoCopied(false), 1500);
-    } catch {
-      throwErrorToast("Failed to copy");
-      setRepoCopied(false);
-    }
-  };
 
   const handleRerun = async () => {
     if (!token) {
@@ -95,6 +77,7 @@ export default function AutograderSubmissionSummary({
           <Button
             type="button"
             size="sm"
+            className="h-8 text-xs"
             onClick={handleRerun}
             disabled={!isTerminalGradingJobStatus(status) || isRerunning}
           >
@@ -120,20 +103,6 @@ export default function AutograderSubmissionSummary({
               <span className="truncate">github.com/{repoURL}</span>
               <ExternalLink className="size-3 shrink-0" />
             </a>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="size-6 shrink-0"
-              onClick={handleCopyRepo}
-              title="Copy repository link"
-            >
-              {repoCopied ? (
-                <CheckIcon className="size-3" />
-              ) : (
-                <ClipboardIcon className="size-3" />
-              )}
-            </Button>
           </dd>
         </div>
         <div>

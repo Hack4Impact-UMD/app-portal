@@ -14,6 +14,7 @@ type AutograderExpandableRowProps = {
   children?: ReactNode;
   className?: string;
   contentClassName?: string;
+  defaultOpen?: boolean;
 };
 
 export default function AutograderExpandableRow({
@@ -24,9 +25,11 @@ export default function AutograderExpandableRow({
   children,
   className,
   contentClassName,
+  defaultOpen,
 }: AutograderExpandableRowProps) {
   const hasExpandableContent = Boolean(children);
-  const shouldAutoOpen = hasExpandableContent && status === "failed";
+  const shouldAutoOpen =
+    hasExpandableContent && (defaultOpen || status === "failed");
   const [manualOpen, setManualOpen] = useState<boolean | null>(null);
   const isOpen = manualOpen ?? shouldAutoOpen;
 

@@ -28,6 +28,7 @@ async function cleanupStaleJobs() {
       GradingJobStatus.Completed,
       GradingJobStatus.Failed,
     ])
+    .orderBy("updated", "desc")
     .get();
 
   if (staleJobs.empty) {
