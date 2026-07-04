@@ -63,6 +63,21 @@ export default function AutograderJobCard({
   const iconStatus = failed ? "failed" : finished ? "complete" : "active";
   const maxScore = getGradingJobMaxScore(job);
   const elapsedMs = job.updated.toMillis() - job.started.toMillis();
+  const cardClass = failed
+    ? "border-destructive/30 bg-destructive/10 hover:bg-destructive/15"
+    : finished
+      ? "border-green-600/30 bg-green-50/80 hover:bg-green-50"
+      : "border-blue/25 bg-blue/5 hover:bg-blue/10";
+  const detailsClass = failed
+    ? "text-destructive"
+    : finished
+      ? "text-green-700"
+      : "text-blue";
+  const metadataClass = failed
+    ? "bg-background/70 text-destructive"
+    : finished
+      ? "bg-background/70 text-green-800"
+      : "bg-background/70 text-muted-foreground";
 
   return (
     <Link
@@ -71,24 +86,30 @@ export default function AutograderJobCard({
       rel="noreferrer"
       title={job.id}
       className={cn(
-        "flex flex-col justify-center rounded border bg-white p-3 hover:bg-muted",
+        "flex flex-col justify-center gap-2 rounded-md border p-4 shadow-xs transition hover:shadow-sm",
+        cardClass,
         className,
       )}
     >
       <div className="flex items-center justify-between gap-2">
         {header && (
-          <span className="truncate text-sm font-semibold text-foreground">
+          <span className="truncate text-base font-semibold text-foreground">
             {header}
           </span>
         )}
 
-        <span className="text-blue ml-auto flex shrink-0 items-center gap-0.5 text-xs">
+        <span
+          className={cn(
+            "ml-auto flex shrink-0 items-center gap-0.5 text-xs",
+            detailsClass,
+          )}
+        >
           Details
           <ChevronRight className="size-3" />
         </span>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-foreground">
           <AutograderStatusIcon
             status={iconStatus}
@@ -105,7 +126,7 @@ export default function AutograderJobCard({
           <span
             className={cn(
               "shrink-0 text-2xl font-semibold",
-              finished ? "text-foreground" : "text-muted-foreground",
+              finished ? detailsClass : "text-muted-foreground",
             )}
           >
             {job.score}
@@ -116,17 +137,19 @@ export default function AutograderJobCard({
         )}
       </div>
 
-      <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-        <FolderGit2 className="size-3 shrink-0" />
-        <span className="truncate">{job.repoURL}</span>
-      </div>
+      <div className={cn("space-y-1 rounded-md px-2.5 py-2", metadataClass)}>
+        <div className="flex min-w-0 items-center gap-1.5 text-xs">
+          <FolderGit2 className="size-3 shrink-0" />
+          <span className="truncate">{job.repoURL}</span>
+        </div>
 
-      <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-        <Clock className="size-3 shrink-0" />
-        <span className="truncate">{displayTimestamp(job.started)}</span>
-        <span aria-hidden>·</span>
-        <Timer className="size-3 shrink-0" />
-        <span className="truncate">{displayDurationMs(elapsedMs)}</span>
+        <div className="flex min-w-0 items-center gap-1.5 text-xs">
+          <Clock className="size-3 shrink-0" />
+          <span className="truncate">{displayTimestamp(job.started)}</span>
+          <span aria-hidden>·</span>
+          <Timer className="size-3 shrink-0" />
+          <span className="truncate">{displayDurationMs(elapsedMs)}</span>
+        </div>
       </div>
 
       {failed && job.errorStep && (

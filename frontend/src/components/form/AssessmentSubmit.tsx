@@ -112,12 +112,7 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
   };
 
   return (
-    <main
-      className={twMerge(
-        "flex flex-col hover:brightness-95 transition",
-        className,
-      )}
-    >
+    <main className={twMerge("flex flex-col", className)}>
       <span className="mb-2 text-xl font-normal">
         {question}
         {isRequired && <span className="text-red-600 ml-px">*</span>}
@@ -149,7 +144,7 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
         <div className="w-full flex flex-row gap-1">
           <Input
             className={twMerge(
-              "grow mt-auto p-2 w-full bg-white rounded-md outline outline-black border-2 disabled:cursor-not-allowed disabled:opacity-100 disabled:bg-[#f3f4f6]",
+              "grow mt-auto p-2 w-full bg-white rounded-md outline outline-black border-2 transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-100 disabled:bg-[#f3f4f6]",
             )}
             required={isRequired}
             value={repoUrl}
