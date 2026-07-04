@@ -66,7 +66,7 @@ export default function AutograderJobCard({
   const cardClass = failed
     ? "border-destructive/30 bg-destructive/10 hover:bg-destructive/15"
     : finished
-      ? "border-green-600/30 bg-green-50/80 hover:bg-green-50"
+      ? "border-green-600/30 bg-green-50/80 hover:bg-green-100"
       : "border-blue/25 bg-blue/5 hover:bg-blue/10";
   const detailsClass = failed
     ? "text-destructive"
