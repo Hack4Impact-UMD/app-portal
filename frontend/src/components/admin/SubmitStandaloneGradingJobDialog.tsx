@@ -62,22 +62,27 @@ export default function SubmitStandaloneGradingJobDialog({
       return;
     }
 
-    submitStandaloneGradingJob(
-      {
-        repoURL: assessmentPath,
-        testRepo: testPath,
-        token: (await token()) ?? "",
-      },
-      {
-        onSuccess: (jobId) => {
-          throwSuccessToast(
-            `Grading job queued successfully! Job ID: ${jobId}`,
-          );
-          onOpenChange(false);
-          navigate(`/autograder/${jobId}`);
+    try {
+      submitStandaloneGradingJob(
+        {
+          repoURL: assessmentPath,
+          testRepo: testPath,
+          token: (await token()) ?? "",
         },
-      },
-    );
+        {
+          onSuccess: (jobId) => {
+            throwSuccessToast(
+              `Grading job queued successfully! Job ID: ${jobId}`,
+            );
+            onOpenChange(false);
+            navigate(`/autograder/${jobId}`);
+          },
+        },
+      );
+    } catch (err) {
+      console.error(err);
+      throwErrorToast("Not authenticated");
+    }
   };
 
   return (

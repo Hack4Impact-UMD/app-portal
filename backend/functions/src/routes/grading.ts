@@ -357,8 +357,10 @@ router.post(
         tests: {},
       };
 
-      await gradingJobsPublicCollection.doc(jobId).set(publicJob);
-      await gradingJobsInternalCollection.doc(jobId).set(internalJob);
+      await db.runTransaction(async (tx) => {
+        tx.set(gradingJobsPublicCollection.doc(jobId), publicJob);
+        tx.set(gradingJobsInternalCollection.doc(jobId), internalJob);
+      });
 
       logger.info(`Created Firestore documents for standalone job ${jobId}`);
 
