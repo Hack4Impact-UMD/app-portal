@@ -38,7 +38,7 @@ export const SuiteResultsSchema = z.record(z.string(), SuiteResultSchema);
 export const GradingJobPublicBaseSchema = z.object({
   id: z.string().nonempty(),
   responseId: z.string().nonempty(),
-  repoURL: z.string().nonempty(),
+  repoURL: z.string().nonempty(), // stored as "owner/repo" GitHub path, not a full URL
   status: z.enum(GradingJobStatus),
   score: z.float64().nonnegative(),
   totalTests: z.int().nonnegative(),
@@ -60,7 +60,7 @@ export const GradingJobDataInternalSchema = z.object({
   installLog: z.string(),
   playwrightLog: z.string(),
   error: z.string().optional(),
-  tests: z.record(z.string(), z.record(z.string(), TestResultSchema)),
+  tests: TestsSchema,
 });
 
 export const submitGradingJobSchema = GradingJobPublicBaseSchema.pick({
