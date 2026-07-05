@@ -60,6 +60,10 @@ export enum ReviewStatus {
   Waitlisted = "waitlist",
 }
 
+// Sentinel responseId used for standalone grading jobs that grade an arbitrary
+// assessment repo against a test repo with no application response attached.
+export const STANDALONE_GRADING_RESPONSE_ID = "standalone";
+
 export enum GradingJobStatus {
   Queued = "queued",
   Pending = "pending",

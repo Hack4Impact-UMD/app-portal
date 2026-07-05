@@ -2,7 +2,10 @@ import { z } from "zod";
 
 import { GradingJobStatus } from "../constants/index.js";
 
-const githubRepoPathPattern = /^[^/\s]+\/[^/\s]+$/;
+// Matches a GitHub "owner/repo" path using only characters GitHub allows in
+// owner and repo names, rejecting shell metacharacters and path traversal.
+const githubRepoPathPattern =
+  /^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})\/[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})$/;
 
 export const TestResultSchema = z.object({
   suite: z.string().nonempty(),
@@ -68,6 +71,18 @@ export const submitGradingJobSchema = GradingJobPublicBaseSchema.pick({
   repoURL: true,
 }).extend({
   repoURL: z
+    .string()
+    .regex(githubRepoPathPattern, "Repository must be in owner/repo format"),
+});
+
+// Standalone grading job: grade an arbitrary assessment repo against a test
+// repo, with no application response attached. repoURL is the assessment repo
+// to grade; testRepo is the repo containing the tests to run against it.
+export const submitStandaloneGradingJobSchema = z.object({
+  repoURL: z
+    .string()
+    .regex(githubRepoPathPattern, "Repository must be in owner/repo format"),
+  testRepo: z
     .string()
     .regex(githubRepoPathPattern, "Repository must be in owner/repo format"),
 });

@@ -1,6 +1,6 @@
 import { FirestoreCollection } from "@app-portal/shared/constants";
 import axios from "axios";
-import { doc, getDocs, orderBy, query, where } from "firebase/firestore";
+import { doc, getDocs, limit, orderBy, query, where } from "firebase/firestore";
 
 import { API_URL } from "@/config/firebase";
 import { appCollection } from "@/services/firestore";
@@ -26,6 +26,37 @@ export async function submitGradingJob(
   );
 
   return response.data.jobId;
+}
+
+export async function submitStandaloneGradingJob(
+  repoURL: string,
+  testRepo: string,
+  token: string,
+): Promise<string> {
+  const appCheckToken = await getAppCheckToken();
+
+  const response = await axios.post(
+    `${API_URL}/autograder/submit-standalone`,
+    { repoURL, testRepo },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "X-APPCHECK": appCheckToken,
+      },
+    },
+  );
+
+  return response.data.jobId;
+}
+
+// Firestore query for the most recent grading jobs across all responses,
+// ordered newest-first. Single-field orderBy is auto-indexed.
+export function recentGradingJobsQuery(limitN: number) {
+  return query(
+    appCollection(FirestoreCollection.GradingJobsPublic),
+    orderBy("started", "desc"),
+    limit(limitN),
+  );
 }
 
 export function gradingJobDoc(id: string) {

@@ -1,4 +1,8 @@
-import { GradingJobStatus, PermissionRole } from "@app-portal/shared/constants";
+import {
+  GradingJobStatus,
+  PermissionRole,
+  STANDALONE_GRADING_RESPONSE_ID,
+} from "@app-portal/shared/constants";
 import { CircleAlert } from "lucide-react";
 import { useParams } from "react-router-dom";
 
@@ -35,7 +39,7 @@ export default function AutograderRunPage() {
     return <Loading />;
   }
 
-  if (error || !job || (canReadInternalJob && internalJobError)) {
+  if (error || !job) {
     return (
       <main className="flex h-screen flex-col items-center justify-center bg-muted p-8 text-center">
         <CircleAlert className="mb-4 size-12 text-destructive" />
@@ -51,6 +55,7 @@ export default function AutograderRunPage() {
   }
 
   const maxScore = getGradingJobMaxScore(job);
+  const isStandalone = job.responseId === STANDALONE_GRADING_RESPONSE_ID;
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-muted px-8 pb-12 pt-6">
@@ -74,6 +79,16 @@ export default function AutograderRunPage() {
           </div>
         </header>
 
+        {canReadInternalJob && internalJobError && (
+          <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <CircleAlert className="size-4 shrink-0" />
+            <span>
+              Failed to load internal job details. Public status, score, and
+              history below are still up to date.
+            </span>
+          </div>
+        )}
+
         <div className="grid grid-cols-[20rem_minmax(0,1fr)] gap-6">
           <aside className="sticky top-20 flex self-start flex-col gap-3">
             <AutograderRunStatusSummary
@@ -89,11 +104,15 @@ export default function AutograderRunPage() {
               jobId={job.id}
               responseId={job.responseId}
               status={job.status}
+              isStandalone={isStandalone}
+              testRepo={internalJob?.testRepo}
             />
-            <AutograderJobHistoryList
-              responseId={job.responseId}
-              currentJobId={job.id}
-            />
+            {!isStandalone && (
+              <AutograderJobHistoryList
+                responseId={job.responseId}
+                currentJobId={job.id}
+              />
+            )}
           </aside>
 
           <div className="flex flex-col gap-6">

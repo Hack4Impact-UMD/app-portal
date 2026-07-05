@@ -7,7 +7,10 @@ import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Button } from "@/components/ui/button";
 import { useApplicantForResponse } from "@/hooks/useApplicants";
 import { useAuth } from "@/hooks/useAuth";
-import { useSubmitGradingJob } from "@/hooks/useGrading";
+import {
+  useSubmitGradingJob,
+  useSubmitStandaloneGradingJob,
+} from "@/hooks/useGrading";
 import { isTerminalGradingJobStatus } from "@/utils/grading";
 
 type AutograderSubmissionSummaryProps = {
@@ -15,6 +18,8 @@ type AutograderSubmissionSummaryProps = {
   jobId: string;
   responseId: string;
   status: GradingJobStatus;
+  isStandalone: boolean;
+  testRepo?: string;
 };
 
 export default function AutograderSubmissionSummary({
@@ -22,16 +27,23 @@ export default function AutograderSubmissionSummary({
   jobId,
   responseId,
   status,
+  isStandalone,
+  testRepo,
 }: AutograderSubmissionSummaryProps) {
   const {
     data: applicant,
     isPending: isApplicantPending,
     error: applicantError,
-  } = useApplicantForResponse(responseId);
+  } = useApplicantForResponse(isStandalone ? undefined : responseId);
   const { user, token } = useAuth();
   const navigate = useNavigate();
-  const { mutate: submitGradingJob, isPending: isRerunning } =
+  const { mutate: submitGradingJob, isPending: isRerunningResponse } =
     useSubmitGradingJob();
+  const {
+    mutate: submitStandaloneGradingJob,
+    isPending: isRerunningStandalone,
+  } = useSubmitStandaloneGradingJob();
+  const isRerunning = isRerunningResponse || isRerunningStandalone;
 
   const canRerun =
     !!user &&
@@ -47,19 +59,28 @@ export default function AutograderSubmissionSummary({
       return;
     }
 
+    if (isStandalone && !testRepo) {
+      throwErrorToast("Test repo not available for this standalone job");
+      return;
+    }
+
     try {
-      submitGradingJob(
-        {
-          responseId,
-          repoURL,
-          token: (await token()) ?? "",
-        },
-        {
-          onSuccess: (newJobId) => {
-            navigate(`/autograder/${newJobId}`);
-          },
-        },
-      );
+      const authToken = (await token()) ?? "";
+      const onSuccess = (newJobId: string) => {
+        navigate(`/autograder/${newJobId}`);
+      };
+
+      if (isStandalone) {
+        submitStandaloneGradingJob(
+          { repoURL, testRepo: testRepo!, token: authToken },
+          { onSuccess },
+        );
+      } else {
+        submitGradingJob(
+          { responseId, repoURL, token: authToken },
+          { onSuccess },
+        );
+      }
     } catch (err) {
       console.error(err);
       throwErrorToast("Not authenticated");
@@ -92,10 +113,21 @@ export default function AutograderSubmissionSummary({
         )}
       </div>
       <dl className="mt-3 space-y-2.5 text-sm">
-        <div>
-          <dt className="text-muted-foreground">Applicant</dt>
-          <dd className="mt-1 font-medium text-foreground">{applicantName}</dd>
-        </div>
+        {isStandalone ? (
+          <div>
+            <dt className="text-muted-foreground">Type</dt>
+            <dd className="mt-1 font-medium text-foreground">
+              Standalone (no application response)
+            </dd>
+          </div>
+        ) : (
+          <div>
+            <dt className="text-muted-foreground">Applicant</dt>
+            <dd className="mt-1 font-medium text-foreground">
+              {applicantName}
+            </dd>
+          </div>
+        )}
         <div>
           <dt className="text-muted-foreground">Repository</dt>
           <dd className="mt-1 flex min-w-0 items-center gap-2">
@@ -114,10 +146,12 @@ export default function AutograderSubmissionSummary({
           <dt className="text-muted-foreground">Job ID</dt>
           <dd className="mt-1 break-all font-mono text-xs">{jobId}</dd>
         </div>
-        <div>
-          <dt className="text-muted-foreground">Response ID</dt>
-          <dd className="mt-1 break-all font-mono text-xs">{responseId}</dd>
-        </div>
+        {!isStandalone && (
+          <div>
+            <dt className="text-muted-foreground">Response ID</dt>
+            <dd className="mt-1 break-all font-mono text-xs">{responseId}</dd>
+          </div>
+        )}
       </dl>
     </section>
   );
