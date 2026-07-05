@@ -24,7 +24,18 @@ app.use(
   }),
 );
 
-app.use(bodyParser.json());
+// Firebase Functions v2 (Cloud Run) reads the request stream to completion
+// before invoking this app, populating `req.rawBody` and `req.body`. Running
+// bodyParser again would re-read the already-consumed stream and throw
+// "stream is not readable". Only parse when Firebase hasn't already (e.g. local
+// standalone Express, where `rawBody` is undefined).
+app.use((req, res, next) => {
+  if ((req as express.Request & { rawBody?: Buffer }).rawBody === undefined) {
+    bodyParser.json()(req, res, next);
+  } else {
+    next();
+  }
+});
 app.use(appcheck);
 
 app.use("/auth", authRouter);
