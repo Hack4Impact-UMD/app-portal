@@ -2,7 +2,8 @@
   "name": "functions",
   "version": "0.1.0",
   "files": [
-    "lib"
+    "lib",
+    ".env"
   ],
   "scripts": {
     "build": "node build.mjs",
