@@ -38,6 +38,9 @@ const ReviewerApplicationsDashboard = lazy(
   () => import("./pages/reviewer/ReviewerApplicationsDashboard"),
 );
 const AdminHome = lazy(() => import("./pages/super-reviewer/AdminHome"));
+const AutograderDashboard = lazy(
+  () => import("./pages/super-reviewer/AutograderDashboard"),
+);
 const SuperReviewerDashboardShell = lazy(
   () => import("./pages/super-reviewer/dashboards/SuperReviewerDashboardShell"),
 );
@@ -226,6 +229,20 @@ function App() {
                       </RequireAuth>
                     }
                   ></Route>
+
+                  <Route
+                    path="autograder"
+                    element={
+                      <RequireAuth
+                        requireRoles={[
+                          PermissionRole.SuperReviewer,
+                          PermissionRole.Board,
+                        ]}
+                      >
+                        <AutograderDashboard />
+                      </RequireAuth>
+                    }
+                  />
 
                   <Route
                     path="dor/"

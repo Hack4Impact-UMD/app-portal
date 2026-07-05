@@ -1,4 +1,8 @@
-import { GradingJobStatus, PermissionRole } from "@app-portal/shared/constants";
+import {
+  GradingJobStatus,
+  PermissionRole,
+  STANDALONE_GRADING_RESPONSE_ID,
+} from "@app-portal/shared/constants";
 import { CircleAlert } from "lucide-react";
 import { useParams } from "react-router-dom";
 
@@ -51,6 +55,7 @@ export default function AutograderRunPage() {
   }
 
   const maxScore = getGradingJobMaxScore(job);
+  const isStandalone = job.responseId === STANDALONE_GRADING_RESPONSE_ID;
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-muted px-8 pb-12 pt-6">
@@ -89,11 +94,15 @@ export default function AutograderRunPage() {
               jobId={job.id}
               responseId={job.responseId}
               status={job.status}
+              isStandalone={isStandalone}
+              testRepo={internalJob?.testRepo}
             />
-            <AutograderJobHistoryList
-              responseId={job.responseId}
-              currentJobId={job.id}
-            />
+            {!isStandalone && (
+              <AutograderJobHistoryList
+                responseId={job.responseId}
+                currentJobId={job.id}
+              />
+            )}
           </aside>
 
           <div className="flex flex-col gap-6">

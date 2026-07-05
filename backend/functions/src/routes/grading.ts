@@ -2,12 +2,17 @@ import {
   FirestoreCollection,
   GradingJobStatus,
   PermissionRole,
+  STANDALONE_GRADING_RESPONSE_ID,
 } from "@app-portal/shared/constants";
 import type { GradingJobDataInternal } from "@app-portal/shared/types";
-import { submitGradingJobSchema } from "@app-portal/shared/types";
+import {
+  submitGradingJobSchema,
+  submitStandaloneGradingJobSchema,
+} from "@app-portal/shared/types";
 import axios from "axios";
 import type { Response, Request } from "express";
 import { Router } from "express";
+import type { CollectionReference } from "firebase-admin/firestore";
 import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { v4 as uuidv4 } from "uuid";
@@ -31,6 +36,56 @@ import type { GradingJobPublic } from "../models/autograder";
 import type { GradingTaskPayload } from "../utils/cloudTasks";
 import { publishGradingTask } from "../utils/cloudTasks";
 import { appCollection } from "../utils/firestore";
+
+// Publishes a grading task to the Professor grader. In the emulator this POSTs
+// directly to the local grader and returns immediately (fire-and-forget); in
+// production it enqueues a Cloud Task. On publish failure the job is marked
+// Failed so it doesn't stay stuck in Queued.
+async function publishGradingJob(
+  gradingJobsPublicCollection: CollectionReference<GradingJobPublic>,
+  payload: GradingTaskPayload,
+) {
+  const { jobId } = payload;
+
+  if (process.env.FUNCTIONS_EMULATOR === "true") {
+    // no await here bc we want to exit early, leave the job running
+    axios
+      .post(process.env.PROFESSOR_URL ?? "http://localhost:8000/grade", payload)
+      .then(() => {
+        logger.info(
+          `Successfully made grading request locally for job ${jobId}`,
+        );
+      })
+      .catch(async (err) => {
+        logger.error(
+          `Failed to make grading request locally for job ${jobId}: ${err}`,
+        );
+        // mark the job failed so it doesn't stay stuck in Queued
+        await gradingJobsPublicCollection
+          .doc(jobId)
+          .update({
+            status: GradingJobStatus.Failed,
+            updated: Timestamp.now(),
+          })
+          .catch((updateErr) => {
+            logger.error(`Failed to mark job ${jobId} as failed: ${updateErr}`);
+          });
+      });
+    return;
+  }
+
+  try {
+    const taskName = await publishGradingTask(payload);
+    logger.info(`Successfully published task ${taskName} for job ${jobId}`);
+  } catch (err) {
+    // mark the job failed so it doesn't stay stuck in Queued
+    await gradingJobsPublicCollection.doc(jobId).update({
+      status: GradingJobStatus.Failed,
+      updated: Timestamp.now(),
+    });
+    throw err;
+  }
+}
 
 const router = Router();
 
@@ -230,52 +285,7 @@ router.post(
         testRepo,
       };
 
-      if (process.env.FUNCTIONS_EMULATOR === "true") {
-        // no await here bc we want to exit early, leave the job running
-        axios
-          .post(
-            process.env.PROFESSOR_URL ?? "http://localhost:8000/grade",
-            payload,
-          )
-          .then(() => {
-            logger.info(
-              `Successfully made grading request locally for job ${jobId}`,
-            );
-          })
-          .catch(async (err) => {
-            logger.error(
-              `Failed to make grading request locally for job ${jobId}: ${err}`,
-            );
-            // mark the job failed so it doesn't stay stuck in Queued and count
-            // against the response's rate limit on subsequent retries
-            await gradingJobsPublicCollection
-              .doc(jobId)
-              .update({
-                status: GradingJobStatus.Failed,
-                updated: Timestamp.now(),
-              })
-              .catch((updateErr) => {
-                logger.error(
-                  `Failed to mark job ${jobId} as failed: ${updateErr}`,
-                );
-              });
-          });
-      } else {
-        let taskName: string;
-        try {
-          taskName = await publishGradingTask(payload);
-        } catch (err) {
-          // mark the job failed so it doesn't stay stuck in Queued and count
-          // against the response's rate limit on subsequent retries
-          await gradingJobsPublicCollection.doc(jobId).update({
-            status: GradingJobStatus.Failed,
-            updated: Timestamp.now(),
-          });
-          throw err;
-        }
-
-        logger.info(`Successfully published task ${taskName} for job ${jobId}`);
-      }
+      await publishGradingJob(gradingJobsPublicCollection, payload);
 
       return res.status(200).json({
         status: "success",
@@ -285,6 +295,90 @@ router.post(
     } catch (error) {
       logger.error("Failed to submit grading job:", error);
       return res.status(500).send("Failed to submit grading job");
+    }
+  },
+);
+
+// Submit a standalone grading job: grade an arbitrary assessment repo against a
+// test repo, with no application response attached. Admin-only. Standalone jobs
+// share a sentinel responseId, so the response-scoped rate limiter and
+// duplicate check don't apply and aren't run here.
+router.post(
+  "/submit-standalone",
+  [
+    isAuthenticated,
+    hasRoles([PermissionRole.Board, PermissionRole.SuperReviewer]),
+    validateSchema(submitStandaloneGradingJobSchema),
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const { repoURL, testRepo } = req.body;
+      const userId = req.token?.uid;
+      const user = await getUserById(userId ?? "");
+
+      if (!userId || !user) {
+        return res.status(401).send("Unauthorized");
+      }
+
+      logger.info(
+        `Received standalone autograder request for repo ${repoURL} against tests ${testRepo}`,
+      );
+
+      const gradingJobsPublicCollection = appCollection(
+        FirestoreCollection.GradingJobsPublic,
+      );
+      const gradingJobsInternalCollection = appCollection(
+        FirestoreCollection.GradingJobsInternal,
+      );
+
+      const jobId = uuidv4();
+      const now = Timestamp.now();
+
+      const publicJob: GradingJobPublic = {
+        id: jobId,
+        responseId: STANDALONE_GRADING_RESPONSE_ID,
+        repoURL,
+        status: GradingJobStatus.Queued,
+        score: 0,
+        totalTests: 0,
+        completedTests: 0,
+        started: now,
+        updated: now,
+        suiteResults: {},
+        publicTests: {},
+      };
+
+      const internalJob: GradingJobDataInternal = {
+        id: jobId,
+        testRepo,
+        buildLog: "",
+        installLog: "",
+        playwrightLog: "",
+        tests: {},
+      };
+
+      await gradingJobsPublicCollection.doc(jobId).set(publicJob);
+      await gradingJobsInternalCollection.doc(jobId).set(internalJob);
+
+      logger.info(`Created Firestore documents for standalone job ${jobId}`);
+
+      const payload: GradingTaskPayload = {
+        jobId,
+        responseId: STANDALONE_GRADING_RESPONSE_ID,
+        repoURL,
+        testRepo,
+      };
+
+      await publishGradingJob(gradingJobsPublicCollection, payload);
+
+      return res.status(200).json({
+        status: "success",
+        message: "Standalone grading job queued successfully",
+        jobId,
+      });
+    } catch (error) {
+      logger.error("Failed to submit standalone grading job:", error);
+      return res.status(500).send("Failed to submit standalone grading job");
     }
   },
 );

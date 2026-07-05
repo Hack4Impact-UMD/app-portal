@@ -13,6 +13,30 @@ export function isTerminalGradingJobStatus(status: GradingJobStatus) {
   return gradingJobTerminalStatuses.includes(status);
 }
 
+export type GradingJobStatusBucket =
+  | "queued"
+  | "running"
+  | "completed"
+  | "failed";
+
+// Collapses the fine-grained grading statuses into the four coarse buckets used
+// by the dashboard's filter buttons. Everything between queued and terminal
+// (cloning, installing, building, serving, testing, pending) counts as running.
+export function gradingJobStatusBucket(
+  status: GradingJobStatus,
+): GradingJobStatusBucket {
+  switch (status) {
+    case GradingJobStatus.Queued:
+      return "queued";
+    case GradingJobStatus.Completed:
+      return "completed";
+    case GradingJobStatus.Failed:
+      return "failed";
+    default:
+      return "running";
+  }
+}
+
 const githubRepoUrlPattern =
   /^(https:\/\/)?github\.com\/([^/\s]+)\/([^/\s]+?)\/?$/i;
 

@@ -72,6 +72,18 @@ export const submitGradingJobSchema = GradingJobPublicBaseSchema.pick({
     .regex(githubRepoPathPattern, "Repository must be in owner/repo format"),
 });
 
+// Standalone grading job: grade an arbitrary assessment repo against a test
+// repo, with no application response attached. repoURL is the assessment repo
+// to grade; testRepo is the repo containing the tests to run against it.
+export const submitStandaloneGradingJobSchema = z.object({
+  repoURL: z
+    .string()
+    .regex(githubRepoPathPattern, "Repository must be in owner/repo format"),
+  testRepo: z
+    .string()
+    .regex(githubRepoPathPattern, "Repository must be in owner/repo format"),
+});
+
 export type TestResult = z.infer<typeof TestResultSchema>;
 export type SuiteResult = z.infer<typeof SuiteResultSchema>;
 export type Tests = z.infer<typeof TestsSchema>;

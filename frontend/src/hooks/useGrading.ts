@@ -17,7 +17,9 @@ import {
   getJobsForApplicationResponse,
   gradingJobDoc,
   gradingJobDocInternal,
+  recentGradingJobsQuery,
   submitGradingJob,
+  submitStandaloneGradingJob,
 } from "@/services/gradingService";
 import type { GradingJobPublic } from "@/types/types";
 
@@ -69,6 +71,30 @@ export function useSubmitGradingJob() {
         return;
       }
       throwErrorToast("Failed to submit grading job: " + error.message);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: [gradingJobRoot] });
+    },
+  });
+}
+
+export function useSubmitStandaloneGradingJob() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      repoURL,
+      testRepo,
+      token,
+    }: {
+      repoURL: string;
+      testRepo: string;
+      token: string;
+    }) => submitStandaloneGradingJob(repoURL, testRepo, token),
+    onError: (error) => {
+      throwErrorToast(
+        "Failed to submit standalone grading job: " + error.message,
+      );
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [gradingJobRoot] });
@@ -157,6 +183,52 @@ export function useGradingJobInternalSnapshot(
     () => createGradingJobStore(gradingJobDocInternal, jobId, enabled),
     [enabled, jobId],
   );
+
+  return useSyncExternalStore(store.subscribe, store.getSnapshot);
+}
+
+type RecentGradingJobsState = {
+  data: GradingJobPublic[] | null;
+  isPending: boolean;
+  error: Error | null;
+};
+
+function createRecentGradingJobsStore(limitN: number) {
+  let currentSnapshot: RecentGradingJobsState = {
+    data: null,
+    isPending: true,
+    error: null,
+  };
+
+  function getSnapshot() {
+    return currentSnapshot;
+  }
+
+  function subscribe(callback: () => void) {
+    return onSnapshot(
+      recentGradingJobsQuery(limitN),
+      (snapshot) => {
+        currentSnapshot = {
+          data: snapshot.docs.map((doc) => doc.data()),
+          isPending: false,
+          error: null,
+        };
+        callback();
+      },
+      (error) => {
+        currentSnapshot = { data: null, isPending: false, error };
+        callback();
+      },
+    );
+  }
+
+  return { getSnapshot, subscribe };
+}
+
+// Live-updating list of the most recent grading jobs across all responses,
+// backed by a Firestore query subscription.
+export function useRecentGradingJobs(limitN = 100) {
+  const store = useMemo(() => createRecentGradingJobsStore(limitN), [limitN]);
 
   return useSyncExternalStore(store.subscribe, store.getSnapshot);
 }
