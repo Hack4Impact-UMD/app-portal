@@ -46,7 +46,7 @@ export default function SubmitStandaloneGradingJobDialog({
       return;
     }
 
-    const assessmentPath = extractGithubRepoPath(assessmentRepo);
+    const assessmentPath = extractGithubRepoPath(assessmentRepo.trim());
     if (!assessmentPath) {
       throwErrorToast(
         "Enter a valid assessment repo URL, e.g. https://github.com/you/repo",
@@ -54,7 +54,7 @@ export default function SubmitStandaloneGradingJobDialog({
       return;
     }
 
-    const testPath = extractGithubRepoPath(testRepo);
+    const testPath = extractGithubRepoPath(testRepo.trim());
     if (!testPath) {
       throwErrorToast(
         "Enter a valid test repo URL, e.g. https://github.com/you/repo",

@@ -46,7 +46,6 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
   responseId,
 }) => {
   const { token } = useAuth();
-  const [lastJobId, setLastJobId] = useState<string | null>(null);
   const [repoUrl, setRepoUrl] = useState("");
   const [urlError, setUrlError] = useState<string | null>(null);
 
@@ -81,7 +80,16 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
       return;
     }
 
-    if (!token) {
+    let resolvedToken: string | undefined;
+    try {
+      resolvedToken = await token();
+    } catch (err) {
+      console.error(err);
+      throwErrorToast("Authentication token not available");
+      return;
+    }
+
+    if (!resolvedToken) {
       throwErrorToast("Authentication token not available");
       return;
     }
@@ -92,11 +100,10 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
       {
         responseId,
         repoURL: repoPath,
-        token: (await token()) ?? "",
+        token: resolvedToken,
       },
       {
         onSuccess: (jobId) => {
-          setLastJobId(jobId);
           onChange(jobId);
         },
       },
@@ -130,8 +137,8 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
             )
           ))}
 
-        {lastJobId && lastJobId !== bestJob?.id && (
-          <AutograderJobCard header="Latest Run" jobId={lastJobId} />
+        {latestJob && latestJob.id !== bestJob?.id && (
+          <AutograderJobCard header="Latest Run" jobId={latestJob.id} />
         )}
         <div className="w-full flex flex-row gap-1">
           <Input

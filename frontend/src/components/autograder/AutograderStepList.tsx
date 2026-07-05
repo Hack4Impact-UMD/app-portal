@@ -26,9 +26,12 @@ function getStepDisplayStatus(
   const stepIndex = gradingJobRunnableStatuses.indexOf(stepStatus);
 
   if (currentStatus === GradingJobStatus.Failed) {
+    // If no errorStep is recorded, fall back to marking the last step as
+    // the failure point rather than leaving every step "pending".
+    const lastStepIndex = gradingJobRunnableStatuses.length - 1;
     const errorStepIndex = errorStep
       ? gradingJobRunnableStatuses.indexOf(errorStep)
-      : -1;
+      : lastStepIndex;
 
     if (stepIndex < errorStepIndex) return "complete";
     if (stepIndex === errorStepIndex) return "failed";

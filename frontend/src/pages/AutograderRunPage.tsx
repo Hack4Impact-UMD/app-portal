@@ -39,7 +39,7 @@ export default function AutograderRunPage() {
     return <Loading />;
   }
 
-  if (error || !job || (canReadInternalJob && internalJobError)) {
+  if (error || !job) {
     return (
       <main className="flex h-screen flex-col items-center justify-center bg-muted p-8 text-center">
         <CircleAlert className="mb-4 size-12 text-destructive" />
@@ -78,6 +78,16 @@ export default function AutograderRunPage() {
             <span aria-hidden>{gradingJobEmoji[job.status]}</span>
           </div>
         </header>
+
+        {canReadInternalJob && internalJobError && (
+          <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <CircleAlert className="size-4 shrink-0" />
+            <span>
+              Failed to load internal job details. Public status, score, and
+              history below are still up to date.
+            </span>
+          </div>
+        )}
 
         <div className="grid grid-cols-[20rem_minmax(0,1fr)] gap-6">
           <aside className="sticky top-20 flex self-start flex-col gap-3">

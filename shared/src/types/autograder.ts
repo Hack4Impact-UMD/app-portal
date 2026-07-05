@@ -2,7 +2,10 @@ import { z } from "zod";
 
 import { GradingJobStatus } from "../constants/index.js";
 
-const githubRepoPathPattern = /^[^/\s]+\/[^/\s]+$/;
+// Matches a GitHub "owner/repo" path using only characters GitHub allows in
+// owner and repo names, rejecting shell metacharacters and path traversal.
+const githubRepoPathPattern =
+  /^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})\/[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})$/;
 
 export const TestResultSchema = z.object({
   suite: z.string().nonempty(),

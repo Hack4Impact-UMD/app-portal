@@ -161,7 +161,7 @@ export function useGradingJobSnapshot(jobId?: string) {
 
   const store = useMemo(
     () =>
-      createGradingJobStore(gradingJobDoc, jobId, true, (job) => {
+      createGradingJobStore(gradingJobDoc, jobId, !!jobId, (job) => {
         // Jobs are graded asynchronously with no push notification to the
         // frontend when grading finishes, so re-fetch the jobs-for-response
         // list on every update to this job to keep "best score" in sync.

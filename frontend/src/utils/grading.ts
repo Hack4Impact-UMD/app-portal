@@ -38,13 +38,14 @@ export function gradingJobStatusBucket(
 }
 
 const githubRepoUrlPattern =
-  /^(https:\/\/)?github\.com\/([^/\s]+)\/([^/\s]+?)\/?$/i;
+  /^(?:https?:\/\/)?(?:www\.)?github\.com\/([^/\s]+)\/([^/\s]+?)(?:\.git)?(?:\/.*)?$/i;
 
 // extracts the "{user}/{repo}" path from a github repo URL, or null if the
-// URL doesn't match the expected github.com repo format
+// URL doesn't match the expected github.com repo format. Tolerates http(s),
+// a "www." prefix, a trailing ".git", and extra path segments (e.g. /tree/main).
 export function extractGithubRepoPath(url: string): string | null {
   const match = githubRepoUrlPattern.exec(url.trim());
   if (!match) return null;
 
-  return `${match[2]}/${match[3]}`;
+  return `${match[1]}/${match[2]}`;
 }
