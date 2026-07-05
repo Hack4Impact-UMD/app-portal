@@ -151,6 +151,7 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
           <Button
             onClick={handleSubmit}
             disabled={
+              isPending ||
               !isTerminalGradingJobStatus(
                 latestJob?.status ?? GradingJobStatus.Completed,
               ) ||

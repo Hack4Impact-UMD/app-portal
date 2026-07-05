@@ -47,18 +47,23 @@ export default function AutograderSubmissionSummary({
       return;
     }
 
-    submitGradingJob(
-      {
-        responseId,
-        repoURL,
-        token: (await token()) ?? "",
-      },
-      {
-        onSuccess: (newJobId) => {
-          navigate(`/autograder/${newJobId}`);
+    try {
+      submitGradingJob(
+        {
+          responseId,
+          repoURL,
+          token: (await token()) ?? "",
         },
-      },
-    );
+        {
+          onSuccess: (newJobId) => {
+            navigate(`/autograder/${newJobId}`);
+          },
+        },
+      );
+    } catch (err) {
+      console.error(err);
+      throwErrorToast("Not authenticated");
+    }
   };
 
   const applicantName = applicant
