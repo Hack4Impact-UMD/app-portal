@@ -7,6 +7,7 @@ import type {
   InternalApplicationStatus,
   InterviewAssignment,
   RoleReviewRubric,
+  GradingJobDataInternal,
 } from "@app-portal/shared/types";
 import type { CollectionReference } from "firebase/firestore";
 import { collection } from "firebase/firestore";
@@ -15,6 +16,7 @@ import { db } from "@/config/firebase";
 import type {
   ApplicationForm,
   ApplicationResponse,
+  GradingJobPublic,
   UserProfile,
 } from "@/types/types";
 
@@ -30,6 +32,8 @@ type ClientCollectionData = {
   [FirestoreCollection.InterviewData]: ApplicationInterviewData;
   [FirestoreCollection.ReviewAssignments]: AppReviewAssignment;
   [FirestoreCollection.InterviewAssignments]: InterviewAssignment;
+  [FirestoreCollection.GradingJobsPublic]: GradingJobPublic;
+  [FirestoreCollection.GradingJobsInternal]: GradingJobDataInternal;
 };
 
 export function appCollection<C extends keyof ClientCollectionData>(name: C) {

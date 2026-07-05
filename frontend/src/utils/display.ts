@@ -1,5 +1,9 @@
 import type { ReviewStatus } from "@app-portal/shared/constants";
-import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
+import {
+  ApplicantRole,
+  GradingJobStatus,
+  PermissionRole,
+} from "@app-portal/shared/constants";
 
 export function displayUserRoleName(role: PermissionRole) {
   if (role === PermissionRole.SuperReviewer) return "Super Reviewer";
@@ -67,4 +71,41 @@ export function applicantRoleDarkColor(role: ApplicantRole) {
   else if (role === ApplicantRole.Engineer) return "#193347";
   else if (role === ApplicantRole.Designer) return "#4C2337";
   else return "#000000";
+}
+
+export const gradingJobStatusLabels: Record<GradingJobStatus, string> = {
+  [GradingJobStatus.Queued]: "Queued",
+  [GradingJobStatus.Pending]: "Pending",
+  [GradingJobStatus.Cloning]: "Clone repository",
+  [GradingJobStatus.Installing]: "Install dependencies",
+  [GradingJobStatus.Building]: "Build assessment",
+  [GradingJobStatus.Serving]: "Serve app",
+  [GradingJobStatus.Testing]: "Run tests",
+  [GradingJobStatus.Completed]: "Completed",
+  [GradingJobStatus.Failed]: "Failed",
+};
+
+export function displayDurationMs(durationMs: number) {
+  return `${(durationMs / 1000).toFixed(1)}s`;
+}
+
+export const gradingJobEmoji: Record<GradingJobStatus, string> = {
+  [GradingJobStatus.Queued]: "📥",
+  [GradingJobStatus.Pending]: "⏳",
+  [GradingJobStatus.Cloning]: "🌱",
+  [GradingJobStatus.Installing]: "📦",
+  [GradingJobStatus.Building]: "🏗️",
+  [GradingJobStatus.Serving]: "🚀",
+  [GradingJobStatus.Testing]: "🧪",
+  [GradingJobStatus.Completed]: "✅",
+  [GradingJobStatus.Failed]: "❌",
+};
+
+export function getGradingJobMaxScore(job: {
+  suiteResults: Record<string, { totalPoints: number }>;
+}) {
+  return Object.values(job.suiteResults).reduce(
+    (total, suite) => total + suite.totalPoints,
+    0,
+  );
 }

@@ -38,6 +38,11 @@ service cloud.firestore {
     function isActive() {
       return !getCurrentUser().data.get('inactive', false);
     }
+
+    function ownsResponse(responseId) {
+      let responseDocPath = /databases/$(database)/documents/application-responses/$(responseId);
+      return exists(responseDocPath) && hasID(get(responseDocPath).data.userId);
+    }
     
     match /users/{user_id} {
       // user documents can be read only by the user they represent or reviewers
@@ -109,6 +114,20 @@ service cloud.firestore {
     match /decision-status/{response_id_user_id} {
       allow read: if isSuperReviewer() || hasID(resource.data.userId);
       allow write: if isSuperReviewer();
+    }
+
+    match /grading-jobs-public/{job_id} {
+      allow read: if isReviewer() || (isApplicant() && ownsResponse(resource.data.responseId));
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    match /grading-jobs-internal/{job_id} {
+      allow read: if isReviewer();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
     
     // by default, all documents should be inaccessible to reads and writes

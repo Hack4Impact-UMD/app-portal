@@ -15,6 +15,7 @@ import { queryClient } from "./config/query";
 import LandingPage from "./pages/LandingPage";
 
 const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
+const AutograderRunPage = lazy(() => import("./pages/AutograderRunPage"));
 const StatusPage = lazy(() => import("./components/status/StatusPage"));
 const DecisionPage = lazy(() => import("./components/status/DecisionPage"));
 const SignUp = lazy(() => import("./pages/sign-up/SignUp"));
@@ -138,6 +139,15 @@ function App() {
                   element={
                     <RequireAuth>
                       <ProfilePage />
+                    </RequireAuth>
+                  }
+                />
+
+                <Route
+                  path="/autograder/:jobId"
+                  element={
+                    <RequireAuth>
+                      <AutograderRunPage />
                     </RequireAuth>
                   }
                 />

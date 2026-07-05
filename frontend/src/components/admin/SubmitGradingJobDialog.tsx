@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
@@ -16,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubmitGradingJob } from "@/hooks/useGrading";
+import { extractGithubRepoPath } from "@/utils/grading";
 
 export default function SubmitGradingJobDialog({
   open,
@@ -26,6 +28,7 @@ export default function SubmitGradingJobDialog({
 }) {
   const { mutate: submitGradingJob, isPending } = useSubmitGradingJob();
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [responseId, setResponseId] = useState("");
   const [repoURL, setRepoURL] = useState("");
 
@@ -50,10 +53,18 @@ export default function SubmitGradingJobDialog({
       return;
     }
 
+    const repoPath = extractGithubRepoPath(normalizedRepoUrl);
+    if (!repoPath) {
+      throwErrorToast(
+        "Enter a valid GitHub URL, e.g. https://github.com/you/repo",
+      );
+      return;
+    }
+
     submitGradingJob(
       {
         responseId: normalizedResponseId,
-        repoURL: normalizedRepoUrl,
+        repoURL: repoPath,
         token: (await token()) ?? "",
       },
       {
@@ -62,9 +73,7 @@ export default function SubmitGradingJobDialog({
             `Grading job queued successfully! Job ID: ${jobId}`,
           );
           onOpenChange(false);
-        },
-        onError: (error) => {
-          throwErrorToast("Failed to submit grading job: " + error.message);
+          navigate(`/autograder/${jobId}`);
         },
       },
     );

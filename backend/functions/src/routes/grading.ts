@@ -25,6 +25,7 @@ import {
   RATE_LIMITER_WINDOW_MS,
 } from "../middleware/rateLimiter";
 import { validateSchema } from "../middleware/validation";
+import { ApplicationFormSchema } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { GradingJobPublic } from "../models/autograder";
 import type { GradingTaskPayload } from "../utils/cloudTasks";
@@ -66,6 +67,9 @@ router.post(
       const gradingJobsInternalCollection = appCollection(
         FirestoreCollection.GradingJobsInternal,
       );
+      const formsCollection = appCollection(
+        FirestoreCollection.ApplicationForms,
+      );
 
       const responseDoc = await applicationResponseCollection
         .doc(responseId)
@@ -83,6 +87,27 @@ router.post(
         );
         return res.status(404).send("Application response not found");
       }
+
+      const formDoc = await formsCollection
+        .doc(responseData.applicationFormId)
+        .get();
+
+      if (!formDoc.exists) {
+        logger.warn(`Form ${responseData.applicationFormId} not found`);
+        return res.status(404).send("Form not found");
+      }
+
+      const formResult = ApplicationFormSchema.safeParse(formDoc.data());
+
+      if (!formResult.success) {
+        logger.error(
+          `Invalid form ${responseData.applicationFormId} while submitting grading job`,
+          formResult.error,
+        );
+        return res.status(500).send("Invalid application form data");
+      }
+
+      const form = formResult.data;
 
       const isOwner = responseData.userId === userId;
       const isAdmin = [
@@ -103,7 +128,14 @@ router.post(
 
       const jobId = uuidv4();
       const now = Timestamp.now();
-      const testRepo = "https://github.com/Hack4Impact-UMD/FAKE_REPO"; // TODO: replace with real repo
+      const testRepo = form.assessmentTestRepoPath;
+
+      if (!testRepo) {
+        logger.warn(`Form ${form.id} is not configured for autograding`);
+        return res
+          .status(400)
+          .send("Application form is not configured for autograding");
+      }
 
       // NOTE: cloud tasks publishing is outside this transaction right now, so docs may be created and left even if publish fails
       const txResult = await db.runTransaction(async (transaction) => {

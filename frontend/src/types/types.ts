@@ -3,6 +3,7 @@ import type {
   ApplicationFormBase,
   ApplicationResponseBase,
   BoardUserProfileBase,
+  GradingJobPublicBase,
   ReviewerUserProfileBase,
   SuperReviewerUserProfileBase,
 } from "@app-portal/shared/types";
@@ -41,6 +42,12 @@ export interface ApplicationResponse extends ApplicationResponseBase {
 
 export interface ApplicationForm extends ApplicationFormBase {
   dueDate: Timestamp;
+}
+
+export interface GradingJobPublic extends GradingJobPublicBase {
+  started: Timestamp;
+  completed?: Timestamp;
+  updated: Timestamp;
 }
 
 export type CsvRow = Record<

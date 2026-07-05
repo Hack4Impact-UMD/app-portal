@@ -3,6 +3,7 @@
     "target": "ES2022",
     "module": "preserve",
     "moduleResolution": "bundler",
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

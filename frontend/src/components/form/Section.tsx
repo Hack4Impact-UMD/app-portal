@@ -64,7 +64,7 @@ const Section: React.FC<SectionProps> = ({
         <FormMarkdown>{section.description}</FormMarkdown>
       </div>
       {section.questions.map((question) => (
-        <div key={question.questionId}>
+        <div key={question.questionId + question.questionType}>
           <QuestionItem
             question={question}
             response={responseMap.get(question.questionId) ?? ""}

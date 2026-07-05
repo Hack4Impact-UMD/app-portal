@@ -12,7 +12,7 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b",
     "lint": "oxlint src",
     "lint:ci": "oxlint src --format=github",
     "lint:fix": "oxlint src --fix",

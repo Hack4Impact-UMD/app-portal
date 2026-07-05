@@ -10,7 +10,7 @@
         },
         {
           "fieldPath": "updated",
-          "order": "ASCENDING"
+          "order": "DESCENDING"
         }
       ]
     },
@@ -24,7 +24,7 @@
         },
         {
           "fieldPath": "started",
-          "order": "ASCENDING"
+          "order": "DESCENDING"
         }
       ]
     }
