@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { DataTable } from "@/components/DataTable";
 // import { RoleSelect } from "./RoleSelect";
 import { ExportButton } from "@/components/ExportButton";
+import Spinner from "@/components/Spinner";
 import SortableHeader from "@/components/tables/SortableHeader";
 import { Button } from "@/components/ui/button";
 import {
@@ -223,7 +224,12 @@ export default function InterviewersTable({
     error,
   } = useRows(interviewers, interviewData, assignments);
 
-  if (isPending) return <p>Loading...</p>;
+  if (isPending)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
   if (error) return <p>Something went wrong: {error.message}</p>;
 
   return (

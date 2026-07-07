@@ -21,6 +21,7 @@ import { DataTable } from "@/components/DataTable";
 import { underReviewRowsQueryRoot } from "@/components/dor/UnderReviewDashboard/useRows";
 import { ExportRoleDialogButton } from "@/components/ExportRoleDialogButton";
 import RolePill from "@/components/role-pill/RolePill";
+import Spinner from "@/components/Spinner";
 import SortableHeader from "@/components/tables/SortableHeader";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
@@ -447,7 +448,12 @@ export default function QualifiedApplicationsTable({
     }
   }, [rows, statusFilter]);
 
-  if (isPending) return <p>Loading...</p>;
+  if (isPending)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
   if (error) return <p>Something went wrong: {error.message}</p>;
 
   return (

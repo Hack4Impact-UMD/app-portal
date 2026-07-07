@@ -8,6 +8,7 @@ import {
 import { useMemo, useState } from "react";
 
 import { DataTable } from "@/components/DataTable";
+import Spinner from "@/components/Spinner";
 import SortableHeader from "@/components/tables/SortableHeader";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
@@ -145,7 +146,12 @@ export function BoardMembersTable({
 
   const { data: rows, isPending, error } = useRows(boardMembers);
 
-  if (isPending) return <p>Loading...</p>;
+  if (isPending)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
   if (error) return <p>Something went wrong: {error.message}</p>;
 
   return (
