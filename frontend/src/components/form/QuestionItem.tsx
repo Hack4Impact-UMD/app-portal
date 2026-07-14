@@ -219,10 +219,26 @@ const areEqual = (
     prevProps.errorMessage !== nextProps.errorMessage ||
     prevProps.question.questionId !== nextProps.question.questionId ||
     prevProps.question.questionType !== nextProps.question.questionType ||
+    prevProps.question.questionText !== nextProps.question.questionText ||
+    prevProps.question.secondaryText !== nextProps.question.secondaryText ||
+    prevProps.question.optional !== nextProps.question.optional ||
     prevProps.onChangeResponse !== nextProps.onChangeResponse ||
     prevProps.onRoleSelect !== nextProps.onRoleSelect
   ) {
     return false;
+  }
+
+  if (
+    (prevProps.question.questionType === QuestionType.ShortAnswer ||
+      prevProps.question.questionType === QuestionType.LongAnswer) &&
+    (nextProps.question.questionType === QuestionType.ShortAnswer ||
+      nextProps.question.questionType === QuestionType.LongAnswer)
+  ) {
+    if (
+      prevProps.question.placeholderText !== nextProps.question.placeholderText
+    ) {
+      return false;
+    }
   }
 
   if (prevProps.disabledRoles.length !== nextProps.disabledRoles.length) {

@@ -64,18 +64,17 @@ const Section: React.FC<SectionProps> = ({
         <FormMarkdown>{section.description}</FormMarkdown>
       </div>
       {section.questions.map((question) => (
-        <div key={question.questionId + question.questionType}>
-          <QuestionItem
-            question={question}
-            response={responseMap.get(question.questionId) ?? ""}
-            errorMessage={errorMap.get(question.questionId)}
-            disabled={disabled}
-            responseId={responseId}
-            disabledRoles={disabledRoles}
-            onChangeResponse={handleChangeResponse}
-            onRoleSelect={onRoleSelect}
-          />
-        </div>
+        <QuestionItem
+          key={question.questionId}
+          question={question}
+          response={responseMap.get(question.questionId) ?? ""}
+          errorMessage={errorMap.get(question.questionId)}
+          disabled={disabled}
+          responseId={responseId}
+          disabledRoles={disabledRoles}
+          onChangeResponse={handleChangeResponse}
+          onRoleSelect={onRoleSelect}
+        />
       ))}
     </div>
   );
