@@ -40,17 +40,21 @@ function groupSuiteResults(
   suiteResults: SuiteResults,
   publicTests: Tests,
 ): SuiteTestLogs[] {
-  return Object.entries(suiteResults).map(([suiteName, result]) => ({
-    suiteName,
-    result,
-    tests: getPublicTestLogs(publicTests, suiteName),
-  }));
+  return Object.entries(suiteResults)
+    .map(([suiteName, result]) => ({
+      suiteName,
+      result,
+      tests: getPublicTestLogs(publicTests, suiteName),
+    }))
+    .sort((a, b) => a.suiteName.localeCompare(b.suiteName));
 }
 
 function SuiteLogDropdown({ suite }: { suite: SuiteTestLogs }) {
   const passed = getSuitePassed(suite);
   const pending = getSuitePending(suite);
-  const tests = Object.entries(suite.tests);
+  const tests = Object.entries(suite.tests).sort(([a], [b]) =>
+    a.localeCompare(b),
+  );
   const hasTestLogs = tests.length > 0;
   const suiteStatus = pending ? "Pending" : passed ? "Passed" : "Failed";
   const suiteSummary = `${suite.result.passed}/${suite.result.total} passed · ${suite.result.points}/${suite.result.totalPoints} pts · ${displayDurationMs(suite.result.durationMs)}`;
