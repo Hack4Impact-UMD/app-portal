@@ -12,6 +12,7 @@ env:
   CLOUD_TASKS_QUEUE_NAME: ${{ secrets.CLOUD_TASKS_QUEUE_NAME }}
   PROFESSOR_SERVICE_URL: ${{ secrets.PROFESSOR_SERVICE_URL }}
   QUEUE_SERVICE_ACCOUNT_EMAIL: ${{ secrets.QUEUE_SERVICE_ACCOUNT_EMAIL }}
+  GITHUB_TOKEN: ${{ secrets.GH_INVITATIONS_TOKEN }}
 jobs:
   deploy_firebase:
     name: Deploy to Firebase Project
@@ -58,6 +59,7 @@ jobs:
           CLOUD_TASKS_QUEUE_NAME=${CLOUD_TASKS_QUEUE_NAME}
           PROFESSOR_SERVICE_URL=${PROFESSOR_SERVICE_URL}
           QUEUE_SERVICE_ACCOUNT_EMAIL=${QUEUE_SERVICE_ACCOUNT_EMAIL}
+          GITHUB_TOKEN=${GITHUB_TOKEN}
           EOF
 
       - name: Deploy to Firebase

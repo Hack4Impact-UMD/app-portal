@@ -12,6 +12,7 @@ import * as admin from "firebase-admin";
 import { onRequest } from "firebase-functions/v2/https";
 
 import app from "./app";
+import { acceptGithubInvitationsOnSchedule } from "./scheduled/acceptGithubInvitations";
 import { cleanupStaleJobsOnSchedule } from "./scheduled/cleanupStaleJobs";
 // import { uploadMockData } from "./utils/mockData";
 
@@ -33,4 +34,4 @@ export const api = onRequest(
   app,
 );
 
-export { cleanupStaleJobsOnSchedule };
+export { cleanupStaleJobsOnSchedule, acceptGithubInvitationsOnSchedule };
