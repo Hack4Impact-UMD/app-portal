@@ -25,11 +25,14 @@ import {
 import { h4iApplicationForm } from "@/data/h4i-application-form";
 import { useUploadApplicationForm } from "@/hooks/useApplicationForm";
 import { useAuth } from "@/hooks/useAuth";
-import { getAllForms } from "@/services/applicationFormsService";
+import { FormIdTakenError } from "@/services/applicationFormsService";
 import type { ApplicationForm } from "@/types/types";
 
 // Two weeks out, at the same time of day — just a sensible starting point
 // admins can change afterward via "Change due date".
+// Form IDs are used verbatim as Firestore document IDs.
+const FORM_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/;
+
 const defaultDueDate = () => {
   const date = new Date();
   date.setDate(date.getDate() + 14);
@@ -57,22 +60,19 @@ export default function CreatePrivateFormDialog({
       return;
     }
 
-    const tok = await token();
-    if (!tok) {
-      throwErrorToast("Not authenticated.");
+    // Matches the backend's check — the ID is used as-is for the Firestore
+    // document ID, so "/" in particular would write the form to a different
+    // path. Checked here too so the admin finds out before the round trip.
+    if (!FORM_ID_PATTERN.test(formId.trim())) {
+      throwErrorToast(
+        "Form ID must start with a letter or number and contain only letters, numbers, hyphens and underscores.",
+      );
       return;
     }
 
-    let existingForms;
-    try {
-      existingForms = await getAllForms();
-    } catch (error) {
-      console.error(error);
-      throwErrorToast("Failed to check existing form IDs. Please try again.");
-      return;
-    }
-    if (existingForms.some((form) => form.id === formId.trim())) {
-      throwErrorToast("Form ID already exists");
+    const tok = await token();
+    if (!tok) {
+      throwErrorToast("Not authenticated.");
       return;
     }
 
@@ -88,7 +88,9 @@ export default function CreatePrivateFormDialog({
     };
 
     uploadForm(
-      { form: newForm, token: tok },
+      // createOnly so a taken ID is rejected by the backend rather than
+      // silently overwriting the existing form with that ID.
+      { form: newForm, token: tok, createOnly: true },
       {
         onSuccess: () => {
           throwSuccessToast(
@@ -100,7 +102,11 @@ export default function CreatePrivateFormDialog({
           onOpenChange(false);
         },
         onError: (error) => {
-          throwErrorToast("An error occurred while creating the form.");
+          throwErrorToast(
+            error instanceof FormIdTakenError
+              ? "Form ID already exists"
+              : "An error occurred while creating the form.",
+          );
           console.error(error);
         },
       },

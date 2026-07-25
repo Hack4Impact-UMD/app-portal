@@ -39,6 +39,12 @@ import { appCollection } from "../utils/firestore";
 
 const router = Router();
 
+// gRPC status code Firestore returns when create() hits an existing document.
+const ALREADY_EXISTS = 6;
+
+// Form IDs are used verbatim as Firestore document IDs.
+const FORM_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/;
+
 interface QuestionMetadata {
   optional: boolean;
   minimumWordCount?: number;
@@ -387,6 +393,24 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       const formData = req.body as ApplicationForm;
+      // This endpoint doubles as the form builder's save, so it upserts by
+      // default. Callers creating a brand new form pass createOnly=true to get
+      // an atomic "fail if this ID is taken" instead, which avoids the race in
+      // checking for a duplicate ID client-side before posting.
+      const createOnly = req.query.createOnly === "true";
+
+      // The ID becomes a Firestore document ID, so a value containing "/"
+      // would be parsed as extra path segments and write the form somewhere
+      // else entirely.
+      if (!FORM_ID_PATTERN.test(formData.id ?? "")) {
+        logger.warn(`Rejected form ID: ${formData.id}`);
+        return res
+          .status(400)
+          .send(
+            "Form ID must start with a letter or number and contain only letters, numbers, hyphens and underscores",
+          );
+      }
+
       const formsCollection = appCollection(
         FirestoreCollection.ApplicationForms,
       );
@@ -395,6 +419,12 @@ router.post(
       );
 
       const existingFormDoc = await formsCollection.doc(formData.id).get();
+
+      if (createOnly && existingFormDoc.exists) {
+        logger.warn(`Form ${formData.id} already exists`);
+        return res.status(409).send("A form with this ID already exists");
+      }
+
       const existingResponses =
         (
           await responsesCollection
@@ -465,7 +495,21 @@ router.post(
         dueDate: new Timestamp(dueDate.seconds, dueDate.nanoseconds),
       };
 
-      await formsCollection.doc(form.id).set(form);
+      if (createOnly) {
+        // create() fails with ALREADY_EXISTS if another request won the race
+        // between the check above and this write.
+        try {
+          await formsCollection.doc(form.id).create(form);
+        } catch (error) {
+          if ((error as { code?: number }).code === ALREADY_EXISTS) {
+            logger.warn(`Form ${form.id} already exists`);
+            return res.status(409).send("A form with this ID already exists");
+          }
+          throw error;
+        }
+      } else {
+        await formsCollection.doc(form.id).set(form);
+      }
       logger.info(`Created application form with ID: ${form.id}`);
 
       return res.status(201).json({ status: "success", formId: form.id });

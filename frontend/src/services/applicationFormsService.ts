@@ -53,23 +53,43 @@ export async function getAllForms(): Promise<ApplicationForm[]> {
   return forms;
 }
 
+/**
+ * Thrown when there is no active form this caller can see. Callers should
+ * check `instanceof NoActiveFormError` rather than matching on the message.
+ */
+export class NoActiveFormError extends Error {
+  constructor() {
+    super("No active form!");
+    this.name = "NoActiveFormError";
+  }
+}
+
 export async function getActiveForm(): Promise<ApplicationForm> {
   const forms = appCollection(FirestoreCollection.ApplicationForms);
   const q = query(forms, where("isActive", "==", true));
 
+  let docs;
   try {
-    const docs = (await getDocs(q)).docs.map((d) => d.data());
-    if (docs.length > 0) return docs[0];
-    throw new Error("No active form!");
+    docs = (await getDocs(q)).docs.map((d) => d.data());
   } catch (err) {
     // The active form may be a private one this caller isn't invited to,
     // which Firestore rules reject as permission-denied for the whole
-    // query. Treat that the same as there being no active form to show.
+    // query. Treat that the same as there being no active form to show —
+    // but log the original error, since a misconfigured ruleset, an
+    // unverified email or a missing user document land here too and would
+    // otherwise be indistinguishable from "nothing to apply to".
     if (err instanceof FirestoreError && err.code === "permission-denied") {
-      throw new Error("No active form!");
+      console.warn(
+        "Active form query was denied, treating as no active form:",
+        err,
+      );
+      throw new NoActiveFormError();
     }
     throw err;
   }
+
+  if (docs.length === 0) throw new NoActiveFormError();
+  return docs[0];
 }
 
 export async function getInvitedFormsForUser(
@@ -82,17 +102,37 @@ export async function getInvitedFormsForUser(
   return snapshot.docs.map((d) => d.data());
 }
 
+/** Thrown when creating a form whose ID is already taken. */
+export class FormIdTakenError extends Error {
+  constructor(formId: string) {
+    super(`A form with the ID "${formId}" already exists`);
+    this.name = "FormIdTakenError";
+  }
+}
+
 export async function createApplicationForm(
   form: ApplicationForm,
   token: string,
+  // The endpoint upserts by default (the form builder saves through it too).
+  // Pass createOnly for new forms so the backend rejects a taken ID
+  // atomically instead of silently overwriting an existing form.
+  { createOnly = false }: { createOnly?: boolean } = {},
 ): Promise<{ status: string; formId: string }> {
-  const res = await axios.post(API_URL + "/application/forms", form, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "X-APPCHECK": await getAppCheckToken(),
-    },
-  });
-  return res.data;
+  try {
+    const res = await axios.post(API_URL + "/application/forms", form, {
+      params: createOnly ? { createOnly: "true" } : undefined,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "X-APPCHECK": await getAppCheckToken(),
+      },
+    });
+    return res.data;
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 409) {
+      throw new FormIdTakenError(form.id);
+    }
+    throw err;
+  }
 }
 
 export async function setFormDecisionRelease(

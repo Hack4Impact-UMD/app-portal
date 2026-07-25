@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDuplicateForm } from "@/hooks/useApplicationForm";
 import { useAuth } from "@/hooks/useAuth";
+import { FormIdTakenError } from "@/services/applicationFormsService";
 import type { ApplicationForm } from "@/types/types";
 
 export default function DuplicateFormDialog({
@@ -55,7 +56,11 @@ export default function DuplicateFormDialog({
           onOpenChange(false);
         },
         onError: (error) => {
-          throwErrorToast("An error occurred while duplicating the form.");
+          throwErrorToast(
+            error instanceof FormIdTakenError
+              ? "Form ID already exists"
+              : "An error occurred while duplicating the form.",
+          );
           console.error(error);
         },
       },

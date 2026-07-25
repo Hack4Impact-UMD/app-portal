@@ -9,6 +9,7 @@ import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
 import { useActiveForm, useInvitedForms } from "@/hooks/useApplicationForm";
 import { useMyApplicationResponses } from "@/hooks/useApplicationResponses";
+import { NoActiveFormError } from "@/services/applicationFormsService";
 
 const AppOverview: React.FC = () => {
   const {
@@ -21,7 +22,7 @@ const AppOverview: React.FC = () => {
     isPending: appsLoading,
     error: appsError,
   } = useMyApplicationResponses();
-  const { data: invitedForms } = useInvitedForms();
+  const { data: invitedForms, error: invitedFormsError } = useInvitedForms();
 
   // Private forms disappear from the invite list once the user has submitted.
   const visibleInvitedForms = useMemo(
@@ -59,7 +60,7 @@ const AppOverview: React.FC = () => {
   const navigate = useNavigate();
   const [wait, setWait] = useState(false);
 
-  const noActiveForm = formError?.message === "No active form!";
+  const noActiveForm = formError instanceof NoActiveFormError;
 
   if (appsLoading || formLoading) return <Loading />;
   if (appsError)
@@ -83,6 +84,14 @@ const AppOverview: React.FC = () => {
   return (
     <div className="flex flex-col items-center">
       <div className="mt-5 max-w-5xl w-full px-5 sm:px-0">
+        {/* Without this, a failed lookup is indistinguishable from having no
+            invitations, and an invited user would just see nothing. */}
+        {invitedFormsError && (
+          <p className="mb-5 text-red-600">
+            Something went wrong while checking for private applications you
+            were invited to: {invitedFormsError.message}
+          </p>
+        )}
         {visibleInvitedForms.map((invited) => (
           <PrivateFormAlert
             key={invited.id}

@@ -6,6 +6,7 @@ import type { Request, Response, NextFunction } from "express";
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions";
 
+import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { UserProfile } from "../models/user";
 import { appCollection } from "../utils/firestore";
@@ -137,14 +138,36 @@ export function canRespondToForm() {
     const bodyFormId = (req.body as { applicationFormId?: string })
       ?.applicationFormId;
 
-    const responses = appCollection(FirestoreCollection.ApplicationResponses);
-    const existingResponse: ApplicationResponse | undefined = responseId
-      ? (await responses.doc(responseId).get()).data()
-      : undefined;
+    let existingResponse: ApplicationResponse | undefined;
+    let form: ApplicationForm | undefined;
+    let formId: string | undefined;
 
-    // No existing response yet (e.g. first save): fall back to the
-    // caller-supplied form ID since there's no canonical one to check against.
-    const formId = existingResponse?.applicationFormId ?? bodyFormId;
+    // Express 4 does not forward rejected promises from async middleware, so a
+    // Firestore failure here would hang the request instead of erroring out.
+    // Both IDs below are caller-supplied.
+    try {
+      const responses = appCollection(FirestoreCollection.ApplicationResponses);
+      existingResponse = responseId
+        ? (await responses.doc(responseId).get()).data()
+        : undefined;
+
+      // No existing response yet (e.g. first save): fall back to the
+      // caller-supplied form ID since there's no canonical one to check
+      // against.
+      formId = existingResponse?.applicationFormId ?? bodyFormId;
+
+      if (formId) {
+        const forms = appCollection(FirestoreCollection.ApplicationForms);
+        form = (await forms.doc(formId).get()).data();
+      }
+    } catch (error) {
+      logger.error(
+        "canRespondToForm middleware: Firestore lookup failed",
+        error,
+      );
+      res.status(500).send("Internal server error.");
+      return;
+    }
 
     if (existingResponse && bodyFormId && bodyFormId !== formId) {
       logger.warn(
@@ -155,10 +178,11 @@ export function canRespondToForm() {
     }
 
     if (formId) {
-      const forms = appCollection(FirestoreCollection.ApplicationForms);
-      const form = (await forms.doc(formId).get()).data();
-
-      if (user.role === PermissionRole.Applicant && !form?.isPrivate) {
+      // A form ID that resolves to nothing is not a public form — without the
+      // existence check `!form?.isPrivate` would wave through any applicant
+      // pointing at a form that doesn't exist. Mirrors the `exists()` guard in
+      // the Firestore rules.
+      if (form && user.role === PermissionRole.Applicant && !form.isPrivate) {
         next();
         return;
       }

@@ -224,7 +224,7 @@ export default function AdminHome() {
                         >
                           Change due date
                         </DropdownMenuItem>
-                        {(form.isPrivate || !form.isActive) && (
+                        {isPrivateForm(form) && (
                           <DropdownMenuItem
                             className="cursor-pointer"
                             onClick={() => {

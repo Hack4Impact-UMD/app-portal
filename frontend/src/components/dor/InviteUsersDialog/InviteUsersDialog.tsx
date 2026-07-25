@@ -1,5 +1,5 @@
 import { XIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
@@ -33,17 +33,23 @@ export default function InviteUsersDialog({
   onOpenChange: (open: boolean) => void;
   form: ApplicationForm;
 }) {
-  const { data: users = [], isPending } = useUsers();
+  const { data: users = [], isPending } = useUsers(open);
   const { mutate: updateInvitedUsers, isPending: isSaving } =
     useUpdateFormInvitedUsers();
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  // Read through a ref so the effect doesn't depend on the array's identity:
+  // any refetch of the forms query hands back a new `invitedUsers` array,
+  // which would otherwise wipe out unsaved selections mid-edit.
+  const invitedUsersRef = useRef(form.invitedUsers);
+  invitedUsersRef.current = form.invitedUsers;
+
   useEffect(() => {
     if (open) {
-      setSelected(new Set(form.invitedUsers ?? []));
+      setSelected(new Set(invitedUsersRef.current ?? []));
     }
-  }, [open, form.invitedUsers]);
+  }, [open, form.id]);
 
   const usersById = useMemo(() => {
     const map = new Map<string, (typeof users)[number]>();
@@ -102,6 +108,10 @@ export default function InviteUsersDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        // The invitee list and the user list both grow with the org, so cap
+        // the dialog to the viewport and let it scroll rather than running
+        // off-screen.
+        className="max-h-[85dvh] overflow-y-auto"
         onCloseAutoFocus={(event) => {
           event.preventDefault();
           document.body.style.pointerEvents = "";
@@ -119,7 +129,7 @@ export default function InviteUsersDialog({
           <p className="text-sm font-medium">
             Invited users ({selectedUsers.length})
           </p>
-          <div className="flex flex-wrap gap-2 min-h-9 rounded-md border border-dashed border-gray-300 p-2">
+          <div className="flex flex-wrap gap-2 min-h-9 max-h-32 overflow-y-auto rounded-md border border-dashed border-gray-300 p-2">
             {selectedUsers.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 No users invited yet. Search below to add some.

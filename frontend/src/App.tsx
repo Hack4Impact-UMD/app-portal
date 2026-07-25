@@ -165,19 +165,24 @@ function App() {
                       </RequireAuth>
                     }
                   ></Route>
+                  {/* The full path lives on this layout route so both the
+                      access guard and FormProvider can read :formId and
+                      :sectionId from useParams — a parent route only sees the
+                      params its own path matched. ApplicationPage renders as
+                      the index child through FormProvider's <Outlet />. */}
                   <Route
+                    path="f/:formId/:sectionId"
                     element={
                       <div className="w-full h-full bg-muted">
                         <RequireAuth>
-                          <FormProvider />
+                          <RequireFormAccess>
+                            <FormProvider />
+                          </RequireFormAccess>
                         </RequireAuth>
                       </div>
                     }
                   >
-                    <Route
-                      path="f/:formId/:sectionId"
-                      element={<ApplicationPage />}
-                    />
+                    <Route index element={<ApplicationPage />} />
                   </Route>
                   <Route
                     path="status"
@@ -210,7 +215,9 @@ function App() {
                   <Route
                     path="success"
                     element={
-                      <RequireAuth requireRoles={[PermissionRole.Applicant]}>
+                      // Not applicant-gated: invited users of any role land
+                      // here after submitting a private form.
+                      <RequireAuth>
                         <AppSubmitted />
                       </RequireAuth>
                     }
