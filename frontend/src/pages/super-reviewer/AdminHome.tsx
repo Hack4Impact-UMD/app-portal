@@ -43,9 +43,7 @@ export default function AdminHome() {
   const navigate = useNavigate();
   const { data: forms, isPending, error } = useAllApplicationForms();
   const { user } = useAuth();
-  const { data: users } = useUsers(
-    user?.role === PermissionRole.SuperReviewer,
-  );
+  const { data: users } = useUsers(user?.role === PermissionRole.SuperReviewer);
   const [selectedForm, setSelectedForm] = useState<ApplicationForm>();
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
   const [showDueDateDialog, setShowDueDateDialog] = useState(false);
@@ -162,7 +160,8 @@ export default function AdminHome() {
                       <TooltipContent className="max-w-64">
                         {user.role !== PermissionRole.SuperReviewer ? (
                           `${form.invitedUsers?.length ?? 0} user(s) invited`
-                        ) : form.invitedUsers && form.invitedUsers.length > 0 ? (
+                        ) : form.invitedUsers &&
+                          form.invitedUsers.length > 0 ? (
                           <ul>
                             {form.invitedUsers.map((id) => (
                               <li key={id}>{userNameById.get(id) ?? id}</li>

@@ -133,8 +133,7 @@ export function canRespondToForm() {
       return;
     }
 
-    const responseId =
-      req.params.respId ?? (req.body as { id?: string })?.id;
+    const responseId = req.params.respId ?? (req.body as { id?: string })?.id;
     const bodyFormId = (req.body as { applicationFormId?: string })
       ?.applicationFormId;
 

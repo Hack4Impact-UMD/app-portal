@@ -41,7 +41,5 @@ export default function RequireFormAccess({
     return children;
   }
 
-  return (
-    <Navigate to={"/login"} replace state={{ path: location.pathname }} />
-  );
+  return <Navigate to={"/login"} replace state={{ path: location.pathname }} />;
 }
