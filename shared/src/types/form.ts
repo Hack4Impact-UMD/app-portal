@@ -15,7 +15,7 @@ export const ApplicationQuestionBaseSchema = z.object({
 
 export const TextQuestionSchema = ApplicationQuestionBaseSchema.extend({
   questionType: z.enum([QuestionType.ShortAnswer, QuestionType.LongAnswer]),
-  placeholderText: z.string(),
+  placeholderText: z.string().optional(),
   minimumWordCount: z.number().optional(),
   maximumWordCount: z.number().optional(),
 });
