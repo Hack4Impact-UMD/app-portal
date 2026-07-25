@@ -11,10 +11,14 @@ import {
   getAllForms,
   getApplicationForm,
   getApplicationFormForResponseId,
+  getInvitedFormsForUser,
   createApplicationForm,
   setApplicationFormDueDate,
+  setApplicationFormInvitedUsers,
 } from "@/services/applicationFormsService";
 import type { ApplicationForm } from "@/types/types";
+
+import { useAuth } from "./useAuth";
 
 const formRoot = "form" as const;
 
@@ -39,6 +43,11 @@ export const formQueries = {
       queryFn: responseId
         ? () => getApplicationFormForResponseId(responseId)
         : skipToken,
+    }),
+  invited: (userId?: string) =>
+    queryOptions({
+      queryKey: [formRoot, "invited", userId] as const,
+      queryFn: userId ? () => getInvitedFormsForUser(userId) : skipToken,
     }),
 };
 
@@ -122,4 +131,32 @@ export function useUpdateApplicationFormDueDate() {
 
 export function useApplicationFormForResponseId(responseId?: string) {
   return useQuery(formQueries.byResponse(responseId));
+}
+
+export function useInvitedForms() {
+  const { user, isAuthed, isLoading } = useAuth();
+
+  return useQuery({
+    ...formQueries.invited(user?.id),
+    enabled: !isLoading && isAuthed,
+    initialData: [],
+  });
+}
+
+export function useUpdateFormInvitedUsers() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      formId,
+      invitedUsers,
+    }: {
+      formId: string;
+      invitedUsers: string[];
+    }) => {
+      await setApplicationFormInvitedUsers(formId, invitedUsers);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: formQueries.root });
+    },
+  });
 }

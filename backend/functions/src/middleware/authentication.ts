@@ -1,5 +1,7 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
-import type { PermissionRole } from "@app-portal/shared/constants";
+import {
+  FirestoreCollection,
+  PermissionRole,
+} from "@app-portal/shared/constants";
 import type { Request, Response, NextFunction } from "express";
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions";
@@ -102,6 +104,53 @@ export function hasRoles(roles: PermissionRole[]) {
       res.status(403).send("Unauthorized");
       return;
     }
+  };
+}
+
+// Private forms can invite users of any role, so submitting/saving a
+// response for one of those forms must be allowed for the invited user even
+// if their role isn't Applicant. Reads `applicationFormId` off the request
+// body, so this must run after body parsing (and, for /save, after route
+// param validation isn't required since the form ID is duplicated in body).
+export function canRespondToForm() {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.token) {
+      logger.warn(
+        "canRespondToForm middleware: request is not authenticated. This middleware must be used after isAuthenticated!",
+      );
+      res.status(403).send("Unauthorized");
+      return;
+    }
+
+    const user = await getUserById(req.token.uid);
+    if (!user) {
+      logger.error(
+        `canRespondToForm middleware: User with id ${req.token.uid} not found!`,
+      );
+      res.status(403).send("Unauthorized");
+      return;
+    }
+
+    if (user.role === PermissionRole.Applicant) {
+      next();
+      return;
+    }
+
+    const formId = (req.body as { applicationFormId?: string })
+      ?.applicationFormId;
+    if (formId) {
+      const forms = appCollection(FirestoreCollection.ApplicationForms);
+      const form = (await forms.doc(formId).get()).data();
+      if (form?.invitedUsers?.includes(req.token.uid)) {
+        next();
+        return;
+      }
+    }
+
+    logger.warn(
+      `canRespondToForm middleware: User ${req.token.uid} has role ${user.role} and is not invited to form ${formId}`,
+    );
+    res.status(403).send("Unauthorized");
   };
 }
 

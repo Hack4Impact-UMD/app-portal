@@ -167,7 +167,7 @@ function App() {
                   <Route
                     element={
                       <div className="w-full h-full bg-muted">
-                        <RequireAuth requireRoles={[PermissionRole.Applicant]}>
+                        <RequireAuth>
                           <FormProvider />
                         </RequireAuth>
                       </div>
@@ -181,7 +181,7 @@ function App() {
                   <Route
                     path="status"
                     element={
-                      <RequireAuth requireRoles={[PermissionRole.Applicant]}>
+                      <RequireAuth>
                         <StatusPage />
                       </RequireAuth>
                     }

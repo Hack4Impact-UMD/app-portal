@@ -64,6 +64,16 @@ export async function getActiveForm(): Promise<ApplicationForm> {
   }
 }
 
+export async function getInvitedFormsForUser(
+  userId: string,
+): Promise<ApplicationForm[]> {
+  const forms = appCollection(FirestoreCollection.ApplicationForms);
+  const q = query(forms, where("invitedUsers", "array-contains", userId));
+
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => d.data());
+}
+
 export async function createApplicationForm(
   form: ApplicationForm,
   token: string,
@@ -111,6 +121,20 @@ export async function setApplicationFormDueDate(formId: string, dueDate: Date) {
 
   const update: Partial<ApplicationForm> = {
     dueDate: Timestamp.fromDate(dueDate),
+  };
+
+  await updateDoc(docRef, update);
+}
+
+export async function setApplicationFormInvitedUsers(
+  formId: string,
+  invitedUsers: string[],
+) {
+  const forms = appCollection(FirestoreCollection.ApplicationForms);
+  const docRef = doc(forms, formId);
+
+  const update: Partial<ApplicationForm> = {
+    invitedUsers,
   };
 
   await updateDoc(docRef, update);

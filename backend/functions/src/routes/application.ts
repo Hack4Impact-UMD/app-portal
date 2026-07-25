@@ -26,7 +26,11 @@ import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 
 import { db } from "../index";
-import { hasRoles, isAuthenticated } from "../middleware/authentication";
+import {
+  canRespondToForm,
+  hasRoles,
+  isAuthenticated,
+} from "../middleware/authentication";
 import { validateSchema } from "../middleware/validation";
 import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
@@ -177,7 +181,7 @@ router.post(
   "/submit",
   [
     isAuthenticated,
-    hasRoles([PermissionRole.Applicant]),
+    canRespondToForm(),
     validateSchema(ApplicationResponseSubmitRequestSchema),
   ],
   async (req: Request, res: Response) => {
@@ -308,7 +312,7 @@ router.put(
   "/save/:respId",
   [
     isAuthenticated,
-    hasRoles([PermissionRole.Applicant]),
+    canRespondToForm(),
     validateSchema(ApplicationResponseSaveRequestSchema),
   ],
   async (req: Request, res: Response) => {

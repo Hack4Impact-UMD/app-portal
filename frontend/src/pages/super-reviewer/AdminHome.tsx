@@ -5,6 +5,7 @@ import {
   MailIcon,
   MailOpenIcon,
   UnlockIcon,
+  UserPlusIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -12,7 +13,9 @@ import { Link, useNavigate } from "react-router-dom";
 import UploadInterviewRubricDialog from "@/components/admin/UploadInterviewRubricDialog";
 import UploadReviewRubricDialog from "@/components/admin/UploadReviewRubricDialog";
 import ChangeDueDateDialog from "@/components/dor/ChangeDueDateDialog/ChangeDueDateDialog";
+import CreatePrivateFormDialog from "@/components/dor/CreatePrivateFormDialog/CreatePrivateFormDialog";
 import DuplicateFormDialog from "@/components/dor/DuplicateFormDialog/DuplicateFormDialog";
+import InviteUsersDialog from "@/components/dor/InviteUsersDialog/InviteUsersDialog";
 import Loading from "@/components/Loading";
 import CreateInternalApplicantDialog from "@/components/reviewer/CreateInternalApplicantDialog";
 import { Button } from "@/components/ui/button";
@@ -31,20 +34,32 @@ import {
 import { useAllApplicationForms } from "@/hooks/useApplicationForm";
 import { useAuth } from "@/hooks/useAuth";
 import { useUpdateApplicationFormActive } from "@/hooks/useUpdateApplicationFormActive";
+import { useUsers } from "@/hooks/useUsers";
 import type { ApplicationForm } from "@/types/types";
 import { displayUserRoleName } from "@/utils/display";
+import { isPrivateForm } from "@/utils/form";
 
 export default function AdminHome() {
   const navigate = useNavigate();
   const { data: forms, isPending, error } = useAllApplicationForms();
+  const { data: users } = useUsers();
   const { user } = useAuth();
   const [selectedForm, setSelectedForm] = useState<ApplicationForm>();
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
   const [showDueDateDialog, setShowDueDateDialog] = useState(false);
+  const [showCreatePrivateFormDialog, setShowCreatePrivateFormDialog] =
+    useState(false);
+  const [showInviteUsersDialog, setShowInviteUsersDialog] = useState(false);
   const [formsLocked, setFormsLocked] = useState(true);
 
   const { mutate: setFormActiveStatus, isPending: activePending } =
     useUpdateApplicationFormActive();
+
+  const userNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    users?.forEach((u) => map.set(u.id, `${u.firstName} ${u.lastName}`));
+    return map;
+  }, [users]);
 
   const sortedForms = useMemo(
     () =>
@@ -134,6 +149,27 @@ export default function AdminHome() {
                       timeStyle: "short",
                     }).format(form.dueDate.toDate())}
                   </span>
+                  {isPrivateForm(form) && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="bg-lightblue text-blue px-2 py-1 text-sm rounded-full cursor-default">
+                          Private &middot; {form.invitedUsers?.length ?? 0}{" "}
+                          invited
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-64">
+                        {form.invitedUsers && form.invitedUsers.length > 0 ? (
+                          <ul>
+                            {form.invitedUsers.map((id) => (
+                              <li key={id}>{userNameById.get(id) ?? id}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          "No users invited yet"
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                   <span>
                     Semester: {form.semester} (ID:{" "}
                     <span className="font-mono text-sm">{form.id}</span>)
@@ -185,6 +221,16 @@ export default function AdminHome() {
                         >
                           Change due date
                         </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={() => {
+                            setSelectedForm(form);
+                            setShowInviteUsersDialog(true);
+                          }}
+                        >
+                          <UserPlusIcon className="size-4" />
+                          Invite users
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </>
@@ -235,6 +281,23 @@ export default function AdminHome() {
               <UploadInterviewRubricDialog />
             </div>
           </div>
+          <div className="max-w-5xl w-full p-4 bg-white rounded-md">
+            <h1 className="text-xl">Private Forms</h1>
+            <p className="text-muted-foreground">
+              Create a form that stays hidden from all applicants except the
+              users you invite. Invite users to an existing private form from
+              its "..." menu above.
+            </p>
+            <div className="mt-4 flex gap-2">
+              <Button onClick={() => setShowCreatePrivateFormDialog(true)}>
+                Create Private Form
+              </Button>
+            </div>
+          </div>
+          <CreatePrivateFormDialog
+            open={showCreatePrivateFormDialog}
+            onOpenChange={setShowCreatePrivateFormDialog}
+          />
           {selectedForm && (
             <>
               <DuplicateFormDialog
@@ -246,6 +309,11 @@ export default function AdminHome() {
                 open={showDueDateDialog}
                 form={selectedForm}
                 onOpenChange={setShowDueDateDialog}
+              />
+              <InviteUsersDialog
+                open={showInviteUsersDialog}
+                form={selectedForm}
+                onOpenChange={setShowInviteUsersDialog}
               />
             </>
           )}
