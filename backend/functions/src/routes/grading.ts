@@ -30,12 +30,12 @@ import {
   RATE_LIMITER_WINDOW_MS,
 } from "../middleware/rateLimiter";
 import { validateSchema } from "../middleware/validation";
-import { ApplicationFormSchema } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { GradingJobPublic } from "../models/autograder";
 import type { GradingTaskPayload } from "../utils/cloudTasks";
 import { publishGradingTask } from "../utils/cloudTasks";
 import { appCollection } from "../utils/firestore";
+import type { ApplicationForm } from "../models/appForm";
 
 // Publishes a grading task to the Professor grader. In the emulator this POSTs
 // directly to the local grader and returns immediately (fire-and-forget); in
@@ -271,9 +271,9 @@ router.post(
           .status(429)
           .send(
             `Too many grading jobs submitted for this application. ` +
-              `You can submit another request in about ${retryInMinutes} ` +
-              `minute${retryInMinutes === 1 ? "" : "s"} ` +
-              `(after ${new Date(retryAtMs).toISOString()}).`,
+            `You can submit another request in about ${retryInMinutes} ` +
+            `minute${retryInMinutes === 1 ? "" : "s"} ` +
+            `(after ${new Date(retryAtMs).toISOString()}).`,
           );
       }
 
