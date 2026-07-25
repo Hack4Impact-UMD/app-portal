@@ -5,6 +5,7 @@ import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 import RequireAuth from "./components/auth/RequireAuth";
+import RequireFormAccess from "./components/auth/RequireFormAccess";
 import RequireNoAuth from "./components/auth/RequireNoAuth";
 import Loading from "./components/Loading";
 import AuthProvider from "./components/providers/AuthProvider";
@@ -189,16 +190,20 @@ function App() {
                   <Route
                     path="revisit/:formId"
                     element={
-                      <RequireAuth requireRoles={[PermissionRole.Applicant]}>
-                        <AppRevisitPage />
+                      <RequireAuth>
+                        <RequireFormAccess>
+                          <AppRevisitPage />
+                        </RequireFormAccess>
                       </RequireAuth>
                     }
                   />
                   <Route
                     path="submit/:formId"
                     element={
-                      <RequireAuth requireRoles={[PermissionRole.Applicant]}>
-                        <AppSubmitPage />
+                      <RequireAuth>
+                        <RequireFormAccess>
+                          <AppSubmitPage />
+                        </RequireFormAccess>
                       </RequireAuth>
                     }
                   />

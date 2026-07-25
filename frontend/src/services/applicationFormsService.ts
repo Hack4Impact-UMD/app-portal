@@ -2,6 +2,7 @@ import { FirestoreCollection } from "@app-portal/shared/constants";
 import axios from "axios";
 import {
   doc,
+  FirestoreError,
   getDoc,
   getDocs,
   query,
@@ -56,11 +57,18 @@ export async function getActiveForm(): Promise<ApplicationForm> {
   const forms = appCollection(FirestoreCollection.ApplicationForms);
   const q = query(forms, where("isActive", "==", true));
 
-  const docs = (await getDocs(q)).docs.map((d) => d.data());
-  console.log(docs);
-  if (docs.length > 0) return docs[0];
-  else {
+  try {
+    const docs = (await getDocs(q)).docs.map((d) => d.data());
+    if (docs.length > 0) return docs[0];
     throw new Error("No active form!");
+  } catch (err) {
+    // The active form may be a private one this caller isn't invited to,
+    // which Firestore rules reject as permission-denied for the whole
+    // query. Treat that the same as there being no active form to show.
+    if (err instanceof FirestoreError && err.code === "permission-denied") {
+      throw new Error("No active form!");
+    }
+    throw err;
   }
 }
 

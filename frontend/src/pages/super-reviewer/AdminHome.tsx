@@ -42,8 +42,10 @@ import { isPrivateForm } from "@/utils/form";
 export default function AdminHome() {
   const navigate = useNavigate();
   const { data: forms, isPending, error } = useAllApplicationForms();
-  const { data: users } = useUsers();
   const { user } = useAuth();
+  const { data: users } = useUsers(
+    user?.role === PermissionRole.SuperReviewer,
+  );
   const [selectedForm, setSelectedForm] = useState<ApplicationForm>();
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
   const [showDueDateDialog, setShowDueDateDialog] = useState(false);
@@ -158,7 +160,9 @@ export default function AdminHome() {
                         </span>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-64">
-                        {form.invitedUsers && form.invitedUsers.length > 0 ? (
+                        {user.role !== PermissionRole.SuperReviewer ? (
+                          `${form.invitedUsers?.length ?? 0} user(s) invited`
+                        ) : form.invitedUsers && form.invitedUsers.length > 0 ? (
                           <ul>
                             {form.invitedUsers.map((id) => (
                               <li key={id}>{userNameById.get(id) ?? id}</li>
@@ -221,16 +225,18 @@ export default function AdminHome() {
                         >
                           Change due date
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="cursor-pointer"
-                          onClick={() => {
-                            setSelectedForm(form);
-                            setShowInviteUsersDialog(true);
-                          }}
-                        >
-                          <UserPlusIcon className="size-4" />
-                          Invite users
-                        </DropdownMenuItem>
+                        {(form.isPrivate || !form.isActive) && (
+                          <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={() => {
+                              setSelectedForm(form);
+                              setShowInviteUsersDialog(true);
+                            }}
+                          >
+                            <UserPlusIcon className="size-4" />
+                            Invite users
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </>

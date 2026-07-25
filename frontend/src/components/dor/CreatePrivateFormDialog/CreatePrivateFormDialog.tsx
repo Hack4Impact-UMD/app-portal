@@ -63,7 +63,14 @@ export default function CreatePrivateFormDialog({
       return;
     }
 
-    const existingForms = await getAllForms();
+    let existingForms;
+    try {
+      existingForms = await getAllForms();
+    } catch (error) {
+      console.error(error);
+      throwErrorToast("Failed to check existing form IDs. Please try again.");
+      return;
+    }
     if (existingForms.some((form) => form.id === formId.trim())) {
       throwErrorToast("Form ID already exists");
       return;

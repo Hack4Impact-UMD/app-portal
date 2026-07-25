@@ -53,7 +53,8 @@ service cloud.firestore {
     }
 
     function canRespondToForm(formId) {
-      return isApplicant() || isInvitedToForm(formId);
+      let formDocPath = /databases/$(database)/documents/application-forms/$(formId);
+      return (isApplicant() && exists(formDocPath) && !get(formDocPath).data.get('isPrivate', false)) || isInvitedToForm(formId);
     }
 
     match /users/{user_id} {
@@ -67,7 +68,7 @@ service cloud.firestore {
     }
 
     match /application-forms/{form_id} {
-      allow read: if isAuthed();
+      allow read: if isReviewer() || isInvitedToForm(form_id) || (isApplicant() && !resource.data.get('isPrivate', false));
       allow create: if isSuperReviewer();
       allow update: if isSuperReviewer();
       allow delete: if isSuperReviewer();

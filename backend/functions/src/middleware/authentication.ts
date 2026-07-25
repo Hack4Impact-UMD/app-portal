@@ -6,6 +6,7 @@ import type { Request, Response, NextFunction } from "express";
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions";
 
+import type { ApplicationResponse } from "../models/appResponse";
 import type { UserProfile } from "../models/user";
 import { appCollection } from "../utils/firestore";
 
@@ -109,9 +110,10 @@ export function hasRoles(roles: PermissionRole[]) {
 
 // Private forms can invite users of any role, so submitting/saving a
 // response for one of those forms must be allowed for the invited user even
-// if their role isn't Applicant. Reads `applicationFormId` off the request
-// body, so this must run after body parsing (and, for /save, after route
-// param validation isn't required since the form ID is duplicated in body).
+// if their role isn't Applicant. The persisted response's applicationFormId
+// is the source of truth for which form governs this request — a caller
+// could otherwise supply an applicationFormId for a form they're invited to
+// while acting on a response that actually belongs to a different form.
 export function canRespondToForm() {
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!req.token) {
@@ -131,20 +133,44 @@ export function canRespondToForm() {
       return;
     }
 
-    if (user.role === PermissionRole.Applicant) {
-      next();
+    const responseId =
+      req.params.respId ?? (req.body as { id?: string })?.id;
+    const bodyFormId = (req.body as { applicationFormId?: string })
+      ?.applicationFormId;
+
+    const responses = appCollection(FirestoreCollection.ApplicationResponses);
+    const existingResponse: ApplicationResponse | undefined = responseId
+      ? (await responses.doc(responseId).get()).data()
+      : undefined;
+
+    // No existing response yet (e.g. first save): fall back to the
+    // caller-supplied form ID since there's no canonical one to check against.
+    const formId = existingResponse?.applicationFormId ?? bodyFormId;
+
+    if (existingResponse && bodyFormId && bodyFormId !== formId) {
+      logger.warn(
+        `canRespondToForm middleware: User ${req.token.uid} supplied form ${bodyFormId} which does not match response ${responseId}'s form ${formId}`,
+      );
+      res.status(403).send("Unauthorized");
       return;
     }
 
-    const formId = (req.body as { applicationFormId?: string })
-      ?.applicationFormId;
     if (formId) {
       const forms = appCollection(FirestoreCollection.ApplicationForms);
       const form = (await forms.doc(formId).get()).data();
+
+      if (user.role === PermissionRole.Applicant && !form?.isPrivate) {
+        next();
+        return;
+      }
+
       if (form?.invitedUsers?.includes(req.token.uid)) {
         next();
         return;
       }
+    } else if (user.role === PermissionRole.Applicant) {
+      next();
+      return;
     }
 
     logger.warn(
