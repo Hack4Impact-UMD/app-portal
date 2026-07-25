@@ -152,17 +152,17 @@ router.post(
         return res.status(404).send("Form not found");
       }
 
-      const formResult = ApplicationFormSchema.safeParse(formDoc.data());
+      //const formResult = ApplicationFormSchema.safeParse(formDoc.data());
 
-      if (!formResult.success) {
+      /*if (!formResult.success) {
         logger.error(
           `Invalid form ${responseData.applicationFormId} while submitting grading job`,
           formResult.error,
         );
         return res.status(500).send("Invalid application form data");
-      }
+      }*/
 
-      const form = formResult.data;
+      const form: ApplicationForm = formDoc.data() as ApplicationForm;
 
       const isOwner = responseData.userId === userId;
       const isAdmin = [
