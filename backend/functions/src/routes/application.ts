@@ -401,8 +401,10 @@ router.post(
 
       // The ID becomes a Firestore document ID, so a value containing "/"
       // would be parsed as extra path segments and write the form somewhere
-      // else entirely.
-      if (!FORM_ID_PATTERN.test(formData.id ?? "")) {
+      // else entirely. Only enforced when creating: this endpoint is also the
+      // form builder's save, and an existing form whose ID predates this rule
+      // must stay editable.
+      if (createOnly && !FORM_ID_PATTERN.test(formData.id ?? "")) {
         logger.warn(`Rejected form ID: ${formData.id}`);
         return res
           .status(400)

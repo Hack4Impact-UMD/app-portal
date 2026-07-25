@@ -125,7 +125,15 @@ export function canRespondToForm() {
       return;
     }
 
-    const user = await getUserById(req.token.uid);
+    let user: UserProfile | undefined;
+    try {
+      user = await getUserById(req.token.uid);
+    } catch (error) {
+      logger.error("canRespondToForm middleware: User lookup failed", error);
+      res.status(500).send("Internal server error.");
+      return;
+    }
+
     if (!user) {
       logger.error(
         `canRespondToForm middleware: User with id ${req.token.uid} not found!`,
