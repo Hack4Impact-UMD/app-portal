@@ -15,7 +15,7 @@ export const ApplicationQuestionBaseSchema = z.object({
 
 export const TextQuestionSchema = ApplicationQuestionBaseSchema.extend({
   questionType: z.enum([QuestionType.ShortAnswer, QuestionType.LongAnswer]),
-  placeholderText: z.string(),
+  placeholderText: z.string().optional(),
   minimumWordCount: z.number().optional(),
   maximumWordCount: z.number().optional(),
 });
@@ -88,6 +88,12 @@ export const ApplicationFormBaseSchema = z.object({
   scoreWeights: ScoreWeightsSchema,
   interviewScoreWeights: ScoreWeightsSchema,
   assessmentTestRepoPath: z.string().optional(),
+  // Private forms are hidden from the general applicant pool and are only
+  // surfaced to the user IDs listed in `invitedUsers`. Both fields are
+  // optional so existing form documents (which predate this feature) remain
+  // valid without a migration.
+  isPrivate: z.boolean().optional(),
+  invitedUsers: z.array(z.string()).optional(),
 });
 export type TextQuestion = z.infer<typeof TextQuestionSchema>;
 export type OptionQuestion = z.infer<typeof OptionQuestionSchema>;

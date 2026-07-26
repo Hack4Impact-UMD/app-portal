@@ -30,7 +30,7 @@ import {
   RATE_LIMITER_WINDOW_MS,
 } from "../middleware/rateLimiter";
 import { validateSchema } from "../middleware/validation";
-import { ApplicationFormSchema } from "../models/appForm";
+import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { GradingJobPublic } from "../models/autograder";
 import type { GradingTaskPayload } from "../utils/cloudTasks";

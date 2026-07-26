@@ -170,7 +170,10 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
           </Button>
         </div>
         {urlError && <p className="text-red-600 text-sm">{urlError}</p>}
-        <p className="text-muted-foreground text-sm">You can resubmit your assessment as many times as you'd like. We will only keep your highest score.</p>
+        <p className="text-muted-foreground text-sm">
+          You can resubmit your assessment as many times as you'd like. We will
+          only keep your highest score.
+        </p>
       </div>
 
       {errorMessage && <p className="text-red-600">{errorMessage}</p>}

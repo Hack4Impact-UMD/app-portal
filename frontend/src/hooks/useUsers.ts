@@ -17,8 +17,8 @@ export const userQueries = {
     }),
 };
 
-export function useUsers() {
-  return useQuery(userQueries.all);
+export function useUsers(enabled = true) {
+  return useQuery({ ...userQueries.all, enabled });
 }
 
 export function useUser(id: string) {

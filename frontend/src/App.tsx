@@ -5,6 +5,7 @@ import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 import RequireAuth from "./components/auth/RequireAuth";
+import RequireFormAccess from "./components/auth/RequireFormAccess";
 import RequireNoAuth from "./components/auth/RequireNoAuth";
 import Loading from "./components/Loading";
 import AuthProvider from "./components/providers/AuthProvider";
@@ -164,24 +165,29 @@ function App() {
                       </RequireAuth>
                     }
                   ></Route>
+                  {/* The full path lives on this layout route so both the
+                      access guard and FormProvider can read :formId and
+                      :sectionId from useParams — a parent route only sees the
+                      params its own path matched. ApplicationPage renders as
+                      the index child through FormProvider's <Outlet />. */}
                   <Route
+                    path="f/:formId/:sectionId"
                     element={
                       <div className="w-full h-full bg-muted">
-                        <RequireAuth requireRoles={[PermissionRole.Applicant]}>
-                          <FormProvider />
+                        <RequireAuth>
+                          <RequireFormAccess>
+                            <FormProvider />
+                          </RequireFormAccess>
                         </RequireAuth>
                       </div>
                     }
                   >
-                    <Route
-                      path="f/:formId/:sectionId"
-                      element={<ApplicationPage />}
-                    />
+                    <Route index element={<ApplicationPage />} />
                   </Route>
                   <Route
                     path="status"
                     element={
-                      <RequireAuth requireRoles={[PermissionRole.Applicant]}>
+                      <RequireAuth>
                         <StatusPage />
                       </RequireAuth>
                     }
@@ -189,23 +195,29 @@ function App() {
                   <Route
                     path="revisit/:formId"
                     element={
-                      <RequireAuth requireRoles={[PermissionRole.Applicant]}>
-                        <AppRevisitPage />
+                      <RequireAuth>
+                        <RequireFormAccess>
+                          <AppRevisitPage />
+                        </RequireFormAccess>
                       </RequireAuth>
                     }
                   />
                   <Route
                     path="submit/:formId"
                     element={
-                      <RequireAuth requireRoles={[PermissionRole.Applicant]}>
-                        <AppSubmitPage />
+                      <RequireAuth>
+                        <RequireFormAccess>
+                          <AppSubmitPage />
+                        </RequireFormAccess>
                       </RequireAuth>
                     }
                   />
                   <Route
                     path="success"
                     element={
-                      <RequireAuth requireRoles={[PermissionRole.Applicant]}>
+                      // Not applicant-gated: invited users of any role land
+                      // here after submitting a private form.
+                      <RequireAuth>
                         <AppSubmitted />
                       </RequireAuth>
                     }

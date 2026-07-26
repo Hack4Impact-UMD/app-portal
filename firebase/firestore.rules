@@ -43,7 +43,30 @@ service cloud.firestore {
       let responseDocPath = /databases/$(database)/documents/application-responses/$(responseId);
       return exists(responseDocPath) && hasID(get(responseDocPath).data.userId);
     }
-    
+
+    // Private forms can invite users of any role (not just applicants), so
+    // reads and response creation/updates must also allow anyone on that
+    // form's invitedUsers list, not just isApplicant(). Both fields are
+    // optional, so forms predating this feature read as public.
+    // The *FormData variants take the form's data directly; use them whenever
+    // `resource.data` is already the form, since a get() on the very document
+    // being read costs an extra billed access and eats into the 10-per-request
+    // / 20-per-query document access limits.
+    function isInvitedToFormData(form) {
+      return isAuthed() && request.auth.uid in form.get('invitedUsers', []);
+    }
+
+    function canRespondToFormData(form) {
+      return (isApplicant() && !form.get('isPrivate', false)) || isInvitedToFormData(form);
+    }
+
+    // For rules on documents other than the form itself, where the form has to
+    // be fetched. Bound once so the whole check costs a single access.
+    function canRespondToForm(formId) {
+      let form = get(/databases/$(database)/documents/application-forms/$(formId));
+      return form != null && canRespondToFormData(form.data);
+    }
+
     match /users/{user_id} {
       // user documents can be read only by the user they represent or reviewers
     	allow read: if isReviewer() || hasID(user_id);
@@ -55,7 +78,7 @@ service cloud.firestore {
     }
 
     match /application-forms/{form_id} {
-      allow read: if isAuthed();
+      allow read: if isReviewer() || canRespondToFormData(resource.data);
       allow create: if isSuperReviewer();
       allow update: if isSuperReviewer();
       allow delete: if isSuperReviewer();
@@ -65,9 +88,16 @@ service cloud.firestore {
       // NOTE: Cannot query in rules, so any reviewer can read any application.
       // Frontend queries should filter this to only assigned applications.
       allow read: if isReviewer() || hasID(resource.data.userId);
-      allow create: if isApplicant() && request.resource.data.status == 'in-progress' && isResponseOpen(request.resource.data) && hasID(request.resource.data.userId);
-      allow update: if isApplicant() && hasID(resource.data.userId) && resource.data.status == 'in-progress' && isResponseOpen(resource.data);
-      allow delete: if (isApplicant() && hasID(resource.data.userId)) || isSuperReviewer();
+      allow create: if canRespondToForm(request.resource.data.applicationFormId) && request.resource.data.status == 'in-progress' && isResponseOpen(request.resource.data) && hasID(request.resource.data.userId);
+      // A response belongs to one form and one user for its whole life. Both
+      // are pinned here because every other clause is checked against the
+      // pre-write document: without the pin, an owner could repoint an
+      // in-progress response at a private form they were never invited to (or
+      // at another user) and only the old, permitted values would be checked.
+      allow update: if canRespondToForm(resource.data.applicationFormId) && hasID(resource.data.userId) && resource.data.status == 'in-progress' && isResponseOpen(resource.data)
+        && request.resource.data.applicationFormId == resource.data.applicationFormId
+        && request.resource.data.userId == resource.data.userId;
+      allow delete: if (canRespondToForm(resource.data.applicationFormId) && hasID(resource.data.userId)) || isSuperReviewer();
     }
 
     match /review-assignments/{assignment_id} {
