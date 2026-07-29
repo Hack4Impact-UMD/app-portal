@@ -33,7 +33,8 @@ const LongFormInput: React.FC<LongFormInputProps> = ({
   placeholderText = "",
 }) => {
   const wordCount = useMemo(() => {
-    const words = value.trim().split(" ");
+    const trimmedVal = value.trim();
+    const words = trimmedVal.split(/\s+/);
     if (words.length === 1 && words[0] === "") return 0;
     return words.length;
   }, [value]);
