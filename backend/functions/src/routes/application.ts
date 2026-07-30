@@ -397,7 +397,7 @@ router.post(
       // default. Callers creating a brand new form pass createOnly=true to get
       // an atomic "fail if this ID is taken" instead, which avoids the race in
       // checking for a duplicate ID client-side before posting.
-      const createOnly = req.query.createOnly === "true";
+      const createOnly = req.query?.createOnly === "true";
 
       // The ID becomes a Firestore document ID, so a value containing "/"
       // would be parsed as extra path segments and write the form somewhere
