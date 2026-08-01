@@ -37,6 +37,13 @@ function Navbar({ className }: { className?: string }) {
               </span>
             </>
           )}
+          {import.meta.env.DEV && (
+            <>
+              <span className="font-mono px-2 text-sm bg-amber-400 rounded">
+                DEV
+              </span>
+            </>
+          )}
         </div>
         <div className="ml-auto flex flex-row items-center">
           <NavLink

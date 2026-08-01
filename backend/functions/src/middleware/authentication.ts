@@ -1,9 +1,13 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
-import type { PermissionRole } from "@app-portal/shared/constants";
+import {
+  FirestoreCollection,
+  PermissionRole,
+} from "@app-portal/shared/constants";
 import type { Request, Response, NextFunction } from "express";
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions";
 
+import type { ApplicationForm } from "../models/appForm";
+import type { ApplicationResponse } from "../models/appResponse";
 import type { UserProfile } from "../models/user";
 import { appCollection } from "../utils/firestore";
 
@@ -102,6 +106,108 @@ export function hasRoles(roles: PermissionRole[]) {
       res.status(403).send("Unauthorized");
       return;
     }
+  };
+}
+
+// Private forms can invite users of any role, so submitting/saving a
+// response for one of those forms must be allowed for the invited user even
+// if their role isn't Applicant. The persisted response's applicationFormId
+// is the source of truth for which form governs this request — a caller
+// could otherwise supply an applicationFormId for a form they're invited to
+// while acting on a response that actually belongs to a different form.
+export function canRespondToForm() {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.token) {
+      logger.warn(
+        "canRespondToForm middleware: request is not authenticated. This middleware must be used after isAuthenticated!",
+      );
+      res.status(403).send("Unauthorized");
+      return;
+    }
+
+    let user: UserProfile | undefined;
+    try {
+      user = await getUserById(req.token.uid);
+    } catch (error) {
+      logger.error("canRespondToForm middleware: User lookup failed", error);
+      res.status(500).send("Internal server error.");
+      return;
+    }
+
+    if (!user) {
+      logger.error(
+        `canRespondToForm middleware: User with id ${req.token.uid} not found!`,
+      );
+      res.status(403).send("Unauthorized");
+      return;
+    }
+
+    const responseId = req.params.respId ?? (req.body as { id?: string })?.id;
+    const bodyFormId = (req.body as { applicationFormId?: string })
+      ?.applicationFormId;
+
+    let existingResponse: ApplicationResponse | undefined;
+    let form: ApplicationForm | undefined;
+    let formId: string | undefined;
+
+    // Express 4 does not forward rejected promises from async middleware, so a
+    // Firestore failure here would hang the request instead of erroring out.
+    // Both IDs below are caller-supplied.
+    try {
+      const responses = appCollection(FirestoreCollection.ApplicationResponses);
+      existingResponse = responseId
+        ? (await responses.doc(responseId).get()).data()
+        : undefined;
+
+      // No existing response yet (e.g. first save): fall back to the
+      // caller-supplied form ID since there's no canonical one to check
+      // against.
+      formId = existingResponse?.applicationFormId ?? bodyFormId;
+
+      if (formId) {
+        const forms = appCollection(FirestoreCollection.ApplicationForms);
+        form = (await forms.doc(formId).get()).data();
+      }
+    } catch (error) {
+      logger.error(
+        "canRespondToForm middleware: Firestore lookup failed",
+        error,
+      );
+      res.status(500).send("Internal server error.");
+      return;
+    }
+
+    if (existingResponse && bodyFormId && bodyFormId !== formId) {
+      logger.warn(
+        `canRespondToForm middleware: User ${req.token.uid} supplied form ${bodyFormId} which does not match response ${responseId}'s form ${formId}`,
+      );
+      res.status(403).send("Unauthorized");
+      return;
+    }
+
+    if (formId) {
+      // A form ID that resolves to nothing is not a public form — without the
+      // existence check `!form?.isPrivate` would wave through any applicant
+      // pointing at a form that doesn't exist. Mirrors the `exists()` guard in
+      // the Firestore rules.
+      if (form && user.role === PermissionRole.Applicant && !form.isPrivate) {
+        next();
+        return;
+      }
+
+      if (form?.invitedUsers?.includes(req.token.uid)) {
+        next();
+        return;
+      }
+    } else if (user.role === PermissionRole.Applicant) {
+      next();
+      return;
+    }
+
+    logger.warn(
+      `canRespondToForm middleware: User ${req.token.uid} has role ${user.role} and is not invited to form ${formId}`,
+    );
+    res.status(403).send("Unauthorized");
   };
 }
 

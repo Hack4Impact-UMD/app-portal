@@ -11,10 +11,14 @@ import {
   getAllForms,
   getApplicationForm,
   getApplicationFormForResponseId,
+  getInvitedFormsForUser,
   createApplicationForm,
   setApplicationFormDueDate,
+  setApplicationFormInvitedUsers,
 } from "@/services/applicationFormsService";
 import type { ApplicationForm } from "@/types/types";
+
+import { useAuth } from "./useAuth";
 
 const formRoot = "form" as const;
 
@@ -40,6 +44,11 @@ export const formQueries = {
         ? () => getApplicationFormForResponseId(responseId)
         : skipToken,
     }),
+  invited: (userId?: string) =>
+    queryOptions({
+      queryKey: [formRoot, "invited", userId] as const,
+      queryFn: userId ? () => getInvitedFormsForUser(userId) : skipToken,
+    }),
 };
 
 export function useAllApplicationForms() {
@@ -60,8 +69,15 @@ export function useActiveForm() {
 export const useUploadApplicationForm = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ form, token }: { form: ApplicationForm; token: string }) =>
-      createApplicationForm(form, token),
+    mutationFn: ({
+      form,
+      token,
+      createOnly,
+    }: {
+      form: ApplicationForm;
+      token: string;
+      createOnly?: boolean;
+    }) => createApplicationForm(form, token, { createOnly }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: formQueries.all.queryKey });
     },
@@ -82,10 +98,6 @@ export const useDuplicateForm = () => {
       newFormSemester: string;
       token: string;
     }) => {
-      const existingForms = await getAllForms();
-      if (existingForms.some((form) => form.id === newFormId))
-        throw new Error("Form ID already exists");
-
       const newForm: ApplicationForm = {
         ...originalForm,
         id: newFormId,
@@ -94,7 +106,10 @@ export const useDuplicateForm = () => {
         decisionsReleased: false,
       };
 
-      return await createApplicationForm(newForm, token);
+      // createOnly makes the backend reject a taken ID, so there's no need to
+      // scan every form first (and no window for another admin to claim the
+      // ID between that check and this write).
+      return await createApplicationForm(newForm, token, { createOnly: true });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: formQueries.root });
@@ -122,4 +137,32 @@ export function useUpdateApplicationFormDueDate() {
 
 export function useApplicationFormForResponseId(responseId?: string) {
   return useQuery(formQueries.byResponse(responseId));
+}
+
+export function useInvitedForms() {
+  const { user, isAuthed, isLoading } = useAuth();
+
+  return useQuery({
+    ...formQueries.invited(user?.id),
+    enabled: !isLoading && isAuthed,
+    initialData: [],
+  });
+}
+
+export function useUpdateFormInvitedUsers() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      formId,
+      invitedUsers,
+    }: {
+      formId: string;
+      invitedUsers: string[];
+    }) => {
+      await setApplicationFormInvitedUsers(formId, invitedUsers);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: formQueries.root });
+    },
+  });
 }
