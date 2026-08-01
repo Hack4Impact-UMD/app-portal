@@ -54,7 +54,7 @@ export async function submitStandaloneGradingJob(
 export function recentGradingJobsQuery() {
   return query(
     appCollection(FirestoreCollection.GradingJobsPublic),
-    orderBy("started", "desc")
+    orderBy("started", "desc"),
   );
 }
 

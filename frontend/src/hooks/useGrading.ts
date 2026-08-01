@@ -119,22 +119,22 @@ function createGradingJobStore<T extends GradingJobSnapshotData>(
   }
 
   function subscribe(callback: () => void) {
-    if (!jobId || !enabled) return () => { };
+    if (!jobId || !enabled) return () => {};
 
     return onSnapshot(
       getDocRef(jobId),
       (doc) => {
         currentSnapshot = doc.exists()
           ? {
-            data: doc.data(),
-            isPending: false,
-            error: null,
-          }
+              data: doc.data(),
+              isPending: false,
+              error: null,
+            }
           : {
-            data: null,
-            isPending: false,
-            error: new Error(`Autograder job ${jobId} does not exist.`),
-          };
+              data: null,
+              isPending: false,
+              error: new Error(`Autograder job ${jobId} does not exist.`),
+            };
 
         if (doc.exists()) {
           onData?.(doc.data());
