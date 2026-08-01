@@ -119,22 +119,22 @@ function createGradingJobStore<T extends GradingJobSnapshotData>(
   }
 
   function subscribe(callback: () => void) {
-    if (!jobId || !enabled) return () => {};
+    if (!jobId || !enabled) return () => { };
 
     return onSnapshot(
       getDocRef(jobId),
       (doc) => {
         currentSnapshot = doc.exists()
           ? {
-              data: doc.data(),
-              isPending: false,
-              error: null,
-            }
+            data: doc.data(),
+            isPending: false,
+            error: null,
+          }
           : {
-              data: null,
-              isPending: false,
-              error: new Error(`Autograder job ${jobId} does not exist.`),
-            };
+            data: null,
+            isPending: false,
+            error: new Error(`Autograder job ${jobId} does not exist.`),
+          };
 
         if (doc.exists()) {
           onData?.(doc.data());
@@ -193,7 +193,7 @@ type RecentGradingJobsState = {
   error: Error | null;
 };
 
-function createRecentGradingJobsStore(limitN: number) {
+function createRecentGradingJobsStore() {
   let currentSnapshot: RecentGradingJobsState = {
     data: null,
     isPending: true,
@@ -206,7 +206,7 @@ function createRecentGradingJobsStore(limitN: number) {
 
   function subscribe(callback: () => void) {
     return onSnapshot(
-      recentGradingJobsQuery(limitN),
+      recentGradingJobsQuery(),
       (snapshot) => {
         currentSnapshot = {
           data: snapshot.docs.map((doc) => doc.data()),
@@ -227,8 +227,8 @@ function createRecentGradingJobsStore(limitN: number) {
 
 // Live-updating list of the most recent grading jobs across all responses,
 // backed by a Firestore query subscription.
-export function useRecentGradingJobs(limitN = 100) {
-  const store = useMemo(() => createRecentGradingJobsStore(limitN), [limitN]);
+export function useRecentGradingJobs() {
+  const store = useMemo(() => createRecentGradingJobsStore(), []);
 
   return useSyncExternalStore(store.subscribe, store.getSnapshot);
 }

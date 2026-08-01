@@ -1,6 +1,6 @@
 import { FirestoreCollection } from "@app-portal/shared/constants";
 import axios from "axios";
-import { doc, getDocs, limit, orderBy, query, where } from "firebase/firestore";
+import { doc, getDocs, orderBy, query, where } from "firebase/firestore";
 
 import { API_URL } from "@/config/firebase";
 import { appCollection } from "@/services/firestore";
@@ -51,11 +51,10 @@ export async function submitStandaloneGradingJob(
 
 // Firestore query for the most recent grading jobs across all responses,
 // ordered newest-first. Single-field orderBy is auto-indexed.
-export function recentGradingJobsQuery(limitN: number) {
+export function recentGradingJobsQuery() {
   return query(
     appCollection(FirestoreCollection.GradingJobsPublic),
-    orderBy("started", "desc"),
-    limit(limitN),
+    orderBy("started", "desc")
   );
 }
 
