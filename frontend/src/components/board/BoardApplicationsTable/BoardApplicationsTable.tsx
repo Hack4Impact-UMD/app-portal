@@ -226,6 +226,17 @@ export default function BoardApplicationsTable({
             );
           },
         }),
+        columnHelper.accessor("bestGradingScore", {
+          id: "autograder-score",
+          header: ({ column }) => {
+            return <SortableHeader column={column}>AUTOGRADER</SortableHeader>;
+          },
+          cell: ({ getValue }) => {
+            const value = getValue();
+            if (value === null || value === undefined) return "-";
+            return `${(value * 100).toFixed(1)}%`;
+          },
+        }),
         columnHelper.accessor("status.isQualified", {
           id: "qualified",
           cell: ({ getValue }) => {
