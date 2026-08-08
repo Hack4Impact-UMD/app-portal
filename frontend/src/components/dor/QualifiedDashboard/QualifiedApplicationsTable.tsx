@@ -300,6 +300,17 @@ export default function QualifiedApplicationsTable({
             );
           },
         }),
+        columnHelper.accessor("averageReviewScore", {
+          id: "avg-review-score",
+          header: ({ column }) => (
+            <SortableHeader column={column}>REVIEW SCORE</SortableHeader>
+          ),
+          cell: ({ getValue }) => {
+            const value = getValue();
+            if (value === null || value === undefined) return "N/A";
+            return value.toFixed(2);
+          },
+        }),
         columnHelper.accessor("averageScore", {
           id: "avg-score",
           header: ({ column }) => (

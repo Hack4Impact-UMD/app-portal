@@ -9,6 +9,7 @@ import type { Timestamp } from "firebase/firestore";
 
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationForm } from "@/services/applicationFormsService";
+import { getBestScoreForApplicationResponse } from "@/services/gradingService";
 import { getPreviouslyAppliedCount } from "@/services/previouslyAppliedService";
 import { getReviewAssignmentsForApplication } from "@/services/reviewAssignmentService";
 import { getReviewDataForResponseRole } from "@/services/reviewDataService";
@@ -44,6 +45,7 @@ export type ApplicationRow = {
   reviewers: {
     assigned: ReviewCapableUser[];
   };
+  bestGradingScore: number | null;
   status: InternalApplicationStatus | undefined;
 };
 
@@ -68,11 +70,13 @@ export function underReviewRowsQueryOptions(
         applications.map(async (app, index) => {
           const role = app.rolesApplied[0];
 
-          const [user, reviews, allAssignments] = await Promise.all([
-            getApplicantById(app.userId),
-            getReviewDataForResponseRole(formId, app.id, role),
-            getReviewAssignmentsForApplication(app.id),
-          ]);
+          const [user, reviews, allAssignments, bestGradingScore] =
+            await Promise.all([
+              getApplicantById(app.userId),
+              getReviewDataForResponseRole(formId, app.id, role),
+              getReviewAssignmentsForApplication(app.id),
+              getBestScoreForApplicationResponse(app.id),
+            ]);
           const assignments = allAssignments.filter((a) => a.forRole === role);
 
           const completedReviews = reviews.filter((r) => r.submitted).length;
@@ -129,6 +133,7 @@ export function underReviewRowsQueryOptions(
                 ),
               ),
             },
+            bestGradingScore,
             status: status,
           };
 
@@ -167,6 +172,7 @@ export function flattenRows(
       Name: row.applicant.name,
       Role: row.role,
       "Average Review Score": row.reviews.averageScore,
+      "Best Autograder Score": row.bestGradingScore ?? "",
     };
 
     const submittedReviews = row.reviews.reviewData.filter((r) => r.submitted);
