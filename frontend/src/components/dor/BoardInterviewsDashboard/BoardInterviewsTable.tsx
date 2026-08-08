@@ -16,9 +16,11 @@ import { useNavigate } from "react-router-dom";
 import { DataTable } from "@/components/DataTable";
 import type { QualifiedAppRow } from "@/components/dor/QualifiedDashboard/useRows";
 import {
+  flattenRows,
   qualifiedRowsQueryRoot,
   useRows,
 } from "@/components/dor/QualifiedDashboard/useRows";
+import { ExportButton } from "@/components/ExportButton";
 import RolePill from "@/components/role-pill/RolePill";
 import Spinner from "@/components/Spinner";
 import SortableHeader from "@/components/tables/SortableHeader";
@@ -264,6 +266,17 @@ export default function BoardInterviewsTable({
             );
           },
         }),
+        columnHelper.accessor("bestGradingScore", {
+          id: "autograder-score",
+          header: ({ column }) => (
+            <SortableHeader column={column}>AUTOGRADER</SortableHeader>
+          ),
+          cell: ({ getValue }) => {
+            const value = getValue();
+            if (value === null || value === undefined) return "-";
+            return `${(value * 100).toFixed(1)}%`;
+          },
+        }),
         columnHelper.accessor("status.status", {
           id: "status",
           header: ({ column }) => (
@@ -347,6 +360,15 @@ export default function BoardInterviewsTable({
 
   return (
     <div className="flex flex-col w-full gap-2">
+      <div className="mt-2 flex flex-row items-center gap-2">
+        <div className="ml-auto flex gap-2">
+          <ExportButton
+            data={flattenRows(rows ?? [], roleFilter)}
+            filename={`h4i-interviews-${roleFilter}`}
+            className=""
+          />
+        </div>
+      </div>
       <DataTable
         columns={cols}
         data={rows ?? []}

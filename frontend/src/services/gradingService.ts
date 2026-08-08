@@ -4,6 +4,7 @@ import { doc, getDocs, orderBy, query, where } from "firebase/firestore";
 
 import { API_URL } from "@/config/firebase";
 import { appCollection } from "@/services/firestore";
+import { getGradingJobMaxScore } from "@/utils/display";
 
 import { getAppCheckToken } from "./appCheckService";
 
@@ -77,4 +78,25 @@ export async function getJobsForApplicationResponse(responseId: string) {
   const snap = await getDocs(q);
 
   return snap.docs.map((d) => d.data());
+}
+
+export async function getBestScoreForApplicationResponse(
+  responseId: string,
+): Promise<number | null> {
+  const jobs = await getJobsForApplicationResponse(responseId);
+
+  let bestScore: number | null = null;
+
+  jobs.forEach((j) => {
+    // Jobs that haven't produced suite results yet have a max score of 0
+    const maxScore = getGradingJobMaxScore(j);
+    if (maxScore <= 0) return;
+
+    const score = j.score / maxScore;
+    if (bestScore === null || bestScore < score) {
+      bestScore = score;
+    }
+  });
+
+  return bestScore;
 }
