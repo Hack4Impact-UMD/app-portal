@@ -9,8 +9,10 @@ import type { Timestamp } from "firebase/firestore";
 
 import { getApplicantById } from "@/services/applicantService";
 import { getApplicationForm } from "@/services/applicationFormsService";
+import { getBestScoreForApplicationResponse } from "@/services/gradingService";
 import { getInterviewAssignmentsForApplication } from "@/services/interviewAssignmentService";
 import { getInterviewDataForResponseRole } from "@/services/interviewDataService";
+import { getReviewDataForResponseRole } from "@/services/reviewDataService";
 import { reviewCapable } from "@/services/reviewersService";
 import { getApplicationStatusForResponseRole } from "@/services/statusService";
 import { getUserById } from "@/services/userService";
@@ -19,7 +21,7 @@ import type {
   ReviewCapableUser,
   CsvRow,
 } from "@/types/types";
-import { calculateInterviewScore } from "@/utils/scores";
+import { calculateInterviewScore, calculateReviewScore } from "@/utils/scores";
 
 export type QualifiedAppRow = {
   index: number;
@@ -33,6 +35,8 @@ export type QualifiedAppRow = {
   assignments: InterviewAssignment[];
   averageScore: number | null;
   individualScores: number[];
+  averageReviewScore: number | null;
+  bestGradingScore: number | null;
   responseId: string;
   interviews: ApplicationInterviewData[];
   status?: InternalApplicationStatus;
@@ -89,10 +93,19 @@ export function qualifiedRowsQueryOptions(
               ? individualScores.reduce((acc, v) => acc + v, 0) /
                 individualScores.length
               : null;
-          const status = await getApplicationStatusForResponseRole(
-            app.id,
-            app.rolesApplied[0],
-          );
+          const [status, reviews, bestGradingScore] = await Promise.all([
+            getApplicationStatusForResponseRole(app.id, app.rolesApplied[0]),
+            getReviewDataForResponseRole(formId, app.id, app.rolesApplied[0]),
+            getBestScoreForApplicationResponse(app.id),
+          ]);
+          const submittedReviews = reviews.filter((r) => r.submitted);
+          const averageReviewScore =
+            submittedReviews.length > 0
+              ? submittedReviews.reduce(
+                  (acc, r) => acc + calculateReviewScore(r, form),
+                  0,
+                ) / submittedReviews.length
+              : null;
           return {
             index: 1 + index,
             dateSubmitted: app.dateSubmitted,
@@ -103,6 +116,8 @@ export function qualifiedRowsQueryOptions(
             assignments,
             averageScore,
             individualScores,
+            averageReviewScore,
+            bestGradingScore,
             responseId: app.id,
             interviews,
             status,
@@ -121,28 +136,33 @@ export function useRows(applications: ApplicationResponse[], formId: string) {
 
 export function flattenRows(
   rows: QualifiedAppRow[],
-  role: ApplicantRole,
+  role: ApplicantRole | "all",
 ): CsvRow[] {
-  const filteredRows = rows.filter((row) => row.role === role);
+  const filteredRows =
+    role === "all" ? rows : rows.filter((row) => row.role === role);
 
   if (filteredRows.length === 0) return [];
 
-  const sampleInterview = filteredRows
-    .flatMap((r) => r.interviews.filter((i) => i.submitted))
-    .find((i) => i !== undefined);
-
-  const scoreKeys = sampleInterview
-    ? Object.keys(sampleInterview.interviewScores).sort()
-    : [];
-  const noteKeys = sampleInterview
-    ? Object.keys(sampleInterview.interviewerNotes).sort()
-    : [];
+  // Roles can have different interview criteria, so take the union of keys
+  // across every submitted interview: CSV headers come from the first row, so
+  // every row has to carry the same set of keys.
+  const allSubmitted = filteredRows.flatMap((r) =>
+    r.interviews.filter((i) => i.submitted),
+  );
+  const scoreKeys = [
+    ...new Set(allSubmitted.flatMap((i) => Object.keys(i.interviewScores))),
+  ].sort();
+  const noteKeys = [
+    ...new Set(allSubmitted.flatMap((i) => Object.keys(i.interviewerNotes))),
+  ].sort();
 
   return filteredRows.map((row) => {
     const flat: CsvRow = {
       Name: row.name,
       Role: row.role,
+      "Average Review Score": row.averageReviewScore ?? "",
       "Average Interview Score": row.averageScore ?? "",
+      "Best Autograder Score": row.bestGradingScore ?? "",
     };
 
     const submittedInterviews = row.interviews.filter((i) => i.submitted);
