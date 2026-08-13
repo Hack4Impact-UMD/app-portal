@@ -14,6 +14,7 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { CopyCloneCommandMenuItem } from "@/components/autograder/CopyCloneCommandMenuItem";
 import { DataTable } from "@/components/DataTable";
 import type { ApplicationRow } from "@/components/dor/UnderReviewDashboard/useRows";
 import {
@@ -319,6 +320,9 @@ export default function BoardApplicationsTable({
                   >
                     View Application
                   </DropdownMenuItem>
+                  <CopyCloneCommandMenuItem
+                    responseId={row.original.responseId}
+                  />
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

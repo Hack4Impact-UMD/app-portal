@@ -5,6 +5,7 @@ import { doc, getDocs, orderBy, query, where } from "firebase/firestore";
 import { API_URL } from "@/config/firebase";
 import { appCollection } from "@/services/firestore";
 import { getGradingJobMaxScore } from "@/utils/display";
+import { pickBestGradingJob } from "@/utils/grading";
 
 import { getAppCheckToken } from "./appCheckService";
 
@@ -84,19 +85,11 @@ export async function getBestScoreForApplicationResponse(
   responseId: string,
 ): Promise<number | null> {
   const jobs = await getJobsForApplicationResponse(responseId);
+  const best = pickBestGradingJob(jobs);
+  if (!best) return null;
 
-  let bestScore: number | null = null;
+  const maxScore = getGradingJobMaxScore(best);
+  if (maxScore <= 0) return null;
 
-  jobs.forEach((j) => {
-    // Jobs that haven't produced suite results yet have a max score of 0
-    const maxScore = getGradingJobMaxScore(j);
-    if (maxScore <= 0) return;
-
-    const score = j.score / maxScore;
-    if (bestScore === null || bestScore < score) {
-      bestScore = score;
-    }
-  });
-
-  return bestScore;
+  return best.score / maxScore;
 }
