@@ -19,6 +19,7 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { CopyCloneCommandMenuItem } from "@/components/autograder/CopyCloneCommandMenuItem";
 import { DataTable } from "@/components/DataTable";
 import { qualifiedRowsQueryRoot } from "@/components/dor/QualifiedDashboard/useRows";
 import { reviewerRowsQueryRoot } from "@/components/dor/ReviewersDashboard/useRows";
@@ -476,6 +477,9 @@ export default function SuperReviewerApplicationsTable({
                   >
                     View Application
                   </DropdownMenuItem>
+                  <CopyCloneCommandMenuItem
+                    responseId={row.original.responseId}
+                  />
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
