@@ -122,6 +122,31 @@ export default function BoardApplicationsTable({
                     </TooltipContent>
                   </Tooltip>
                 )}
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      variant={"outline"}
+                      className="p-0 size-6"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(
+                            row.original.applicant.email,
+                          );
+                          throwSuccessToast(
+                            `${row.original.applicant.email} added to clipboard!`,
+                          );
+                        } catch (err) {
+                          console.log("Failed to copy email:");
+                          console.log(err);
+                          throwErrorToast(`Failed to add email to clipboard.`);
+                        }
+                      }}
+                    >
+                      <ClipboardIcon className="rounded cursor-pointer text-blue" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Copy Applicant Email</TooltipContent>
+                </Tooltip>
               </span>
             );
           },
