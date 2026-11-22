@@ -48,12 +48,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { ApplicationResponse } from "@/types/types";
 import { displayTimestamp } from "@/utils/dates";
 import { displayReviewStatus } from "@/utils/display";
 
 type BoardApplicationsTableProps = {
-  applications: ApplicationResponse[];
   search: string;
   rowCount?: number;
   roleFilter: "all" | ApplicantRole;
@@ -61,7 +59,6 @@ type BoardApplicationsTableProps = {
 };
 
 export default function BoardApplicationsTable({
-  applications,
   search,
   formId,
   rowCount = 20,
@@ -357,7 +354,7 @@ export default function BoardApplicationsTable({
     [columnHelper, formId, navigate],
   );
 
-  const { data: rows, isPending, error } = useRows(applications, formId);
+  const { data: rows, isPending, error } = useRows(formId);
 
   const handleCopyEmails = useCallback(async () => {
     if (!rows || rows.length === 0) {
@@ -450,7 +447,7 @@ export default function BoardApplicationsTable({
       <div className="flex flex-row gap-2">
         <span>
           Page {pagination.pageIndex + 1} of{" "}
-          {Math.max(Math.ceil(applications.length / rowCount), 1)}
+          {Math.max(Math.ceil((rows?.length ?? 0) / rowCount), 1)}
         </span>
         <div className="ml-auto">
           <Button
@@ -468,7 +465,7 @@ export default function BoardApplicationsTable({
           <Button
             variant="outline"
             disabled={
-              (pagination.pageIndex + 1) * rowCount >= applications.length
+              (pagination.pageIndex + 1) * rowCount >= (rows?.length ?? 0)
             }
             onClick={() =>
               setPagination({

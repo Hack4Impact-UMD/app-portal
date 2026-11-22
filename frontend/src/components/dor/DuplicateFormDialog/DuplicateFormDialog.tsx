@@ -48,7 +48,6 @@ export default function DuplicateFormDialog({
         originalForm: form,
         newFormId: newFormId.trim(),
         newFormSemester: newFormSemester.trim(),
-        token: tok,
       },
       {
         onSuccess: () => {

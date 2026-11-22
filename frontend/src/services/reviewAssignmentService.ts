@@ -68,18 +68,6 @@ export async function getReviewAssignments(
   return res.docs.map((d) => d.data());
 }
 
-export async function getReviewAssignmentsForApplication(
-  responseId: string,
-): Promise<AppReviewAssignment[]> {
-  const assignments = appCollection(FirestoreCollection.ReviewAssignments);
-  const q = query(
-    assignments,
-    where("applicationResponseId", "==", responseId),
-  );
-
-  return (await getDocs(q)).docs.map((d) => d.data());
-}
-
 export async function getReviewAssignmentsForForm(formId: string) {
   const assignments = appCollection(FirestoreCollection.ReviewAssignments);
   const q = query(assignments, where("formId", "==", formId));

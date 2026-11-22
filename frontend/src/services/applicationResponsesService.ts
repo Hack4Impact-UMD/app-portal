@@ -3,11 +3,7 @@ import {
   FirestoreCollection,
   QuestionType,
 } from "@app-portal/shared/constants";
-import type {
-  SectionResponse,
-  ValidationError,
-} from "@app-portal/shared/types";
-import axios from "axios";
+import type { SectionResponse } from "@app-portal/shared/types";
 import {
   setDoc,
   Timestamp,
@@ -21,33 +17,17 @@ import {
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
-import { API_URL } from "@/config/firebase";
+import { trpcClient } from "@/config/trpc";
 import type { ApplicationForm, ApplicationResponse } from "@/types/types";
 
-import { getAppCheckToken } from "./appCheckService";
 import { getApplicationForm } from "./applicationFormsService";
 import { appCollection } from "./firestore";
 
 export async function saveApplicationResponse(
   response: ApplicationResponse,
-  token: string,
-) {
+): Promise<ApplicationResponse> {
   console.log("saving...");
-  const appCheckToken = await getAppCheckToken();
-  const res = await axios.put(
-    API_URL + "/application/save/" + response.id,
-    response,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "X-APPCHECK": appCheckToken,
-      },
-    },
-  );
-
-  const data = res.data as ApplicationResponse;
-
-  return data;
+  return trpcClient.application.save.mutate(response);
 }
 
 export async function getApplicationResponses(
@@ -165,35 +145,15 @@ async function fetchOrCreateApplicationResponse(
   return newResponse;
 }
 
-type SuccessfulSubmitResponse = {
+export type ApplicationSubmitResponse = {
   status: "success";
   application: ApplicationResponse;
 };
 
-type ErrorApplicationResponse = {
-  status: "error";
-  validationErrors: ValidationError[];
-};
-
-export type ApplicationSubmitResponse =
-  | SuccessfulSubmitResponse
-  | ErrorApplicationResponse;
-
 export async function submitApplicationResponse(
   response: ApplicationResponse,
-  token: string,
 ): Promise<ApplicationSubmitResponse> {
-  const appCheckToken = await getAppCheckToken();
-  const res = await axios.post(API_URL + "/application/submit", response, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "X-APPCHECK": appCheckToken,
-    },
-  });
-
-  const data = res.data as ApplicationSubmitResponse;
-
-  return data;
+  return trpcClient.application.submit.mutate(response);
 }
 
 export async function fetchMyApplicationResponseAndForm(

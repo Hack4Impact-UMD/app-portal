@@ -65,21 +65,17 @@ export default function AutograderSubmissionSummary({
     }
 
     try {
-      const authToken = (await token()) ?? "";
       const onSuccess = (newJobId: string) => {
         navigate(`/autograder/${newJobId}`);
       };
 
       if (isStandalone) {
         submitStandaloneGradingJob(
-          { repoURL, testRepo: testRepo!, token: authToken },
+          { repoURL, testRepo: testRepo! },
           { onSuccess },
         );
       } else {
-        submitGradingJob(
-          { responseId, repoURL, token: authToken },
-          { onSuccess },
-        );
+        submitGradingJob({ responseId, repoURL }, { onSuccess });
       }
     } catch (err) {
       console.error(err);

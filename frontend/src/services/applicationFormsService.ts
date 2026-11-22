@@ -1,5 +1,4 @@
 import { FirestoreCollection } from "@app-portal/shared/constants";
-import axios from "axios";
 import {
   doc,
   FirestoreError,
@@ -11,10 +10,9 @@ import {
   where,
 } from "firebase/firestore";
 
-import { API_URL } from "@/config/firebase";
+import { isTRPCClientError, trpcClient } from "@/config/trpc";
 import type { ApplicationForm } from "@/types/types";
 
-import { getAppCheckToken } from "./appCheckService";
 import { getApplicationResponseById } from "./applicationResponsesService";
 import { appCollection } from "./firestore";
 
@@ -112,23 +110,15 @@ export class FormIdTakenError extends Error {
 
 export async function createApplicationForm(
   form: ApplicationForm,
-  token: string,
   // The endpoint upserts by default (the form builder saves through it too).
   // Pass createOnly for new forms so the backend rejects a taken ID
   // atomically instead of silently overwriting an existing form.
   { createOnly = false }: { createOnly?: boolean } = {},
 ): Promise<{ status: string; formId: string }> {
   try {
-    const res = await axios.post(API_URL + "/application/forms", form, {
-      params: createOnly ? { createOnly: "true" } : undefined,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "X-APPCHECK": await getAppCheckToken(),
-      },
-    });
-    return res.data;
+    return await trpcClient.application.createForm.mutate({ form, createOnly });
   } catch (err) {
-    if (axios.isAxiosError(err) && err.response?.status === 409) {
+    if (isTRPCClientError(err) && err.data?.code === "CONFLICT") {
       throw new FormIdTakenError(form.id);
     }
     throw err;

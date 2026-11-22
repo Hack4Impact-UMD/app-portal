@@ -1,8 +1,4 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import type {
-  AppReviewAssignment,
-  ApplicationReviewData,
-} from "@app-portal/shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
@@ -29,16 +25,12 @@ import {
 import { reviewerQueries } from "@/hooks/useReviewers";
 import { getReviewerById, reviewingFor } from "@/services/reviewersService";
 import { setReviewCapableUserRolePreferences } from "@/services/userService";
-import type { ReviewCapableUser } from "@/types/types";
 
 import { RoleSelect } from "./RoleSelect";
 import type { ReviewerRow } from "./useRows";
-import { flattenRows, useRows } from "./useRows";
+import { flattenRows, reviewerRowsQueryRoot, useRows } from "./useRows";
 
 type ReviewersTableProps = {
-  reviewers: ReviewCapableUser[];
-  assignments: AppReviewAssignment[];
-  reviewData: ApplicationReviewData[];
   search: string;
   rowCount?: number;
   formId: string;
@@ -46,9 +38,6 @@ type ReviewersTableProps = {
 };
 
 export default function ReviewersTable({
-  reviewers,
-  assignments,
-  reviewData,
   search,
   formId,
   rowCount = 20,
@@ -76,7 +65,10 @@ export default function ReviewersTable({
       );
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: reviewerQueries.root });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: reviewerQueries.root }),
+        queryClient.invalidateQueries({ queryKey: reviewerRowsQueryRoot }),
+      ]);
       throwSuccessToast("Successfully added role preference!");
     },
     onError: (error) => {
@@ -106,7 +98,10 @@ export default function ReviewersTable({
       );
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: reviewerQueries.root });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: reviewerQueries.root }),
+        queryClient.invalidateQueries({ queryKey: reviewerRowsQueryRoot }),
+      ]);
       throwSuccessToast("Successfully removed role preference!");
     },
     onError: (error) => {
@@ -237,11 +232,7 @@ export default function ReviewersTable({
     ],
   );
 
-  const {
-    data: rows,
-    isPending,
-    error,
-  } = useRows(reviewers, assignments, reviewData);
+  const { data: rows, isPending, error } = useRows(formId);
 
   if (isPending)
     return (
@@ -278,7 +269,7 @@ export default function ReviewersTable({
       <div className="flex flex-row gap-2">
         <span>
           Page {pagination.pageIndex + 1} of{" "}
-          {Math.max(Math.ceil(reviewers.length / rowCount), 1)}
+          {Math.max(Math.ceil((rows?.length ?? 0) / rowCount), 1)}
         </span>
         <div className="ml-auto">
           <Button
@@ -295,7 +286,9 @@ export default function ReviewersTable({
           </Button>
           <Button
             variant="outline"
-            disabled={(pagination.pageIndex + 1) * rowCount >= reviewers.length}
+            disabled={
+              (pagination.pageIndex + 1) * rowCount >= (rows?.length ?? 0)
+            }
             onClick={() =>
               setPagination({
                 ...pagination,

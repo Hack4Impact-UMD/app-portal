@@ -1,7 +1,3 @@
-import type {
-  InterviewAssignment,
-  ApplicationInterviewData,
-} from "@app-portal/shared/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
@@ -23,15 +19,11 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { ReviewCapableUser } from "@/types/types";
 
 import type { InterviewerRow } from "./useRows";
 import { flattenRows, useRows } from "./useRows";
 
 type InterviewersTableProps = {
-  interviewers: ReviewCapableUser[];
-  interviewData: ApplicationInterviewData[];
-  assignments: InterviewAssignment[];
   search: string;
   rowCount?: number;
   formId: string;
@@ -39,9 +31,6 @@ type InterviewersTableProps = {
 };
 
 export default function InterviewersTable({
-  interviewers,
-  interviewData,
-  assignments,
   search,
   formId,
   rowCount = 20,
@@ -218,11 +207,7 @@ export default function InterviewersTable({
     [columnHelper],
   );
 
-  const {
-    data: rows,
-    isPending,
-    error,
-  } = useRows(interviewers, interviewData, assignments);
+  const { data: rows, isPending, error } = useRows(formId);
 
   if (isPending)
     return (
@@ -259,7 +244,7 @@ export default function InterviewersTable({
       <div className="flex flex-row gap-2">
         <span>
           Page {pagination.pageIndex + 1} of{" "}
-          {Math.max(Math.ceil(interviewers.length / rowCount), 1)}
+          {Math.max(Math.ceil((rows?.length ?? 0) / rowCount), 1)}
         </span>
         <div className="ml-auto">
           <Button
@@ -277,7 +262,7 @@ export default function InterviewersTable({
           <Button
             variant="outline"
             disabled={
-              (pagination.pageIndex + 1) * rowCount >= interviewers.length
+              (pagination.pageIndex + 1) * rowCount >= (rows?.length ?? 0)
             }
             onClick={() =>
               setPagination({

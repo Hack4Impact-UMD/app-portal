@@ -71,13 +71,11 @@ export const useUploadApplicationForm = () => {
   return useMutation({
     mutationFn: ({
       form,
-      token,
       createOnly,
     }: {
       form: ApplicationForm;
-      token: string;
       createOnly?: boolean;
-    }) => createApplicationForm(form, token, { createOnly }),
+    }) => createApplicationForm(form, { createOnly }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: formQueries.all.queryKey });
     },
@@ -91,12 +89,10 @@ export const useDuplicateForm = () => {
       originalForm,
       newFormId,
       newFormSemester,
-      token,
     }: {
       originalForm: ApplicationForm;
       newFormId: string;
       newFormSemester: string;
-      token: string;
     }) => {
       const newForm: ApplicationForm = {
         ...originalForm,
@@ -109,7 +105,7 @@ export const useDuplicateForm = () => {
       // createOnly makes the backend reject a taken ID, so there's no need to
       // scan every form first (and no window for another admin to claim the
       // ID between that check and this write).
-      return await createApplicationForm(newForm, token, { createOnly: true });
+      return await createApplicationForm(newForm, { createOnly: true });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: formQueries.root });

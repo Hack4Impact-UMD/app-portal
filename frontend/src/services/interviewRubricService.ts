@@ -1,12 +1,10 @@
 import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { RoleReviewRubric } from "@app-portal/shared/types";
-import axios from "axios";
 import { getDocs, query, where } from "firebase/firestore";
 
-import { API_URL } from "@/config/firebase";
+import { trpcClient } from "@/config/trpc";
 
-import { getAppCheckToken } from "./appCheckService";
 import { appCollection } from "./firestore";
 
 export async function getRoleInterviewRubricsForForm(
@@ -32,17 +30,6 @@ export async function getRoleInterviewRubricsForFormRole(
 
 export async function uploadInterviewRubrics(
   interviewRubrics: RoleReviewRubric[],
-  token: string,
 ) {
-  const appCheckToken = await getAppCheckToken();
-  return await axios.post(
-    API_URL + "/application/interview-rubrics",
-    interviewRubrics,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "X-APPCHECK": appCheckToken,
-      },
-    },
-  );
+  return trpcClient.application.uploadInterviewRubrics.mutate(interviewRubrics);
 }

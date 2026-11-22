@@ -18,7 +18,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useApplicationForm } from "@/hooks/useApplicationForm";
-import { useAuth } from "@/hooks/useAuth";
 import {
   useInterviewRubricsForForm,
   useUploadInterviewRubrics,
@@ -85,7 +84,6 @@ export default function RubricBuilderPage() {
     useState<RubricValidationWarnings | null>(null);
 
   const { formId } = useParams();
-  const { token } = useAuth();
 
   const {
     data: form,
@@ -189,7 +187,7 @@ export default function RubricBuilderPage() {
 
     if (rubricType === "application") {
       uploadRubricsMutation.mutate(
-        { rubrics: parsedRubrics, token: (await token()) ?? "" },
+        { rubrics: parsedRubrics },
         {
           onSuccess: () => {
             throwSuccessToast(
@@ -204,7 +202,7 @@ export default function RubricBuilderPage() {
       );
     } else {
       uploadInterviewRubricsMutation.mutate(
-        { interviewRubrics: parsedRubrics, token: (await token()) ?? "" },
+        { interviewRubrics: parsedRubrics },
         {
           onSuccess: () => {
             throwSuccessToast(
@@ -224,7 +222,6 @@ export default function RubricBuilderPage() {
     formId,
     validationWarnings,
     uploadRubricsMutation,
-    token,
     uploadInterviewRubricsMutation,
   ]);
 

@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { BoardMembersTable } from "@/components/dor/BoardDashboard/BoardMembersTable";
+import { useRows } from "@/components/dor/BoardDashboard/useRows";
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
-import { useAllBoardMembers } from "@/hooks/useBoardMembers";
 import useSearch from "@/hooks/useSearch";
 
 export default function SuperReviewerBoardDashboard() {
@@ -14,7 +14,7 @@ export default function SuperReviewerBoardDashboard() {
     data: boardMembers,
     isPending: boardPending,
     error: boardError,
-  } = useAllBoardMembers();
+  } = useRows();
 
   const { search } = useSearch();
 
@@ -37,11 +37,7 @@ export default function SuperReviewerBoardDashboard() {
           <span className="mt-auto">Board Members</span>
         </Button>
       </div>
-      <BoardMembersTable
-        boardMembers={boardMembers}
-        search={search}
-        statusFilter={statusFilter}
-      />
+      <BoardMembersTable search={search} statusFilter={statusFilter} />
     </div>
   );
 }

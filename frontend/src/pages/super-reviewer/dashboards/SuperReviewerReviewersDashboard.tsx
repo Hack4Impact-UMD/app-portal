@@ -2,87 +2,40 @@ import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import ReviewersTable from "@/components/dor/ReviewersDashboard/ReviewersTable";
+import { useRows } from "@/components/dor/ReviewersDashboard/useRows";
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
-import { useReviewAssignmentsForForm } from "@/hooks/useReviewAssignments";
-import { useReviewDataForForm } from "@/hooks/useReviewData";
-import { useAllReviewers } from "@/hooks/useReviewers";
 import useSearch from "@/hooks/useSearch";
 
 export default function SuperReviewerReviewersDashboard() {
   const { formId } = useParams<{ formId: string }>();
 
-  const {
-    data: reviewers,
-    isPending: reviewersPending,
-    error: reviewersError,
-  } = useAllReviewers();
-
-  const {
-    data: reviewData,
-    isPending: dataPending,
-    error: dataError,
-  } = useReviewDataForForm(formId);
-  const {
-    data: assignments,
-    isPending: assignmentsPending,
-    error: assignmentsError,
-  } = useReviewAssignmentsForForm(formId);
-
+  const { data: rows, isPending, error } = useRows(formId);
   const { search } = useSearch();
-
   const [statusFilter, setStatusFilter] = useState<
     "all" | "complete" | "pending" | "unassigned"
   >("all");
 
   const numComplete = useMemo(
     () =>
-      reviewers?.reduce((acc, reviewer) => {
-        const data =
-          reviewData?.filter((d) => d.reviewerId === reviewer.id) ?? [];
-        const assigned =
-          assignments?.filter((a) => a.reviewerId === reviewer.id) ?? [];
-
-        if (data.length === 0 && assigned.length === 0) return acc;
-
-        if (
-          data.reduce(
-            (acc, review) => (review.submitted ? acc + 1 : acc),
-            0,
-          ) === assigned.length
-        ) {
-          return acc + 1;
-        } else {
-          return acc;
-        }
-      }, 0),
-    [assignments, reviewData, reviewers],
+      rows?.filter(
+        (row) =>
+          !(row.reviewDataCount === 0 && row.assignments === 0) &&
+          row.pendingAssignments === 0,
+      ).length,
+    [rows],
   );
 
   const numNoAssignments = useMemo(
     () =>
-      reviewers?.reduce((acc, reviewer) => {
-        const data =
-          reviewData?.filter((d) => d.reviewerId === reviewer.id) ?? [];
-        const assigned =
-          assignments?.filter((a) => a.reviewerId === reviewer.id) ?? [];
-
-        if (data.length === 0 && assigned.length === 0) return acc + 1;
-        else return acc;
-      }, 0),
-    [assignments, reviewData, reviewers],
+      rows?.filter((row) => row.reviewDataCount === 0 && row.assignments === 0)
+        .length,
+    [rows],
   );
 
   if (!formId) return <p>No formId found! The url is probably malformed.</p>;
-  if (reviewersError)
-    return <p>Failed to fetch reviewers: {reviewersError.message}</p>;
-  if (dataError) return <p>Failed to fetch review data: {dataError.message}</p>;
-  if (assignmentsError)
-    return (
-      <p>Failed to fetch review assignments: {assignmentsError.message}</p>
-    );
-  if (reviewersPending || dataPending || assignmentsPending || !reviewers)
-    return <Loading />;
+  if (error) return <p>Failed to fetch reviewers: {error.message}</p>;
+  if (isPending || !rows) return <Loading />;
 
   return (
     <div>
@@ -92,7 +45,7 @@ export default function SuperReviewerReviewersDashboard() {
 					${statusFilter === "all" ? "bg-[#17476B] hover:bg-[#17476B]/90 text-[#D5E7F2]" : "bg-[#D5E7F2] hover:bg-[#D5E7F2]/90 text-[#17476B]"}`}
           onClick={() => setStatusFilter("all")}
         >
-          <span className="text-3xl">{reviewers.length}</span>
+          <span className="text-3xl">{rows.length}</span>
           <span className="mt-auto">Reviewers</span>
         </Button>
         <Button
@@ -109,7 +62,7 @@ export default function SuperReviewerReviewersDashboard() {
           onClick={() => setStatusFilter("pending")}
         >
           <span className="text-3xl">
-            {reviewers.length - (numComplete ?? 0) - (numNoAssignments ?? 0)}
+            {rows.length - (numComplete ?? 0) - (numNoAssignments ?? 0)}
           </span>
           <span className="mt-auto">Pending</span>
         </Button>
@@ -123,9 +76,6 @@ export default function SuperReviewerReviewersDashboard() {
         </Button>
       </div>
       <ReviewersTable
-        reviewers={reviewers}
-        assignments={assignments}
-        reviewData={reviewData}
         formId={formId}
         search={search}
         statusFilter={statusFilter}

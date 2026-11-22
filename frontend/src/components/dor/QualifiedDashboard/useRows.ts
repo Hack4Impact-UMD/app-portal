@@ -1,137 +1,27 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import type {
-  ApplicationInterviewData,
-  InterviewAssignment,
-  InternalApplicationStatus,
-} from "@app-portal/shared/types";
-import { queryOptions, useQuery } from "@tanstack/react-query";
-import type { Timestamp } from "firebase/firestore";
+import { keepPreviousData, skipToken, useQuery } from "@tanstack/react-query";
 
-import { getApplicantById } from "@/services/applicantService";
-import { getApplicationForm } from "@/services/applicationFormsService";
-import { getBestScoreForApplicationResponse } from "@/services/gradingService";
-import { getInterviewAssignmentsForApplication } from "@/services/interviewAssignmentService";
-import { getInterviewDataForResponseRole } from "@/services/interviewDataService";
-import { getReviewDataForResponseRole } from "@/services/reviewDataService";
-import { reviewCapable } from "@/services/reviewersService";
-import { getApplicationStatusForResponseRole } from "@/services/statusService";
-import { getUserById } from "@/services/userService";
-import type {
-  ApplicationResponse,
-  ReviewCapableUser,
-  CsvRow,
-} from "@/types/types";
-import { calculateInterviewScore, calculateReviewScore } from "@/utils/scores";
+import { trpc } from "@/config/trpc";
+import type { RouterOutputs } from "@/types/trpc";
+import type { CsvRow } from "@/types/types";
 
-export type QualifiedAppRow = {
-  index: number;
-  dateSubmitted: Timestamp;
-  name: string;
-  email: string;
-  role: ApplicantRole;
-  interviewers: {
-    assigned: ReviewCapableUser[];
-  };
-  assignments: InterviewAssignment[];
-  averageScore: number | null;
-  individualScores: number[];
-  averageReviewScore: number | null;
-  bestGradingScore: number | null;
-  responseId: string;
-  interviews: ApplicationInterviewData[];
-  status?: InternalApplicationStatus;
-  internal: boolean;
-};
+export type QualifiedAppRow = RouterOutputs["rows"]["qualified"][number];
 
-export const qualifiedRowsQueryRoot = ["qualified-rows"] as const;
+export const qualifiedRowsQueryRoot = trpc.rows.qualified.pathKey();
 
-export function qualifiedRowsQueryOptions(
-  applications: ApplicationResponse[],
-  formId: string,
-) {
-  return queryOptions({
-    queryKey: [
-      ...qualifiedRowsQueryRoot,
-      "form",
-      formId,
-      "responses",
-      applications.map((a) => a.id).sort(),
-    ] as const,
-    placeholderData: (prev) => prev,
-    queryFn: async () => {
-      const form = await getApplicationForm(formId);
-      return Promise.all(
-        applications.map(async (app, index) => {
-          const user = await getApplicantById(app.userId);
-          // Get interview assignments for this application
-          const assignments = (
-            await getInterviewAssignmentsForApplication(app.id)
-          ).filter((a) => a.forRole === app.rolesApplied[0]);
-          // Get all assigned interviewer profiles
-          const assignedInterviewers: ReviewCapableUser[] = (
-            await Promise.all(
-              assignments.map((a) => getUserById(a.interviewerId)),
-            )
-          ).filter((u) => reviewCapable(u));
-          // Get interview data for this application/role
-          const interviews = await getInterviewDataForResponseRole(
-            formId,
-            app.id,
-            app.rolesApplied[0],
-          );
-          const submittedInterviews = interviews.filter((i) => i.submitted);
-          const individualScores =
-            submittedInterviews.length > 0
-              ? await Promise.all(
-                  submittedInterviews.map((i) =>
-                    calculateInterviewScore(i, form),
-                  ),
-                )
-              : [];
-          const averageScore =
-            individualScores.length > 0
-              ? individualScores.reduce((acc, v) => acc + v, 0) /
-                individualScores.length
-              : null;
-          const [status, reviews, bestGradingScore] = await Promise.all([
-            getApplicationStatusForResponseRole(app.id, app.rolesApplied[0]),
-            getReviewDataForResponseRole(formId, app.id, app.rolesApplied[0]),
-            getBestScoreForApplicationResponse(app.id),
-          ]);
-          const submittedReviews = reviews.filter((r) => r.submitted);
-          const averageReviewScore =
-            submittedReviews.length > 0
-              ? submittedReviews.reduce(
-                  (acc, r) => acc + calculateReviewScore(r, form),
-                  0,
-                ) / submittedReviews.length
-              : null;
-          return {
-            index: 1 + index,
-            dateSubmitted: app.dateSubmitted,
-            name: `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            role: app.rolesApplied[0],
-            interviewers: { assigned: assignedInterviewers },
-            assignments,
-            averageScore,
-            individualScores,
-            averageReviewScore,
-            bestGradingScore,
-            responseId: app.id,
-            interviews,
-            status,
-            internal: user.isInternal ?? false,
-          };
-        }),
-      );
-    },
-    refetchOnWindowFocus: true,
-  });
+export function qualifiedRowsQueryOptions(formId: string) {
+  return trpc.rows.qualified.queryOptions(
+    { formId },
+    { placeholderData: keepPreviousData, refetchOnWindowFocus: true },
+  );
 }
 
-export function useRows(applications: ApplicationResponse[], formId: string) {
-  return useQuery(qualifiedRowsQueryOptions(applications, formId));
+export function useRows(formId: string | undefined) {
+  return useQuery(
+    formId
+      ? qualifiedRowsQueryOptions(formId)
+      : trpc.rows.qualified.queryOptions(skipToken),
+  );
 }
 
 export function flattenRows(

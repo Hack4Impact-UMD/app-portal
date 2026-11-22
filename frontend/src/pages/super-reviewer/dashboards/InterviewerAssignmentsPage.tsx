@@ -1,13 +1,11 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import InterviewerAssignmentsTable from "@/components/dor/InterviewerAssignmentsDashboard/InterviewerAssignmentsTable";
+import { useInterviewerAssignments } from "@/components/dor/InterviewerAssignmentsDashboard/useRows";
 import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import { Button } from "@/components/ui/button";
-import { useInterviewAssignments } from "@/hooks/useInterviewAssignments";
-import { useInterviewDataForInterviewer } from "@/hooks/useInterviewData";
-import { useReviewerForId } from "@/hooks/useReviewers";
 import { reviewingFor } from "@/services/reviewersService";
 
 export function InterviewerAssignmentsPage() {
@@ -19,41 +17,15 @@ export function InterviewerAssignmentsPage() {
     interviewerId: string;
   }>();
 
-  const {
-    data: assignedInterviews,
-    isPending: assignmentsPending,
-    error: assignmentsError,
-  } = useInterviewAssignments(formId, interviewerId);
-  const {
-    data: interviewer,
-    isPending: interviewerPending,
-    error: interviewerError,
-  } = useReviewerForId(interviewerId);
-  const {
-    data: interviews,
-    isPending: interviewsPending,
-    error: interviewsError,
-  } = useInterviewDataForInterviewer(formId, interviewerId);
-
-  const numInterviewed = useMemo(
-    () =>
-      interviews?.reduce(
-        (acc, interview) => (interview.submitted ? acc + 1 : acc),
-        0,
-      ) ?? 0,
-    [interviews],
+  const { data, isPending, error } = useInterviewerAssignments(
+    formId ?? "",
+    interviewerId ?? "",
   );
 
-  if (assignmentsPending || interviewerPending || interviewsPending)
-    return <Loading />;
+  if (isPending) return <Loading />;
+  if (error) return <p>Failed to fetch assignments: {error.message}</p>;
 
-  if (assignmentsError)
-    return <p>Failed to fetch assignments: {assignmentsError.message}</p>;
-  if (interviewerError)
-    return <p>Failed to fetch interviewer: {interviewerError.message}</p>;
-  if (interviewsError)
-    return <p>Failed to fetch interviews: {interviewsError.message}</p>;
-  if (!interviewer) return <p>Failed to fetch interviewer</p>;
+  const { interviewer, numInterviewed, rows: assignedInterviews } = data;
 
   return (
     <div className="w-full h-full bg-lightgray flex flex-col items-center p-2 py-4">
@@ -110,7 +82,7 @@ export function InterviewerAssignmentsPage() {
           </Button>
         </div>
         <InterviewerAssignmentsTable
-          assignments={assignedInterviews}
+          interviewerId={interviewerId!}
           formId={formId!}
           search=""
           statusFilter={statusFilter}

@@ -41,11 +41,9 @@ export const useUploadInterviewRubrics = () => {
   return useMutation({
     mutationFn: ({
       interviewRubrics,
-      token,
     }: {
       interviewRubrics: RoleReviewRubric[];
-      token: string;
-    }) => uploadInterviewRubricsService(interviewRubrics, token),
+    }) => uploadInterviewRubricsService(interviewRubrics),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: interviewRubricQueries.root });
     },

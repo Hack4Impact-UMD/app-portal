@@ -31,7 +31,6 @@ export default function UploadReviewRubricDialog() {
     uploadRubrics(
       {
         rubrics: APPLICATION_RUBRICS(selectedFormId),
-        token: (await token()) ?? "",
       },
       {
         onSuccess: () => {

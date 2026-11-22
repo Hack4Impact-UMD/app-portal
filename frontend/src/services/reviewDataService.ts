@@ -1,5 +1,4 @@
 import { FirestoreCollection } from "@app-portal/shared/constants";
-import type { ApplicantRole } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
@@ -90,23 +89,6 @@ export async function getReviewDataForReviewer(
     reviewData,
     where("reviewerId", "==", reviewerId),
     where("applicationFormId", "==", formId),
-  );
-  const result = await getDocs(q);
-
-  return result.docs.map((doc) => doc.data());
-}
-
-export async function getReviewDataForResponseRole(
-  formId: string,
-  responseId: string,
-  role: ApplicantRole,
-) {
-  const reviewData = appCollection(FirestoreCollection.ReviewData);
-  const q = query(
-    reviewData,
-    where("applicationFormId", "==", formId),
-    where("applicationResponseId", "==", responseId),
-    where("forRole", "==", role),
   );
   const result = await getDocs(q);
 

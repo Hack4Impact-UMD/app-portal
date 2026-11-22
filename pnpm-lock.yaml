@@ -42,8 +42,8 @@ importers:
         specifier: ^0.22.1
         version: 0.22.1
       typescript:
-        specifier: ~5.6.2
-        version: 5.6.3
+        specifier: ~5.9.3
+        version: 5.9.3
 
   backend/functions:
     dependencies:
@@ -56,12 +56,12 @@ importers:
       '@google-cloud/tasks':
         specifier: ^6.2.1
         version: 6.2.2
+      '@trpc/server':
+        specifier: ^11.29.7
+        version: 11.29.7(@types/express@4.17.25)(typescript@5.9.3)
       axios:
         specifier: ^1.16.0
         version: 1.16.0
-      body-parser:
-        specifier: ^1.20.3
-        version: 1.20.5
       cors:
         specifier: ^2.8.5
         version: 2.8.6
@@ -74,6 +74,9 @@ importers:
       firebase-functions:
         specifier: ^7.0.2
         version: 7.2.5(firebase-admin@13.10.0)
+      superjson:
+        specifier: ^2.2.7
+        version: 2.2.7
       uuid:
         specifier: 11.1.1
         version: 11.1.1
@@ -81,9 +84,6 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
-      '@types/body-parser':
-        specifier: ^1.19.6
-        version: 1.19.6
       '@types/cors':
         specifier: ^2.8.19
         version: 2.8.19
@@ -151,8 +151,8 @@ importers:
         specifier: ^4.1.12
         version: 4.3.0(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
       '@tanstack/react-query':
-        specifier: ^5.69.0
-        version: 5.100.9(react@19.1.0)
+        specifier: ^5.108.2
+        version: 5.108.2(@types/react@19.1.5)(react@19.1.0)
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -174,6 +174,12 @@ importers:
       '@tiptap/starter-kit':
         specifier: ^3.17.0
         version: 3.23.1
+      '@trpc/client':
+        specifier: ^11.29.7
+        version: 11.29.7(@trpc/server@11.29.7(@types/express@5.0.6)(typescript@5.9.3))(typescript@5.9.3)
+      '@trpc/tanstack-react-query':
+        specifier: ^11.29.7
+        version: 11.29.7(@tanstack/react-query@5.108.2(@types/react@19.1.5)(react@19.1.0))(@trpc/client@11.29.7(@trpc/server@11.29.7(@types/express@5.0.6)(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.29.7(@types/express@5.0.6)(typescript@5.9.3))(react@19.1.0)(typescript@5.9.3)
       ansi-to-react:
         specifier: ^6.2.6
         version: 6.2.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -228,6 +234,9 @@ importers:
       react-toastify:
         specifier: ^11.0.5
         version: 11.1.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      superjson:
+        specifier: ^2.2.7
+        version: 2.2.7
       tailwind-merge:
         specifier: ^3.3.0
         version: 3.5.0
@@ -241,6 +250,9 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.19(tailwindcss@4.3.0)
+      '@trpc/server':
+        specifier: ^11.29.7
+        version: 11.29.7(@types/express@5.0.6)(typescript@5.9.3)
       '@types/react':
         specifier: 19.1.5
         version: 19.1.5
@@ -250,6 +262,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^5.0.1
         version: 5.2.0(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+      functions:
+        specifier: workspace:*
+        version: link:../backend/functions
       react-scan:
         specifier: 0.5.4
         version: 0.5.4(esbuild@0.28.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(rollup@4.60.3)
@@ -2116,8 +2131,8 @@ packages:
   '@radix-ui/rect@1.1.1':
     resolution: {integrity: sha512-HPwpGIzkl28mWyZqG52jiqDJ12waP11Pa1lGoiyUkIEuMLBP0oeK/C89esbXrxsky5we7dfd8U58nm0SgAWpVw==}
 
-  '@react-grab/cli@0.1.47':
-    resolution: {integrity: sha512-Cc7d8mSwvoV8gpeTQbE8dMPdeXIyO6w+yIhzgi3jY06i03WLNhb/6jIxNBNF1cVRI7ujnFQXZA66BbnBNTpBSw==}
+  '@react-grab/cli@0.2.0':
+    resolution: {integrity: sha512-LVfA+j5cFT0Szd958WRD8W/B8ucCtz4ViiveDKWLqAwBkZFW9VRW1ZvwOUhp/M3SmVPtjDaRkW12GvAuTArP+Q==}
     hasBin: true
 
   '@rolldown/pluginutils@1.0.0-rc.3':
@@ -2397,13 +2412,17 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
-  '@tanstack/query-core@5.100.9':
-    resolution: {integrity: sha512-SJSFw1S8+kQ0+knv/XGfrbocWoAlT7vDKsSImtLx3ZPQmEcR46hkDjLSvynSy25N8Ms4tIEini1FuBd5k7IscQ==}
+  '@tanstack/query-core@5.108.2':
+    resolution: {integrity: sha512-0l+0xDKqn71hfJBKaAvFP/X7WYM0TbscEk6nK1pHaWQUWUEA+WJD0VlT8wF+HIJANMV9B/DouPWwDnX3w/l9BA==}
 
-  '@tanstack/react-query@5.100.9':
-    resolution: {integrity: sha512-Oa44XkaI3kCNN6ME0KByU3xT3SEUNOMfZpHxL6+wFoTm+OeUFYHKdeYVe0aOXlRDm/f15sgLwEt2HDorIdW8+A==}
+  '@tanstack/react-query@5.108.2':
+    resolution: {integrity: sha512-wV6hEjVGTfh9rvu3uREYW0hgBfS9klDejGelhPY575jD5jg6qbAb1nzT7hR1Q+wemR66ZjtE5p9pAGUwqK8zbg==}
     peerDependencies:
+      '@types/react': ^18 || ^19
       react: ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@tanstack/react-table@8.21.3':
     resolution: {integrity: sha512-5nNMTSETP4ykGegmVkhjcS8tTLW6Vl4axfEGQN3v0zdHYbK4UfoqfPChclTrJ4EoK9QynqAu9oUf8VEmrpZ5Ww==}
@@ -2584,6 +2603,42 @@ packages:
   '@tootallnate/once@2.0.1':
     resolution: {integrity: sha512-HqmEUIGRJ5fSXchkVgR5F7qn48bDBzv0kWj/Kfu5e6uci4UlEeng4331LnBkWffb++Ei3FOVLxo8JJWMFBDMeQ==}
     engines: {node: '>= 10'}
+
+  '@trpc/client@11.29.7':
+    resolution: {integrity: sha512-cW/8uDPDBEzSBdEoV0fLb6JL5U/YTOZRktLI7/bJJVsb9dz+qhYJST6YJEaI8yM6oz4MfnpCKf7Sk609zvjNxA==}
+    peerDependencies:
+      '@trpc/server': 11.29.7
+      typescript: '>=5.7.2'
+
+  '@trpc/server@11.29.7':
+    resolution: {integrity: sha512-9chUuB0abOfVkCm87lFQ3PTUJzPlErlf5HOBzvwtiGl7B0YdPBul1O597NTzjUcF1XDTsRqdnQfrz7BeptzSXQ==}
+    peerDependencies:
+      '@types/aws-lambda': '*'
+      '@types/express': '*'
+      '@types/ws': '*'
+      fastify: '*'
+      next: '*'
+      typescript: '>=5.7.2'
+    peerDependenciesMeta:
+      '@types/aws-lambda':
+        optional: true
+      '@types/express':
+        optional: true
+      '@types/ws':
+        optional: true
+      fastify:
+        optional: true
+      next:
+        optional: true
+
+  '@trpc/tanstack-react-query@11.29.7':
+    resolution: {integrity: sha512-8UTTghi0CI9ZTp4p1nnSn7ZzzYytuIKoc7LE0obrC4ZTPloP9A2ER4WK/BkCPWIlGzGXLrSB+MrNRxyoX82TCQ==}
+    peerDependencies:
+      '@tanstack/react-query': ^5.106.0
+      '@trpc/client': 11.29.7
+      '@trpc/server': 11.29.7
+      react: '>=18.2.0'
+      typescript: '>=5.7.2'
 
   '@tufjs/canonical-json@2.0.0':
     resolution: {integrity: sha512-yVtV8zsdo8qFHe+/3kw81dSLyF7D576A5cCFCi4X7B39tWT7SekaEFUnvnWJHz+9qO7qJTah1JbrDjWKqFtdWA==}
@@ -2931,6 +2986,11 @@ packages:
     peerDependencies:
       react: '>=17.0.1'
 
+  bippy@0.6.1:
+    resolution: {integrity: sha512-ky4m94Y/KfsddjGkKTsV4uFjZqkJjpOjQ2t5gKPdX6XH1MNxMNX5FrVefsxV4lpjemEmEdwe0e0YbzAMNs3oUQ==}
+    peerDependencies:
+      react: '>=17.0.1'
+
   body-parser@1.20.5:
     resolution: {integrity: sha512-3grm+/2tUOvu2cjJkvsIxrv/wVpfXQW4PsQHYm7yk4vfpu7Ekl6nEsYBoJUL6qDwZUx8wUhQ8tR2qz+ad9c9OA==}
     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
@@ -3120,6 +3180,10 @@ packages:
 
   cookie@1.1.1:
     resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
+    engines: {node: '>=18'}
+
+  copy-anything@4.1.5:
+    resolution: {integrity: sha512-vePst2VLTSqPglW7Q98VwFpGiGpOHTyXIo81MO5VyLecA5zMbZw/P/V1vmwD1jksa2iJpn/YkDrJ3XhTfzUyhQ==}
     engines: {node: '>=18'}
 
   cors@2.8.6:
@@ -4609,8 +4673,8 @@ packages:
     peerDependencies:
       react: ^19.1.0
 
-  react-grab@0.1.47:
-    resolution: {integrity: sha512-1GNy24KMJ4CY1IxorYO9mydItGi0L1HkQB19uYU3t0BMsJB0K+D/QYiaBz+rugRynyY8LzmXIuOcon1TykLlCg==}
+  react-grab@0.2.0:
+    resolution: {integrity: sha512-ohhsfXD4qN0j6cMQd56aaVJBPDF3kUdviF/Od1Eak/rEIXQ3svQ4gjkwTfuTZwTBnxHRL16p9JqdlVQO5nUHqA==}
     hasBin: true
     peerDependencies:
       react: '>=17.0.0'
@@ -5010,6 +5074,10 @@ packages:
   style-to-object@1.0.14:
     resolution: {integrity: sha512-LIN7rULI0jBscWQYaSswptyderlarFkjQ+t79nzty8tcIAceVomEVlLzH5VP4Cmsv6MtKhs7qaAiwlcp+Mgaxw==}
 
+  superjson@2.2.7:
+    resolution: {integrity: sha512-QK/H+tosbovdRvIuGqcWn8g3IxPZY7B8ZPowCAmWsV8bPvCk+bGMlZt90C4AxZjnzMO2WBRDacr1+0i1AOy/5g==}
+    engines: {node: '>=16'}
+
   supports-color@10.2.2:
     resolution: {integrity: sha512-SS+jx45GF1QjgEXQx4NJZV9ImqmO2NPz5FNsIHrsDjh2YsHnawpan7SNQ1o8NuhrbHZy9AZhIoCUiCeaW/C80g==}
     engines: {node: '>=18'}
@@ -5103,8 +5171,8 @@ packages:
     resolution: {integrity: sha512-faYHw0anBbc/kWF3zFTEnxSFOAGUX9GFbOBthvDdLsIlEoWOFOtS0zgCiQYwIskL9iGXZL3kAXD8OoZ4GmMATA==}
     engines: {node: '>= 18'}
 
-  typescript@5.6.3:
-    resolution: {integrity: sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==}
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -7221,7 +7289,7 @@ snapshots:
 
   '@radix-ui/rect@1.1.1': {}
 
-  '@react-grab/cli@0.1.47':
+  '@react-grab/cli@0.2.0':
     dependencies:
       agent-install: 0.0.6
       commander: 14.0.3
@@ -7424,12 +7492,14 @@ snapshots:
       tailwindcss: 4.3.0
       vite: 7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
 
-  '@tanstack/query-core@5.100.9': {}
+  '@tanstack/query-core@5.108.2': {}
 
-  '@tanstack/react-query@5.100.9(react@19.1.0)':
+  '@tanstack/react-query@5.108.2(@types/react@19.1.5)(react@19.1.0)':
     dependencies:
-      '@tanstack/query-core': 5.100.9
+      '@tanstack/query-core': 5.108.2
       react: 19.1.0
+    optionalDependencies:
+      '@types/react': 19.1.5
 
   '@tanstack/react-table@8.21.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
@@ -7626,6 +7696,31 @@ snapshots:
 
   '@tootallnate/once@2.0.1':
     optional: true
+
+  '@trpc/client@11.29.7(@trpc/server@11.29.7(@types/express@5.0.6)(typescript@5.9.3))(typescript@5.9.3)':
+    dependencies:
+      '@trpc/server': 11.29.7(@types/express@5.0.6)(typescript@5.9.3)
+      typescript: 5.9.3
+
+  '@trpc/server@11.29.7(@types/express@4.17.25)(typescript@5.9.3)':
+    dependencies:
+      typescript: 5.9.3
+    optionalDependencies:
+      '@types/express': 4.17.25
+
+  '@trpc/server@11.29.7(@types/express@5.0.6)(typescript@5.9.3)':
+    dependencies:
+      typescript: 5.9.3
+    optionalDependencies:
+      '@types/express': 5.0.6
+
+  '@trpc/tanstack-react-query@11.29.7(@tanstack/react-query@5.108.2(@types/react@19.1.5)(react@19.1.0))(@trpc/client@11.29.7(@trpc/server@11.29.7(@types/express@5.0.6)(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.29.7(@types/express@5.0.6)(typescript@5.9.3))(react@19.1.0)(typescript@5.9.3)':
+    dependencies:
+      '@tanstack/react-query': 5.108.2(@types/react@19.1.5)(react@19.1.0)
+      '@trpc/client': 11.29.7(@trpc/server@11.29.7(@types/express@5.0.6)(typescript@5.9.3))(typescript@5.9.3)
+      '@trpc/server': 11.29.7(@types/express@5.0.6)(typescript@5.9.3)
+      react: 19.1.0
+      typescript: 5.9.3
 
   '@tufjs/canonical-json@2.0.0': {}
 
@@ -7994,6 +8089,10 @@ snapshots:
     dependencies:
       react: 19.1.0
 
+  bippy@0.6.1(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+
   body-parser@1.20.5:
     dependencies:
       bytes: 3.1.2
@@ -8202,6 +8301,8 @@ snapshots:
   cookie@0.7.2: {}
 
   cookie@1.1.1: {}
+
+  copy-anything@4.1.5: {}
 
   cors@2.8.6:
     dependencies:
@@ -10115,10 +10216,10 @@ snapshots:
       react: 19.1.0
       scheduler: 0.26.0
 
-  react-grab@0.1.47(react@19.1.0):
+  react-grab@0.2.0(react@19.1.0):
     dependencies:
-      '@react-grab/cli': 0.1.47
-      bippy: 0.5.41(react@19.1.0)
+      '@react-grab/cli': 0.2.0
+      bippy: 0.6.1(react@19.1.0)
     optionalDependencies:
       react: 19.1.0
 
@@ -10196,7 +10297,7 @@ snapshots:
       prompts: 2.4.2
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
-      react-grab: 0.1.47(react@19.1.0)
+      react-grab: 0.2.0(react@19.1.0)
     optionalDependencies:
       esbuild: 0.28.1
       unplugin: 2.1.0
@@ -10631,6 +10732,10 @@ snapshots:
     dependencies:
       inline-style-parser: 0.2.7
 
+  superjson@2.2.7:
+    dependencies:
+      copy-anything: 4.1.5
+
   supports-color@10.2.2: {}
 
   tailwind-merge@3.5.0: {}
@@ -10751,7 +10856,7 @@ snapshots:
       media-typer: 1.1.0
       mime-types: 3.0.2
 
-  typescript@5.6.3: {}
+  typescript@5.9.3: {}
 
   uc.micro@1.0.6: {}
 

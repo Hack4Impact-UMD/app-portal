@@ -2,89 +2,41 @@ import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { InterviewersTable } from "@/components/dor/InterviewersDashboard";
+import { useRows } from "@/components/dor/InterviewersDashboard/useRows";
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
-import { useInterviewAssignmentsForForm } from "@/hooks/useInterviewAssignments";
-import { useInterviewDataForForm } from "@/hooks/useInterviewData";
-import { useAllReviewers } from "@/hooks/useReviewers";
 import useSearch from "@/hooks/useSearch";
 
 export default function SuperReviewerInterviewersDashboard() {
   const { formId } = useParams<{ formId: string }>();
 
-  const {
-    data: interviewers,
-    isPending: interviewersPending,
-    error: interviewersError,
-  } = useAllReviewers(); // all reviewers are eligible for interviews, but some will never be assigned interviews
-  const {
-    data: interviewData,
-    isPending: dataPending,
-    error: dataError,
-  } = useInterviewDataForForm(formId);
-  const {
-    data: assignments,
-    isPending: assignmentsPending,
-    error: assignmentsError,
-  } = useInterviewAssignmentsForForm(formId);
-
+  const { data: rows, isPending, error } = useRows(formId);
   const { search } = useSearch();
-
   const [statusFilter, setStatusFilter] = useState<
     "all" | "complete" | "pending" | "unassigned"
   >("all");
 
   const numComplete = useMemo(
     () =>
-      interviewers?.reduce((acc, interviewer) => {
-        const data =
-          interviewData?.filter((d) => d.interviewerId === interviewer.id) ??
-          [];
-        const assigned =
-          assignments?.filter((a) => a.interviewerId === interviewer.id) ?? [];
-
-        if (data.length === 0 && assigned.length === 0) return acc;
-
-        if (
-          data.reduce(
-            (acc, interview) => (interview.submitted ? acc + 1 : acc),
-            0,
-          ) === assigned.length
-        ) {
-          return acc + 1;
-        } else {
-          return acc;
-        }
-      }, 0),
-    [assignments, interviewData, interviewers],
+      rows?.filter(
+        (row) =>
+          !(row.interviewDataCount === 0 && row.assignments === 0) &&
+          row.pendingAssignments === 0,
+      ).length,
+    [rows],
   );
 
   const numNoAssignments = useMemo(
     () =>
-      interviewers?.reduce((acc, interviewer) => {
-        const data =
-          interviewData?.filter((d) => d.interviewerId === interviewer.id) ??
-          [];
-        const assigned =
-          assignments?.filter((a) => a.interviewerId === interviewer.id) ?? [];
-
-        if (data.length === 0 && assigned.length === 0) return acc + 1;
-        else return acc;
-      }, 0),
-    [assignments, interviewData, interviewers],
+      rows?.filter(
+        (row) => row.interviewDataCount === 0 && row.assignments === 0,
+      ).length,
+    [rows],
   );
 
   if (!formId) return <p>No formId found! The url is probably malformed.</p>;
-  if (interviewersError)
-    return <p>Failed to fetch interviewers: {interviewersError.message}</p>;
-  if (dataError)
-    return <p>Failed to fetch interview data: {dataError.message}</p>;
-  if (assignmentsError)
-    return (
-      <p>Failed to fetch interview assignments: {assignmentsError.message}</p>
-    );
-  if (interviewersPending || dataPending || assignmentsPending || !interviewers)
-    return <Loading />;
+  if (error) return <p>Failed to fetch interviewers: {error.message}</p>;
+  if (isPending || !rows) return <Loading />;
 
   return (
     <div>
@@ -94,7 +46,7 @@ export default function SuperReviewerInterviewersDashboard() {
 					${statusFilter === "all" ? "bg-[#17476B] hover:bg-[#17476B]/90 text-[#D5E7F2]" : "bg-[#D5E7F2] hover:bg-[#D5E7F2]/90 text-[#17476B]"}`}
           onClick={() => setStatusFilter("all")}
         >
-          <span className="text-3xl">{interviewers.length}</span>
+          <span className="text-3xl">{rows.length}</span>
           <span className="mt-auto">Interviewers</span>
         </Button>
         <Button
@@ -111,7 +63,7 @@ export default function SuperReviewerInterviewersDashboard() {
           onClick={() => setStatusFilter("pending")}
         >
           <span className="text-3xl">
-            {interviewers.length - (numComplete ?? 0) - (numNoAssignments ?? 0)}
+            {rows.length - (numComplete ?? 0) - (numNoAssignments ?? 0)}
           </span>
           <span className="mt-auto">Pending</span>
         </Button>
@@ -125,9 +77,6 @@ export default function SuperReviewerInterviewersDashboard() {
         </Button>
       </div>
       <InterviewersTable
-        interviewers={interviewers}
-        interviewData={interviewData}
-        assignments={assignments}
         formId={formId}
         search={search}
         statusFilter={statusFilter}

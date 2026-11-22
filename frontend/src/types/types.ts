@@ -6,13 +6,14 @@ import type {
   GradingJobPublicBase,
   ReviewerUserProfileBase,
   SuperReviewerUserProfileBase,
+  TimestampLike,
 } from "@app-portal/shared/types";
 import type { Timestamp } from "firebase/firestore";
 
 // ⚠️ do not edit these types!!!!
 // edit the base schemas within @app-portal/shared instead!!!!
 
-type ProfileWithClientTimestamp<T> = T & { dateCreated: Timestamp };
+type ProfileWithClientTimestamp<T> = T & { dateCreated: TimestampLike };
 
 export type ApplicantUserProfile =
   ProfileWithClientTimestamp<ApplicantUserProfileBase>;
@@ -37,7 +38,7 @@ export type ReviewCapableUser =
   | SuperReviewerUserProfile;
 
 export interface ApplicationResponse extends ApplicationResponseBase {
-  dateSubmitted: Timestamp;
+  dateSubmitted: TimestampLike;
 }
 
 export interface ApplicationForm extends ApplicationFormBase {

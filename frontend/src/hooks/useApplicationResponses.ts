@@ -67,9 +67,6 @@ export function useMyApplicationResponseAndForm(formId?: string) {
 }
 
 // includes in-progress submissions
-export function useAllApplicationResponsesForForm(formId: string | undefined) {
-  return useQuery(applicationResponseQueries.byForm(formId));
-}
 
 export function useApplicationResponse(responseId?: string) {
   return useQuery(applicationResponseQueries.detail(responseId));

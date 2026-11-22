@@ -1,55 +1,31 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { ReviewerInterviewsTable } from "@/components/reviewer/ReviewerInterviewsTable";
+import { useMyInterviewAssignmentRows } from "@/components/reviewer/ReviewerInterviewsTable/useRows";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
-import { useMyInterviewAssignments } from "@/hooks/useInterviewAssignments";
-import { useMyInterviews } from "@/hooks/useInterviewData";
 import useSearch from "@/hooks/useSearch";
 
 export default function ReviewerInterviewsDashboard() {
   const { formId } = useParams();
-  const {
-    data: assignedInterviews,
-    isPending: assignmentsLoading,
-    error: assignmentsError,
-  } = useMyInterviewAssignments(formId ?? "");
-  const {
-    data: interviews,
-    isPending: interviewsLoading,
-    error: interviewsError,
-  } = useMyInterviews(formId ?? "");
+  const { data, isPending, error } = useMyInterviewAssignmentRows(formId ?? "");
   const { search } = useSearch();
   const [statusFilter, setStatusFilter] = useState<
     "all" | "completed" | "pending"
   >("all");
 
-  const numReviewed = useMemo(
-    () =>
-      assignedInterviews?.filter((f) =>
-        interviews
-          ?.filter((r) => r.submitted && r.forRole === f.forRole)
-          ?.map((r) => r.applicationResponseId)
-          .includes(f.applicationResponseId),
-      ).length,
-    [interviews, assignedInterviews],
-  );
-
   if (!formId) return <p>Form ID not provided!</p>;
 
-  if (assignmentsLoading || interviewsLoading)
+  if (isPending)
     return (
       <div className="flex items-center justify-center p-4 w-full h-full">
         <Spinner />
       </div>
     );
-  if (assignmentsError)
-    return (
-      <p>Failed to fetch assigned interviews: {assignmentsError.message}</p>
-    );
-  if (interviewsError)
-    return <p>Failed to fetch interview data: {interviewsError.message}</p>;
+  if (error) return <p>Failed to fetch assigned interviews: {error.message}</p>;
+
+  const { rows: assignedInterviews, numInterviewed: numReviewed } = data;
 
   return (
     <div className="max-w-5xl w-full rounded bg-white flex flex-col gap-2">
@@ -85,7 +61,6 @@ export default function ReviewerInterviewsDashboard() {
         formId={formId}
         statusFilter={statusFilter}
         search={search}
-        assignments={assignedInterviews}
       />
     </div>
   );

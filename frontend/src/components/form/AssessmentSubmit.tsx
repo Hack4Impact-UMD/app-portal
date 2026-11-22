@@ -100,7 +100,6 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
       {
         responseId,
         repoURL: repoPath,
-        token: resolvedToken,
       },
       {
         onSuccess: (jobId) => {

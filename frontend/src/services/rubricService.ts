@@ -1,13 +1,11 @@
 import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { RoleReviewRubric } from "@app-portal/shared/types";
-import axios from "axios";
 import { getDocs, query, where } from "firebase/firestore";
 
-import { API_URL } from "@/config/firebase";
+import { trpcClient } from "@/config/trpc";
 import type { ApplicationForm } from "@/types/types";
 
-import { getAppCheckToken } from "./appCheckService";
 import { appCollection } from "./firestore";
 
 export interface RubricValidationWarnings {
@@ -36,16 +34,8 @@ export async function getRoleRubricsForFormRole(
     .filter((r) => r.roles.length === 0 || r.roles.includes(role));
 }
 
-export async function uploadRubrics(
-  rubrics: RoleReviewRubric[],
-  token: string,
-) {
-  return await axios.post(API_URL + "/application/rubrics", rubrics, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "X-APPCHECK": await getAppCheckToken(),
-    },
-  });
+export async function uploadRubrics(rubrics: RoleReviewRubric[]) {
+  return trpcClient.application.uploadRubrics.mutate(rubrics);
 }
 
 export function validateRubricScoreKeys(

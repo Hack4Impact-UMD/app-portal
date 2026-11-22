@@ -37,13 +37,8 @@ export const useUploadRubrics = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      rubrics,
-      token,
-    }: {
-      rubrics: RoleReviewRubric[];
-      token: string;
-    }) => uploadRubrics(rubrics, token),
+    mutationFn: ({ rubrics }: { rubrics: RoleReviewRubric[] }) =>
+      uploadRubrics(rubrics),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: rubricQueries.root });
     },

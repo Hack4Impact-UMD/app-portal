@@ -1,28 +1,15 @@
 import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { DecisionConfirmation } from "@app-portal/shared/types";
-import axios from "axios";
 import { getDocs, query, where } from "firebase/firestore";
 
-import { API_URL } from "@/config/firebase";
+import { trpcClient } from "@/config/trpc";
 
-import { getAppCheckToken } from "./appCheckService";
 import { appCollection } from "./firestore";
 
 export async function createDecisionConfirmation(
   decisionConfirmation: DecisionConfirmation,
-  token: string,
 ) {
-  const res = await axios.post(
-    API_URL + "/status/decision",
-    decisionConfirmation,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "X-APPCHECK": await getAppCheckToken(),
-      },
-    },
-  );
-  return res.data;
+  return trpcClient.status.confirmDecision.mutate(decisionConfirmation);
 }
 
 export async function getDecisionConfirmationForResponseRole(
@@ -42,15 +29,4 @@ export async function getDecisionConfirmationForResponseRole(
 
   if (resp.length > 0) return resp[0];
   else return null;
-}
-
-export async function getAllDecisionConfirmationsByFormId(
-  formId: string,
-): Promise<DecisionConfirmation[]> {
-  const responses = appCollection(FirestoreCollection.DecisionStatus);
-  const q = query(responses, where("formId", "==", formId));
-
-  const results = await getDocs(q);
-
-  return results.docs.map((d) => d.data());
 }

@@ -1,15 +1,14 @@
-import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
+import { ApplicantRole } from "@app-portal/shared/constants";
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { BoardInterviewsTable } from "@/components/dor/BoardInterviewsDashboard";
+import { useRows } from "@/components/dor/QualifiedDashboard/useRows";
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
-import { useAllApplicationResponsesForForm } from "@/hooks/useApplicationResponses";
-import { useQualifiedStatusesForFormRoles } from "@/hooks/useApplicationStatus";
 import { useAuth } from "@/hooks/useAuth";
 import useSearch from "@/hooks/useSearch";
-import type { ApplicationResponse, BoardUserProfile } from "@/types/types";
+import type { BoardUserProfile } from "@/types/types";
 import {
   applicantRoleColor,
   applicantRoleDarkColor,
@@ -25,54 +24,15 @@ export default function BoardInterviewsDashboard() {
   const boardUser = user as BoardUserProfile;
   const allowedRoles = boardUser?.applicantRoles ?? [];
 
-  const {
-    data: qualifiedStatuses,
-    isPending: statusesPending,
-    error: statusesError,
-  } = useQualifiedStatusesForFormRoles(formId, allowedRoles);
+  const { data: rows, isPending, error } = useRows(formId);
 
-  const {
-    data: apps,
-    isPending: appsPending,
-    error: appsError,
-  } = useAllApplicationResponsesForForm(formId);
-
-  // Expand apps by role, as in SuperReviewerApplicationsDashboard
-  const expandedSubmittedApps = useMemo(
-    () =>
-      apps
-        ?.filter((app) => app.status !== ApplicationStatus.InProgress)
-        ?.flatMap((app) =>
-          app.rolesApplied.map(
-            (role): ApplicationResponse => ({
-              ...app,
-              rolesApplied: [role],
-            }),
-          ),
-        ) ?? [],
-    [apps],
-  );
-
-  // Filter to only those with qualified status
-  const qualifiedApps = useMemo(() => {
-    if (!qualifiedStatuses || !expandedSubmittedApps) return [];
-    const qualifiedSet = new Set(
-      qualifiedStatuses.map((s) => `${s.responseId}:${s.role}`),
-    );
-    return expandedSubmittedApps.filter((app) =>
-      qualifiedSet.has(`${app.id}:${app.rolesApplied[0]}`),
-    );
-  }, [qualifiedStatuses, expandedSubmittedApps]);
-
-  // Role counts for summary cards
   const applicationsByRole = useMemo(() => {
     const freqs: Map<ApplicantRole, number> = new Map();
-    qualifiedApps.forEach((app) => {
-      const role = app.rolesApplied[0];
-      freqs.set(role, (freqs.get(role) ?? 0) + 1);
+    rows?.forEach((row) => {
+      freqs.set(row.role, (freqs.get(row.role) ?? 0) + 1);
     });
     return freqs;
-  }, [qualifiedApps]);
+  }, [rows]);
 
   // Use the same order as SuperReviewerApplicationsDashboard
   const roleOrder = Object.values(ApplicantRole).filter((role) =>
@@ -80,10 +40,8 @@ export default function BoardInterviewsDashboard() {
   );
 
   if (!formId) return <p>No formId found! The url is probably malformed.</p>;
-  if (statusesError)
-    return <p>Something went wrong: {statusesError.message}</p>;
-  if (appsError) return <p>Something went wrong: {appsError.message}</p>;
-  if (statusesPending || appsPending) return <Loading />;
+  if (error) return <p>Something went wrong: {error.message}</p>;
+  if (isPending || !rows) return <Loading />;
 
   return (
     <div>
@@ -93,7 +51,7 @@ export default function BoardInterviewsDashboard() {
 					${roleFilter === "all" ? "bg-[#4A280D] hover:bg-[#4A280D]/90 text-[#F1D5C4]" : "bg-[#F1D5C4] hover:bg-[#F1D5C4]/90 text-[#4A280D]"}`}
           onClick={() => setRoleFilter("all")}
         >
-          <span className="text-3xl">{qualifiedApps.length}</span>
+          <span className="text-3xl">{rows.length}</span>
           <span className="mt-auto">Total Applications</span>
         </Button>
         {roleOrder.map((role) => {
@@ -120,7 +78,6 @@ export default function BoardInterviewsDashboard() {
         })}
       </div>
       <BoardInterviewsTable
-        applications={qualifiedApps}
         formId={formId}
         search={search}
         roleFilter={roleFilter}

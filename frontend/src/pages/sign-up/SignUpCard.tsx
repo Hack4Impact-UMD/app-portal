@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -7,6 +6,7 @@ import { Link } from "react-router-dom";
 import TextBox from "@/components/TextBox";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Button } from "@/components/ui/button";
+import { isTRPCClientError } from "@/config/trpc";
 import { registerUser } from "@/services/userService";
 import { validEmail, validPassword } from "@/utils/verification";
 
@@ -110,20 +110,16 @@ export default function SignUpCard() {
           password: "",
           genericError: "",
         };
-        if (error instanceof AxiosError) {
-          if (error.response?.data.error === "Invalid Data") {
-            error.response?.data.details.map(
-              (issue: {
-                field: "firstName" | "lastName" | "email";
-                message: string;
-              }) => {
-                throwErrorToast(
-                  `[Server validation error] ${issue.field}: ${issue.message}`,
-                );
-                serverErrors[issue.field] = issue.message;
-              },
+        if (isTRPCClientError(error)) {
+          error.data?.zodIssues?.forEach((issue) => {
+            throwErrorToast(
+              `[Server validation error] ${issue.field}: ${issue.message}`,
             );
-          }
+            if (issue.field in serverErrors) {
+              serverErrors[issue.field as keyof typeof serverErrors] =
+                issue.message;
+            }
+          });
         } else if (error instanceof Error) {
           serverErrors.genericError = error.message;
         } else {

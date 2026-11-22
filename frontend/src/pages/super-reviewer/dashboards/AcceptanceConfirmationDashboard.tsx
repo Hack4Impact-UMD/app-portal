@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { AcceptanceConfirmationTable } from "@/components/dor/AcceptanceConfirmationDashboard";
+import { useRows } from "@/components/dor/AcceptanceConfirmationDashboard/useRows";
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
-import { useAllDecisionConfirmationsForForm } from "@/hooks/useDecisionConfirmation";
 import useSearch from "@/hooks/useSearch";
 
 export default function AcceptanceConfirmationDashboard() {
@@ -14,14 +14,10 @@ export default function AcceptanceConfirmationDashboard() {
   >("all");
   const { search } = useSearch();
 
-  const {
-    data: confirmations,
-    isPending,
-    error,
-  } = useAllDecisionConfirmationsForForm(formId ?? "");
+  const { data: confirmations, isPending, error } = useRows(formId ?? "");
 
   const numAccepted = useMemo(
-    () => confirmations?.filter((c) => c.status === "accepted").length,
+    () => confirmations?.filter((c) => c.decision === "accepted").length,
     [confirmations],
   );
 
@@ -67,7 +63,6 @@ export default function AcceptanceConfirmationDashboard() {
 
       {/* Table Component */}
       <AcceptanceConfirmationTable
-        confirmations={confirmations}
         formId={formId}
         search={search}
         decisionFilter={decisionFilter}
