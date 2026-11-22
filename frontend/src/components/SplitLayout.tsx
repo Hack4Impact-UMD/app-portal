@@ -34,7 +34,13 @@ function useWelcomeMessage() {
       ? "landingMessageLoggedIn"
       : "landingMessageLoggedOut";
 
-    const savedMessage = sessionStorage.getItem(sessionKey);
+    let savedMessage: string | null = null;
+    try {
+      savedMessage = sessionStorage.getItem(sessionKey);
+    } catch (err) {
+      console.error("failed to read session storage");
+      console.error(err);
+    }
 
     if (savedMessage) {
       setMessage(savedMessage);
@@ -43,7 +49,12 @@ function useWelcomeMessage() {
       const newMessage = pickWeightedMessage(messages);
 
       setMessage(newMessage);
-      sessionStorage.setItem(sessionKey, newMessage);
+      try {
+        sessionStorage.setItem(sessionKey, newMessage);
+      } catch (err) {
+        console.error("failed to read session storage");
+        console.error(err);
+      }
     }
   }, [user]);
 
