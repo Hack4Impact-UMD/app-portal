@@ -142,26 +142,27 @@ export default function SignUpCard() {
         e.stopPropagation();
         handleSubmit();
       }}
-      className="flex flex-col items-center justify-around w-full max-w-[430px] h-[700px] p-4"
+      className="flex w-full max-w-md flex-col gap-3"
     >
-      <img src="h4i-logo.png" alt="h4i logo" className="h-[105px] w-[105px]" />
-      <div className="flex flex-col items-center text-center justify-around w-[305px] h-[105px]">
-        <h1 className="text-3xl font-bold">Create an Account</h1>
-        <h3 className="text-lg text-darkgray">
-          Let's get started by filling out your information below
-        </h3>
+      <div className="mb-5">
+        <h1 className="text-4xl font-normal leading-[1.05] tracking-tight sm:text-5xl">
+          Create an account
+        </h1>
+        <p className="mt-3 text-lg text-h4i-navy/70">
+          Let's get started by filling out your information below.
+        </p>
       </div>
 
-      <div className="max-w-full w-full flex flex-col justify-between sm:flex-row ">
+      <div className="flex w-full flex-col gap-3 sm:flex-row">
         <TextBox
-          className="mb-2 sm:w-[193px] sm:mb-0"
+          className="min-w-0 sm:flex-1"
           inputType="text"
           label="FIRST NAME"
           invalidLabel={formErrors.firstName}
           onChange={(e) => handleInputChange("firstName", e.target.value)}
         />
         <TextBox
-          className="sm:w-[193px]"
+          className="min-w-0 sm:flex-1"
           inputType="text"
           label="LAST NAME"
           invalidLabel={formErrors.lastName}
@@ -196,18 +197,19 @@ export default function SignUpCard() {
         </button>
       </div>
       <Button
-        className="w-full h-[73px]"
+        size="lg"
+        className="mt-2 w-full"
         disabled={signUpMutation.isPending || !isFormValid}
         type="submit"
       >
-        Create Account
+        Create account
       </Button>
-      <div className="w-full">
-        <hr className="w-full text-darkgray m-0"></hr>
-        <p className="text-darkgray mt-1">
+      <div className="mt-3 w-full">
+        <hr className="m-0 w-full text-gray"></hr>
+        <p className="mt-4 text-sm text-h4i-navy/60">
           Already have an account?{" "}
           <Link to="/login" className="text-blue">
-            Log In
+            Log in
           </Link>
         </p>
       </div>

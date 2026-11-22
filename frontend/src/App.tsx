@@ -22,7 +22,7 @@ const DecisionPage = lazy(() => import("./components/status/DecisionPage"));
 const SignUp = lazy(() => import("./pages/sign-up/SignUp"));
 const LogIn = lazy(() => import("./pages/log-in/LogIn"));
 const ForgotPass = lazy(() => import("./pages/forgot-pass/ForgotPass"));
-const ResetPassCard = lazy(() => import("./pages/reset-pass/ResetPassCard"));
+const ResetPass = lazy(() => import("./pages/reset-pass/ResetPass"));
 const Layout = lazy(() => import("./pages/Layout"));
 const ApplicationPage = lazy(() => import("./pages/applicant/ApplicationPage"));
 const AppOverview = lazy(() => import("./pages/applicant/AppOverview"));
@@ -509,7 +509,7 @@ function App() {
                 }
               />
               <Route path="/forgotpassword" element={<ForgotPass />}></Route>
-              <Route path="/resetpassword" element={<ResetPassCard />}></Route>
+              <Route path="/resetpassword" element={<ResetPass />}></Route>
               <Route path="/verify" element={<VerifyEmailPage />}></Route>
 
               {/*WARN:MAKE SURE THIS IS THE LAST ROUTE*/}

@@ -1,6 +1,6 @@
 import { sendPasswordResetEmail } from "firebase/auth";
 import { useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import TextBox from "@/components/TextBox";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
@@ -78,14 +78,16 @@ export default function ForgotPassCard() {
         e.stopPropagation();
         handleSubmit();
       }}
-      className="flex flex-col items-center justify-around p-4 w-full max-w-[430px] h-[500px]"
+      className="flex w-full max-w-md flex-col gap-3"
     >
-      <img src="h4i-logo.png" alt="h4i logo" className="h-[105px] w-[105px]" />
-      <div className="flex flex-col items-center text-center justify-around w-[305px] h-[105px]">
-        <h1 className="text-3xl font-bold">Forgot Password?</h1>
-        <h3 className="text-lg text-darkgray">
-          No worries! You will recieve an email to reset your account.
-        </h3>
+      <div className="mb-5">
+        <h1 className="text-4xl font-normal leading-[1.05] tracking-tight sm:text-5xl">
+          Forgot password?
+        </h1>
+        <p className="mt-3 text-lg text-h4i-navy/70">
+          No worries! Enter your email and we'll send you a link to reset your
+          password.
+        </p>
       </div>
       <TextBox
         inputType="text"
@@ -94,11 +96,22 @@ export default function ForgotPassCard() {
         invalidLabel={formErrors.email}
         onChange={(e) => handleInputChange("email", e.target.value)}
       />
-      <Button className="w-full h-[73px]" disabled={!isFormValid} type="submit">
-        Send Reset Email
+      <Button
+        size="lg"
+        className="mt-2 w-full"
+        disabled={!isFormValid}
+        type="submit"
+      >
+        Send reset email
       </Button>
-      <div className="w-full">
-        <hr className="w-full text-darkgray m-0"></hr>
+      <div className="mt-3 w-full">
+        <hr className="m-0 w-full text-gray"></hr>
+        <p className="mt-4 text-sm text-h4i-navy/60">
+          Remembered it?{" "}
+          <Link to="/login" className="text-blue">
+            Back to log in
+          </Link>
+        </p>
       </div>
     </form>
   );
