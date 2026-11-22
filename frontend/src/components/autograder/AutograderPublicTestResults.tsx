@@ -97,7 +97,7 @@ function TestLogBlock({ test }: { test: TestResult }) {
     : test.passed
       ? "Passed"
       : "Failed";
-  const subtitle = `${test.suite} · ${displayDurationMs(test.durationMs)}`;
+  const subtitle = `${test.suite} · ${displayDurationMs(test.durationMs)} · ${test.points}pts`;
 
   if (test.pending) {
     return (
