@@ -67,9 +67,7 @@ export const statusRouter = router({
       }
 
       let publicStatus:
-        | ReviewStatus.UnderReview
-        | ReviewStatus.Interview
-        | "decided";
+        ReviewStatus.UnderReview | ReviewStatus.Interview | "decided";
       if (data.status === ReviewStatus.Interview) {
         publicStatus = ReviewStatus.Interview;
       } else if (
@@ -116,7 +114,21 @@ export const statusRouter = router({
         });
       }
 
-      const form = (await formCollection.doc(input.formId).get()).data();
+      // Use the response's own form, not the client-supplied formId, so a
+      // released form can't stand in for this response's unreleased one.
+      if (response.applicationFormId !== input.formId) {
+        logger.warn(
+          `Form ${input.formId} doesn't match response ${responseId}'s form`,
+        );
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Form does not match this response.",
+        });
+      }
+
+      const form = (
+        await formCollection.doc(response.applicationFormId).get()
+      ).data();
       if (!form?.decisionsReleased) {
         logger.warn("Decisions not yet released");
         throw new TRPCError({
@@ -157,6 +169,16 @@ export const statusRouter = router({
       }
 
       const statusDoc = statusDocs.docs[0].data();
+
+      if (statusDoc.responseId !== responseId) {
+        logger.warn(
+          `Status ${internalStatusId} doesn't belong to response ${responseId}`,
+        );
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "No decision found for this response.",
+        });
+      }
 
       if (statusDoc.status !== ReviewStatus.Accepted) {
         logger.warn(

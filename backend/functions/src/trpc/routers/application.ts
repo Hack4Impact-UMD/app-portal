@@ -42,8 +42,7 @@ const FormInputSchema = z.custom<
 
 async function uploadRubrics(
   collection:
-    | FirestoreCollection.Rubrics
-    | FirestoreCollection.InterviewRubrics,
+    FirestoreCollection.Rubrics | FirestoreCollection.InterviewRubrics,
   rubrics: RoleReviewRubric[],
 ) {
   // Fail fast on duplicate IDs in the payload
@@ -118,96 +117,109 @@ export const applicationRouter = router({
       const statusCollection = appCollection(
         FirestoreCollection.ApplicationStatus,
       );
+      const responseRef = applicationResponseCollection.doc(
+        applicationResponse.id,
+      );
 
-      // check that the correct user is updating the application
-      const existing = (
-        await applicationResponseCollection.doc(applicationResponse.id).get()
-      ).data();
-      if (!existing) {
-        logger.warn(`Application response ${applicationResponse.id} not found`);
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Application response not found",
-        });
-      } else if (existing.status === ApplicationStatus.Submitted) {
-        logger.warn(`Application response already submitted ${existing.id}`);
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Application already submitted",
-        });
-      }
+      // Read-check-write in a transaction so two concurrent submits (or a
+      // save racing a submit) can't both pass the in-progress check.
+      const newApp = await db.runTransaction(async (tx) => {
+        // check that the correct user is updating the application
+        const existing = (await tx.get(responseRef)).data();
+        if (!existing) {
+          logger.warn(
+            `Application response ${applicationResponse.id} not found`,
+          );
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Application response not found",
+          });
+        }
 
-      if (existing.userId !== ctx.token.uid) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "User not authorized to submit this application",
-        });
-      }
+        if (existing.userId !== ctx.token.uid) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "User not authorized to submit this application",
+          });
+        }
 
-      // Check that the response is submitted before the due date specified by the application form
-      const form = (
-        await appCollection(FirestoreCollection.ApplicationForms)
-          .doc(existing.applicationFormId)
-          .get()
-      ).data();
-      if (!form) {
-        logger.warn(`Application form ${existing.applicationFormId} not found`);
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Application form not found",
-        });
-      }
+        if (existing.status !== ApplicationStatus.InProgress) {
+          logger.warn(`Application response already submitted ${existing.id}`);
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Application already submitted",
+          });
+        }
 
-      if (Timestamp.now() > form.dueDate) {
-        logger.warn("Submission deadline passed for form:" + form.id);
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Submission deadline has passed",
-        });
-      }
+        // Check that the response is submitted before the due date specified by the application form
+        const form = (
+          await tx.get(
+            appCollection(FirestoreCollection.ApplicationForms).doc(
+              existing.applicationFormId,
+            ),
+          )
+        ).data();
+        if (!form) {
+          logger.warn(
+            `Application form ${existing.applicationFormId} not found`,
+          );
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Application form not found",
+          });
+        }
 
-      const errors = validateResponses(applicationResponse, form);
-      if (errors.length !== 0) {
-        logger.warn(
-          "Validation errors found for response:" + applicationResponse.id,
-        );
-        logger.warn(errors);
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Application response failed validation",
-          cause: new SubmitValidationError(errors),
-        });
-      }
+        if (Timestamp.now() > form.dueDate) {
+          logger.warn("Submission deadline passed for form:" + form.id);
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Submission deadline has passed",
+          });
+        }
 
-      // Proceed with updating submission status
-      const newApp: ApplicationResponse = {
-        id: existing.id,
-        userId: existing.userId,
-        applicationFormId: existing.applicationFormId,
-        rolesApplied: applicationResponse.rolesApplied,
-        sectionResponses: applicationResponse.sectionResponses,
-        status: ApplicationStatus.Submitted,
-        dateSubmitted: Timestamp.now(),
-      };
-      await applicationResponseCollection
-        .doc(applicationResponse.id)
-        .update(newApp);
+        const errors = validateResponses(applicationResponse, form);
+        if (errors.length !== 0) {
+          logger.warn(
+            "Validation errors found for response:" + applicationResponse.id,
+          );
+          logger.warn(errors);
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Application response failed validation",
+            cause: new SubmitValidationError(errors),
+          });
+        }
 
-      for (const role of applicationResponse.rolesApplied) {
-        logger.info(
-          `creating review status object for response ${applicationResponse.id} and role ${role}`,
-        );
-        const status: InternalApplicationStatus = {
-          id: uuidv4(),
-          formId: applicationResponse.applicationFormId,
-          responseId: applicationResponse.id,
-          role: role,
-          status: ReviewStatus.UnderReview,
-          isQualified: false,
+        // Proceed with updating submission status
+        const submitted: ApplicationResponse = {
+          id: existing.id,
+          userId: existing.userId,
+          applicationFormId: existing.applicationFormId,
+          rolesApplied: applicationResponse.rolesApplied,
+          sectionResponses: applicationResponse.sectionResponses,
+          status: ApplicationStatus.Submitted,
+          dateSubmitted: Timestamp.now(),
         };
+        tx.update(responseRef, submitted);
 
-        await statusCollection.doc(status.id).set(status);
-      }
+        for (const role of applicationResponse.rolesApplied) {
+          logger.info(
+            `creating review status object for response ${applicationResponse.id} and role ${role}`,
+          );
+          const status: InternalApplicationStatus = {
+            id: uuidv4(),
+            formId: existing.applicationFormId,
+            responseId: applicationResponse.id,
+            role: role,
+            status: ReviewStatus.UnderReview,
+            isQualified: false,
+          };
+
+          tx.set(statusCollection.doc(status.id), status);
+        }
+
+        return submitted;
+      });
 
       logger.info("Successfully submitted form!");
       logger.info(newApp);
@@ -241,35 +253,41 @@ export const applicationRouter = router({
       const applicationResponsesCollection = appCollection(
         FirestoreCollection.ApplicationResponses,
       );
+      const responseRef = applicationResponsesCollection.doc(newAppResponse.id);
 
-      const existingResp = (
-        await applicationResponsesCollection.doc(newAppResponse.id).get()
-      ).data();
+      // Transaction so a save can't flip a response back to in-progress
+      // after a concurrent submit has marked it submitted.
+      await db.runTransaction(async (tx) => {
+        const existingResp = (await tx.get(responseRef)).data();
 
-      if (!existingResp) {
-        logger.warn(
-          "Attempt to save a non-existant application: ",
-          newAppResponse.id,
-        );
-        throw new TRPCError({ code: "BAD_REQUEST" });
-      } else if (existingResp.status === ApplicationStatus.Submitted) {
-        logger.warn(
-          "Attempt to save a submitted application: ",
-          newAppResponse.id,
-        );
-        throw new TRPCError({ code: "BAD_REQUEST" });
-      }
+        if (!existingResp) {
+          logger.warn(
+            "Attempt to save a non-existant application: ",
+            newAppResponse.id,
+          );
+          throw new TRPCError({ code: "BAD_REQUEST" });
+        }
 
-      if (existingResp.userId !== uid) {
-        logger.warn(
-          `Unauthorized application save! UID: ${uid} vs existing user id in response ${existingResp.userId}`,
-        );
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+        if (existingResp.userId !== uid) {
+          logger.warn(
+            `Unauthorized application save! UID: ${uid} vs existing user id in response ${existingResp.userId}`,
+          );
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
 
-      await applicationResponsesCollection
-        .doc(existingResp.id)
-        .set(newAppResponse);
+        if (existingResp.status !== ApplicationStatus.InProgress) {
+          logger.warn(
+            "Attempt to save a submitted application: ",
+            newAppResponse.id,
+          );
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Application already submitted",
+          });
+        }
+
+        tx.set(responseRef, newAppResponse);
+      });
       logger.info(
         `Saved ApplicationResponse with ID: ${newAppResponse.id} for user ${newAppResponse.userId}`,
       );

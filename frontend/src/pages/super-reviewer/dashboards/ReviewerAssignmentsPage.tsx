@@ -19,6 +19,7 @@ export function ReviewerAssignmentsPage() {
 
   const { data, isPending, error } = useReviewerAssignments(formId, reviewerId);
 
+  if (!formId || !reviewerId) return <p>Form or reviewer ID not provided!</p>;
   if (isPending) return <Loading />;
   if (error) return <p>Failed to fetch assignments: {error.message}</p>;
 

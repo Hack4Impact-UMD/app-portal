@@ -22,6 +22,8 @@ export function InterviewerAssignmentsPage() {
     interviewerId,
   );
 
+  if (!formId || !interviewerId)
+    return <p>Form or interviewer ID not provided!</p>;
   if (isPending) return <Loading />;
   if (error) return <p>Failed to fetch assignments: {error.message}</p>;
 

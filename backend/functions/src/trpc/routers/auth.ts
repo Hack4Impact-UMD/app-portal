@@ -40,20 +40,23 @@ function authErrorToTRPC(error: unknown): TRPCError {
   return new TRPCError({ code: "INTERNAL_SERVER_ERROR", cause: error });
 }
 
+// umd.edu and its subdomains (e.g. terpmail.umd.edu), or exactly hack4impact.org.
+const ALLOWED_EMAIL = /^[^@\s]+@(([^@\s.]+\.)*umd\.edu|hack4impact\.org)$/i;
+
+function assertAllowedEmail(email: string) {
+  if (!ALLOWED_EMAIL.test(email.trim())) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Only emails ending in umd.edu or hack4impact.org are allowed!",
+    });
+  }
+}
+
 export const authRouter = router({
   register: publicProcedure
     .input(userRegisterFormSchema)
     .mutation(async ({ input: registerForm }) => {
-      if (
-        !registerForm.email.trim().match(/^.+@(.*\.)?umd.edu$/) &&
-        !registerForm.email.trim().match(/^.+@(.*\.)?hack4impact.org$/)
-      ) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message:
-            "Only emails ending in umd.edu or hack4impact.org are allowed!",
-        });
-      }
+      assertAllowedEmail(registerForm.email);
 
       try {
         const userRecord = await admin.auth().createUser({
@@ -98,8 +101,21 @@ export const authRouter = router({
       const uid = ctx.token.uid;
 
       try {
+        // Email changes go through verifyBeforeUpdateEmail on the client, which
+        // only changes the auth email once the new address is verified. This
+        // endpoint just syncs the profile doc to that verified email, so it
+        // never changes the auth email itself.
+        const authUser = await admin.auth().getUser(uid);
+        if (updateForm.email !== authUser.email) {
+          logger.warn(`User ${uid} tried to set an unverified email`);
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Verify your new email address before updating it.",
+          });
+        }
+        assertAllowedEmail(updateForm.email);
+
         const updatedUserRecord = await admin.auth().updateUser(uid, {
-          email: updateForm.email,
           displayName: `${updateForm.firstName} ${updateForm.lastName}`,
         });
 

@@ -14,6 +14,7 @@ export function AssignedReviewsPage() {
   const { responseId } = useParams<{ responseId: string }>();
   const { data, isPending, error } = useAssignedReviews(responseId);
 
+  if (!responseId) return <p>Response ID not provided!</p>;
   if (isPending) return <Loading />;
   if (error) return <p>Failed to fetch assignments: {error.message}</p>;
 
