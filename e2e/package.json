@@ -1,0 +1,21 @@
+{
+  "name": "e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint .",
+    "lint:ci": "oxlint . --format=github",
+    "lint:fix": "oxlint . --fix",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check ."
+  },
+  "devDependencies": {
+    "@app-portal/shared": "workspace:*",
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^25.9.1",
+    "firebase-admin": "^13.10.0",
+    "typescript": "~5.9.3"
+  }
+}

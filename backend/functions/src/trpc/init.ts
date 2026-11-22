@@ -50,7 +50,16 @@ const t = initTRPC.context<Context>().create({
 
 export const router = t.router;
 
+function appCheckBypassed() {
+  return (
+    process.env.FUNCTIONS_EMULATOR === "true" &&
+    process.env.APPCHECK_EMULATOR_BYPASS === "true"
+  );
+}
+
 export const publicProcedure = t.procedure.use(async ({ ctx, next }) => {
+  if (appCheckBypassed()) return next();
+
   if (!ctx.appCheckToken) {
     logger.error("No app check token found in request.");
     throw new TRPCError({ code: "FORBIDDEN" });

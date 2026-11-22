@@ -2,6 +2,7 @@ packages:
   - 'frontend'
   - 'backend/functions'
   - 'shared'
+  - 'e2e'
 catalog:
   zod: 4.4.3
 allowBuilds:
