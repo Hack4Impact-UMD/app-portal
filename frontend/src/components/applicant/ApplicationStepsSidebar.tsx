@@ -69,7 +69,9 @@ export default function ApplicationStepsSidebar({
                 type="button"
                 aria-current={isActive ? "step" : undefined}
                 disabled={!isClickable}
-                title={isLocked ? "Complete earlier sections to unlock" : undefined}
+                title={
+                  isLocked ? "Complete earlier sections to unlock" : undefined
+                }
                 onClick={() => {
                   if (isClickable) onStepClick(step);
                 }}
@@ -84,7 +86,7 @@ export default function ApplicationStepsSidebar({
                     isCompleted && "border-blue bg-blue text-white",
                     isActive && "border-blue bg-white text-blue",
                     isUnlocked &&
-                    "border-blue/50 bg-white text-blue group-hover:border-blue group-hover:bg-blue/10",
+                      "border-blue/50 bg-white text-blue group-hover:border-blue group-hover:bg-blue/10",
                     isLocked && "border-gray-200 bg-gray-50 text-gray-400",
                   )}
                 >
