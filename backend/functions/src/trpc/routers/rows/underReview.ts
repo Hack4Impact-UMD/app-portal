@@ -103,9 +103,9 @@ export const underReview = roleProcedure([
           reviewData: reviews,
         },
         reviewers: {
-          assigned: roleAssignments.map(
-            (a) => reviewers.get(a.reviewerId) as ReviewCapableProfile,
-          ),
+          assigned: roleAssignments
+            .map((a) => reviewers.get(a.reviewerId))
+            .filter((r): r is ReviewCapableProfile => r !== undefined),
         },
         bestGradingScore: gradingScores.get(app.id) ?? null,
         status: statuses.get(responseRoleKey(app.id, role)),

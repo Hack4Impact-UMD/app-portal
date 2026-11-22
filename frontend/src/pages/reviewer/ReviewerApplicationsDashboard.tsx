@@ -9,7 +9,7 @@ import useSearch from "@/hooks/useSearch";
 
 export default function ReviewerApplicationsDashboard() {
   const { formId } = useParams();
-  const { data, isPending, error } = useMyReviewAssignmentRows(formId ?? "");
+  const { data, isPending, error } = useMyReviewAssignmentRows(formId);
   const { search } = useSearch();
   const [statusFilter, setStatusFilter] = useState<
     "all" | "reviewed" | "pending"

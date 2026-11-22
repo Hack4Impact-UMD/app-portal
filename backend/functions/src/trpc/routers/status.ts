@@ -96,14 +96,32 @@ export const statusRouter = router({
       const decisionStatusCollection = appCollection(
         FirestoreCollection.DecisionStatus,
       );
+      const formCollection = appCollection(
+        FirestoreCollection.ApplicationForms,
+      );
+      const responseCollection = appCollection(
+        FirestoreCollection.ApplicationResponses,
+      );
       const { responseId, userId, internalStatusId } = input;
+      const response = (
+        await responseCollection.doc(input.responseId).get()
+      ).data();
 
       // Check if user is editing their own decision
-      if (userId !== ctx.token.uid) {
+      if (userId !== ctx.token.uid || response?.userId !== ctx.token.uid) {
         logger.warn("User is not editing their own decision");
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You cannot edit another person's decision",
+        });
+      }
+
+      const form = (await formCollection.doc(input.formId).get()).data();
+      if (!form?.decisionsReleased) {
+        logger.warn("Decisions not yet released");
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Decisions not yet released",
         });
       }
 
@@ -138,7 +156,9 @@ export const statusRouter = router({
         });
       }
 
-      if (statusDocs.docs[0].data().status !== ReviewStatus.Accepted) {
+      const statusDoc = statusDocs.docs[0].data();
+
+      if (statusDoc.status !== ReviewStatus.Accepted) {
         logger.warn(
           `User ${userId} attempted to confirm but was not accepted. Status ID: ${internalStatusId}.`,
         );

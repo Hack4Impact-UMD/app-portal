@@ -9,7 +9,7 @@ import useSearch from "@/hooks/useSearch";
 
 export default function ReviewerInterviewsDashboard() {
   const { formId } = useParams();
-  const { data, isPending, error } = useMyInterviewAssignmentRows(formId ?? "");
+  const { data, isPending, error } = useMyInterviewAssignmentRows(formId);
   const { search } = useSearch();
   const [statusFilter, setStatusFilter] = useState<
     "all" | "completed" | "pending"

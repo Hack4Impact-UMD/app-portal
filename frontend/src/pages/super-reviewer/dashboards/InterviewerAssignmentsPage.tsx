@@ -18,8 +18,8 @@ export function InterviewerAssignmentsPage() {
   }>();
 
   const { data, isPending, error } = useInterviewerAssignments(
-    formId ?? "",
-    interviewerId ?? "",
+    formId,
+    interviewerId,
   );
 
   if (isPending) return <Loading />;

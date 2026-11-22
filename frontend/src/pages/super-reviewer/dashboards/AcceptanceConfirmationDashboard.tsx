@@ -14,7 +14,7 @@ export default function AcceptanceConfirmationDashboard() {
   >("all");
   const { search } = useSearch();
 
-  const { data: confirmations, isPending, error } = useRows(formId ?? "");
+  const { data: confirmations, isPending, error } = useRows(formId);
 
   const numAccepted = useMemo(
     () => confirmations?.filter((c) => c.decision === "accepted").length,

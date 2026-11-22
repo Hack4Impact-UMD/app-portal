@@ -129,6 +129,12 @@ export const applicationRouter = router({
           code: "NOT_FOUND",
           message: "Application response not found",
         });
+      } else if (existing.status === ApplicationStatus.Submitted) {
+        logger.warn(`Application response already submitted ${existing.id}`);
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Application already submitted",
+        });
       }
 
       if (existing.userId !== ctx.token.uid) {
@@ -243,6 +249,12 @@ export const applicationRouter = router({
       if (!existingResp) {
         logger.warn(
           "Attempt to save a non-existant application: ",
+          newAppResponse.id,
+        );
+        throw new TRPCError({ code: "BAD_REQUEST" });
+      } else if (existingResp.status === ApplicationStatus.Submitted) {
+        logger.warn(
+          "Attempt to save a submitted application: ",
           newAppResponse.id,
         );
         throw new TRPCError({ code: "BAD_REQUEST" });

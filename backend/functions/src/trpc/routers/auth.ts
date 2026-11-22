@@ -45,8 +45,8 @@ export const authRouter = router({
     .input(userRegisterFormSchema)
     .mutation(async ({ input: registerForm }) => {
       if (
-        !registerForm.email.trim().endsWith("umd.edu") &&
-        !registerForm.email.trim().endsWith("@hack4impact.org")
+        !registerForm.email.trim().match(/^.+@(.*\.)?umd.edu$/) &&
+        !registerForm.email.trim().match(/^.+@(.*\.)?hack4impact.org$/)
       ) {
         throw new TRPCError({
           code: "BAD_REQUEST",

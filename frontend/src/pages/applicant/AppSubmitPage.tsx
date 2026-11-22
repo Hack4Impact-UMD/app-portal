@@ -48,7 +48,15 @@ export default function AppSubmitPage() {
           setValidationErrors(errors);
         } else if (Timestamp.now() > form.dueDate) {
           throwErrorToast("Due date has passed");
+        } else if (err.data?.zodIssues?.length) {
+          throwErrorToast(
+            err.data.zodIssues.map((issue) => issue.message).join("\n"),
+          );
+        } else {
+          throwErrorToast(err.message || "Failed to submit application");
         }
+      } else {
+        throwErrorToast("Failed to submit application");
       }
     }
   }

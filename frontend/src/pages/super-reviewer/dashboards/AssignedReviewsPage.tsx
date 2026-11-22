@@ -12,7 +12,7 @@ export function AssignedReviewsPage() {
     "reviewed" | "pending" | "all"
   >("all");
   const { responseId } = useParams<{ responseId: string }>();
-  const { data, isPending, error } = useAssignedReviews(responseId ?? "");
+  const { data, isPending, error } = useAssignedReviews(responseId);
 
   if (isPending) return <Loading />;
   if (error) return <p>Failed to fetch assignments: {error.message}</p>;

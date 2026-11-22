@@ -12,7 +12,7 @@ export function AssignedInterviewsPage() {
     "interviewed" | "pending" | "all"
   >("all");
   const { responseId } = useParams<{ responseId: string }>();
-  const { data, isPending, error } = useAssignedInterviews(responseId ?? "");
+  const { data, isPending, error } = useAssignedInterviews(responseId);
 
   if (isPending) return <Loading />;
   if (error) return <p>Failed to fetch assignments: {error.message}</p>;
