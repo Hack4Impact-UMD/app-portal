@@ -67,9 +67,7 @@ export const statusRouter = router({
       }
 
       let publicStatus:
-        | ReviewStatus.UnderReview
-        | ReviewStatus.Interview
-        | "decided";
+        ReviewStatus.UnderReview | ReviewStatus.Interview | "decided";
       if (data.status === ReviewStatus.Interview) {
         publicStatus = ReviewStatus.Interview;
       } else if (
