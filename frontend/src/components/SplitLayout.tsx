@@ -1,6 +1,7 @@
 import { Github, Instagram, Linkedin } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -91,16 +92,20 @@ export default function SplitLayout({ topRight, children }: SplitLayoutProps) {
           aria-hidden="true"
           className="absolute inset-0 -z-10 bg-h4i-navy/70"
         />
-        <a
-          href={MAIN_SITE_URL}
-          className="w-fit rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-h4i-navy"
+        <Link
+          to={"/"}
+          className="flex w-fit items-center gap-3 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-h4i-navy"
         >
           <img
             src="h4i_logo_white.svg"
             alt="Hack4Impact-UMD"
             className="h-[27px] w-auto"
           />
-        </a>
+          <span aria-hidden="true" className="h-5 w-px bg-white/40" />
+          <span className="text-lg font-bold tracking-wide text-white/90">
+            Application Portal
+          </span>
+        </Link>
 
         <div className="mt-8 flex items-center justify-between gap-4 text-sm text-white/80">
           <span>{isLoading ? "Hacking and impacting..." : message}</span>
