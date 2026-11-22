@@ -1,99 +1,83 @@
-import { Github, Instagram, Linkedin } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
-import Spinner from "@/components/Spinner";
+import SplitLayout, {
+  MAIN_SITE_URL,
+  topRightLinkClass,
+} from "@/components/SplitLayout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { displayUserRoleName } from "@/utils/display";
-import {
-  loggedInMessages,
-  loggedOutMessages,
-  pickWeightedMessage,
-} from "@/utils/welcomeMessages";
 
 export default function LandingPage() {
-  const navigate = useNavigate();
   const { user, logout, isLoading } = useAuth();
-  const [displayMessage, setDisplayMessage] = useState<string>("");
-
-  useEffect(() => {
-    const sessionKey = user
-      ? "landingMessageLoggedIn"
-      : "landingMessageLoggedOut";
-
-    const savedMessage = sessionStorage.getItem(sessionKey);
-
-    if (savedMessage) {
-      setDisplayMessage(savedMessage);
-    } else {
-      const messages = user ? loggedInMessages : loggedOutMessages;
-      const newMessage = pickWeightedMessage(messages);
-
-      setDisplayMessage(newMessage);
-      sessionStorage.setItem(sessionKey, newMessage);
-    }
-  }, [user]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <main className="flex flex-col flex-1 items-center justify-center gap-5">
-        <img
-          src="h4i-logo.png"
-          alt="h4i logo"
-          className="h-[105px] w-[105px] transition-transform duration-300 ease-in-out hover:scale-105 hover:animate-spin-slow"
-        />
-        <div className="flex flex-col items-center text-center justify-around">
-          <h1 className="text-3xl font-bold">
-            Hack4Impact-UMD Application Portal
-          </h1>
-          <h3 className="text-lg text-darkgray">
-            {isLoading ? "Hacking and impacting..." : displayMessage}
-          </h3>
-        </div>
-        <div>
-          {isLoading ? (
-            <Spinner />
-          ) : user ? (
-            <div className="flex flex-row gap-1">
-              <Button onClick={() => navigate("/login")}>
-                Enter {displayUserRoleName(user?.role)} Home
+    <SplitLayout
+      topRight={
+        <a
+          href={MAIN_SITE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={topRightLinkClass}
+        >
+          Main site
+          <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+        </a>
+      }
+    >
+      <div className="max-w-xl">
+        <h1 className="text-5xl font-normal leading-[1.05] tracking-tight sm:text-6xl">
+          {user ? "Welcome back" : "Build with us"}
+        </h1>
+        <p className="mt-6 max-w-lg text-lg leading-relaxed text-pretty text-h4i-navy/70">
+          {user
+            ? "Pick up where you left off."
+            : "We're looking for students who want to build software that makes a real difference for nonprofits. Whether you're ready to lead a team or just starting to code, there's a role for you."}
+        </p>
+
+        <div className="mt-10 flex min-h-10 flex-col gap-3 sm:flex-row">
+          {isLoading ? null : user ? (
+            <>
+              <Button asChild size="lg" className="sm:min-w-[200px]">
+                <Link to="/login">
+                  Enter {displayUserRoleName(user.role)} Home
+                </Link>
               </Button>
-              <Button onClick={logout}>Log out</Button>
-            </div>
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                className="sm:min-w-[200px]"
+                onClick={logout}
+              >
+                Log out
+              </Button>
+            </>
           ) : (
-            <div className="flex flex-row gap-1">
-              <Button onClick={() => navigate("/signup")}>
-                Create Account
+            <>
+              <Button asChild size="lg" className="sm:min-w-[200px]">
+                <Link to="/signup">Start your application</Link>
               </Button>
-              <Button onClick={() => navigate("/login")}>Log In</Button>
-            </div>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="sm:min-w-[200px]"
+              >
+                <Link to="/login">Log in</Link>
+              </Button>
+            </>
           )}
         </div>
-      </main>
 
-      <footer className="py-4 text-center text-md">
-        <div className="flex justify-center gap-5 text-gray-600">
-          <Link to="https://www.instagram.com/hack4impactumd/" target="_blank">
-            <Instagram />
-          </Link>{" "}
-          |
-          <Link
-            to="https://www.linkedin.com/company/hack4impact-umd"
-            target="_blank"
-          >
-            <Linkedin />
-          </Link>{" "}
-          |
-          <Link to="https://github.com/Hack4Impact-UMD" target="_blank">
-            <Github />
-          </Link>{" "}
-          |
-          <Link to="https://umd.hack4impact.org/" target="_blank">
-            umd.hack4impact.org
-          </Link>
-        </div>
-      </footer>
-    </div>
+        {!user && !isLoading && (
+          <p className="mt-4 text-sm text-h4i-navy/60">
+            Already applied? Log in to continue your application or check your
+            status.
+          </p>
+        )}
+      </div>
+    </SplitLayout>
   );
 }

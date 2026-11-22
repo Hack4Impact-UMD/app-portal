@@ -84,6 +84,8 @@ body,
   --color-lightblue: rgb(194, 224, 251);
   --color-darkblue: rgb(41, 105, 196);
   --color-teal: rgb(203, 248, 243);
+  /* Brand navy from umd.hack4impact.org, used by the landing page */
+  --color-h4i-navy: #001a33;
   /*
   * SHADCN VARS:
   */

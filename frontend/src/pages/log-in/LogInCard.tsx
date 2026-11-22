@@ -102,14 +102,15 @@ export default function LogInCard() {
         e.stopPropagation();
         handleSubmit();
       }}
-      className="flex flex-col items-center justify-center w-full p-4 max-w-[430px] min-h-screen gap-2"
+      className="flex w-full max-w-md flex-col gap-2"
     >
-      <img src="h4i-logo.png" alt="h4i logo" className="h-[105px] w-[105px]" />
-      <div className="flex flex-col items-center text-center w-[305px] h-[105px]">
-        <h1 className="text-3xl font-bold text-black">Log In</h1>
-        <h3 className="text-lg text-darkgray">
-          Let's get started by filling out your information below
-        </h3>
+      <div className="mb-6">
+        <h1 className="text-4xl font-normal leading-[1.05] tracking-tight sm:text-5xl">
+          Log in
+        </h1>
+        <p className="mt-3 text-lg text-h4i-navy/70">
+          Welcome back! Continue your application or check your status.
+        </p>
       </div>
       <TextBox
         inputType="text"
@@ -146,15 +147,16 @@ export default function LogInCard() {
         </div>
       </div>
       <Button
-        className="w-full h-[73px]"
+        size="lg"
+        className="w-full"
         disabled={loginMutation.isPending || !isFormValid}
         type="submit"
       >
-        Log In
+        Log in
       </Button>
-      <div className="w-full">
-        <hr className="w-full text-darkgray m-0"></hr>
-        <p className="text-gray-500 mt-1">
+      <div className="mt-4 w-full">
+        <hr className="m-0 w-full text-gray"></hr>
+        <p className="mt-4 text-sm text-h4i-navy/60">
           Don't have an account?{" "}
           <Link to="/signup" className="text-blue">
             Create account
