@@ -7,9 +7,8 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { Navigate, Outlet, useParams } from "react-router-dom";
 
 import Loading from "@/components/Loading";
-import Spinner from "@/components/Spinner";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { Button } from "@/components/ui/button";
+import type { SaveStatus } from "@/contexts/formContext";
 import { FormContext } from "@/contexts/formContext";
 import {
   applicationResponseQueries,
@@ -156,12 +155,34 @@ export default function FormProvider() {
     }
   }, [sections, sectionId]);
 
+  const saveStatus = useMemo<SaveStatus>(() => {
+    if (saveMutation.isPending) {
+      return {
+        isSaving: true,
+        isError: false,
+        saved: false,
+      };
+    } else if (saveMutation.isError) {
+      return {
+        isError: true,
+        saved: false,
+      };
+    } else {
+      return {
+        saved: true,
+        lastSavedAt: saveMutation.submittedAt,
+        isError: false,
+      };
+    }
+  }, [saveMutation.isPending, saveMutation.isError, saveMutation.submittedAt]);
+
   const contextValue = useMemo(
     () => ({
       form: data?.form,
       response: response,
       updateQuestionResponse,
       save,
+      saveStatus,
       selectedRoles,
       setSelectedRoles,
       availableSections: sections,
@@ -174,6 +195,7 @@ export default function FormProvider() {
       response,
       updateQuestionResponse,
       save,
+      saveStatus,
       selectedRoles,
       sections,
       sectionId,
@@ -194,41 +216,6 @@ export default function FormProvider() {
 
   return (
     <FormContext.Provider value={contextValue}>
-      <div className="w-full flex flex-row p-2 items-center justify-center">
-        <div className="w-full max-w-3xl flex flex-row items-center">
-          <div className="grow">
-            <div
-              className={`w-fit ${saveMutation.isError ? "bg-red-100" : "bg-lightblue"} rounded-full px-2 text-blue`}
-            >
-              {saveMutation.isPending ? (
-                <p className="pulse font-bold flex flex-row items-center gap-1">
-                  <Spinner className="inline size-4" />
-                  Saving...
-                </p>
-              ) : saveMutation.submittedAt !== 0 && !saveMutation.isError ? (
-                <p>
-                  Last save:{" "}
-                  {new Date(saveMutation.submittedAt).toLocaleTimeString()}
-                </p>
-              ) : saveMutation.isError ? (
-                <p className="text-red-500">
-                  Failed to save your application (Last save:{" "}
-                  {new Date(saveMutation.submittedAt).toLocaleTimeString()})
-                </p>
-              ) : (
-                <p>Form not yet saved!</p>
-              )}
-            </div>
-          </div>
-          <Button
-            disabled={saveMutation.isPending}
-            className="cursor-pointer p-2 bg-blue disabled:bg-blue/50 disabled:cursor-wait rounded text-white"
-            onClick={save}
-          >
-            Save application
-          </Button>
-        </div>
-      </div>
       <Outlet />
     </FormContext.Provider>
   );
