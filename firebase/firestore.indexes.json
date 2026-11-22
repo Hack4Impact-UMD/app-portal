@@ -45,6 +45,20 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "review-data",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "applicationFormId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "reviewerId",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
