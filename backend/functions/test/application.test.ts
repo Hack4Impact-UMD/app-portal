@@ -120,6 +120,25 @@ describe("application.save", () => {
     );
   });
 
+  it("can't save a response that's already been submitted", async () => {
+    const form = await seedForm();
+    const { uid, idToken } = await createUser();
+    const response = await seedResponse(uid, form.id, {
+      status: ApplicationStatus.Submitted,
+    });
+
+    await expectTRPCError(
+      caller(idToken).application.save(saveRequest(response)),
+      "BAD_REQUEST",
+      "Application already submitted",
+    );
+    const saved = await getDoc(
+      FirestoreCollection.ApplicationResponses,
+      response.id,
+    );
+    expect(saved?.status).toBe(ApplicationStatus.Submitted);
+  });
+
   it("requires a signed-in user", async () => {
     const form = await seedForm();
     const { uid } = await createUser();
@@ -279,6 +298,30 @@ describe("application.submit", () => {
       ),
       "FORBIDDEN",
     );
+  });
+
+  it("only submits once, even when two submits race", async () => {
+    const form = await seedForm();
+    const { uid, idToken } = await createUser();
+    const response = await seedResponse(uid, form.id);
+    const api = caller(idToken);
+
+    const results = await Promise.allSettled([
+      api.application.submit(submitRequest(response)),
+      api.application.submit(submitRequest(response)),
+    ]);
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+
+    await expectTRPCError(
+      api.application.submit(submitRequest(response)),
+      "BAD_REQUEST",
+      "Application already submitted",
+    );
+
+    const statuses = await appCollection(FirestoreCollection.ApplicationStatus)
+      .where("responseId", "==", response.id)
+      .get();
+    expect(statuses.size).toBe(1);
   });
 
   it("doesn't let non-applicants respond to public forms", async () => {

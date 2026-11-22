@@ -51,12 +51,28 @@ describe("auth.register", () => {
     expect(profile?.role).toBe(PermissionRole.Applicant);
   });
 
-  it("only allows umd.edu and hack4impact.org emails", async () => {
+  it.each([
+    "someone@gmail.com",
+    "someone@notumd.edu",
+    "someone@x.umdaedu",
+    "someone@evil.com.umd.edu.attacker.com",
+    "someone@sub.hack4impact.org",
+  ])("rejects %s", async (email) => {
     await expectTRPCError(
-      caller().auth.register({ ...form, email: "someone@gmail.com" }),
+      caller().auth.register({ ...form, email }),
       "BAD_REQUEST",
       "Only emails ending in umd.edu or hack4impact.org are allowed!",
     );
+  });
+
+  it.each([
+    "new.applicant@terpmail.umd.edu",
+    "New.Applicant@UMD.EDU",
+    "someone@hack4impact.org",
+  ])("accepts %s", async (email) => {
+    await expect(
+      caller().auth.register({ ...form, email }),
+    ).resolves.toMatchObject({ role: PermissionRole.Applicant });
   });
 
   it("rejects an email that's already registered", async () => {
@@ -73,23 +89,69 @@ describe("auth.register", () => {
 });
 
 describe("auth.update", () => {
-  it("updates the profile and the auth user", async () => {
-    const { uid, idToken } = await createUser();
+  it("updates the name on the profile and the auth user", async () => {
+    const { uid, idToken, email } = await createUser();
 
     const updated = await caller(idToken).auth.update({
-      email: "renamed@umd.edu",
+      email,
       firstName: "Renamed",
       lastName: "Person",
     });
 
     expect(updated).toMatchObject({
-      email: "renamed@umd.edu",
+      email,
       firstName: "Renamed",
       lastName: "Person",
     });
     const authUser = await admin.auth().getUser(uid);
-    expect(authUser.email).toBe("renamed@umd.edu");
+    expect(authUser.email).toBe(email);
     expect(authUser.displayName).toBe("Renamed Person");
+  });
+
+  it("syncs the profile to an email that was verified through Firebase", async () => {
+    const { uid, idToken } = await createUser();
+    await admin.auth().updateUser(uid, { email: "verified.new@umd.edu" });
+
+    const updated = await caller(idToken).auth.update({
+      email: "verified.new@umd.edu",
+      firstName: "Test",
+      lastName: "User",
+    });
+
+    expect(updated.email).toBe("verified.new@umd.edu");
+  });
+
+  it("won't change the auth email directly", async () => {
+    const { uid, idToken, email } = await createUser();
+
+    await expectTRPCError(
+      caller(idToken).auth.update({
+        email: "attacker@gmail.com",
+        firstName: "Test",
+        lastName: "User",
+      }),
+      "BAD_REQUEST",
+      "Verify your new email address before updating it.",
+    );
+    const authUser = await admin.auth().getUser(uid);
+    expect(authUser.email).toBe(email);
+    const profile = await getDoc(FirestoreCollection.Users, uid);
+    expect(profile?.email).toBe(email);
+  });
+
+  it("won't sync the profile to a disallowed email domain", async () => {
+    const { uid, idToken } = await createUser();
+    await admin.auth().updateUser(uid, { email: "someone@gmail.com" });
+
+    await expectTRPCError(
+      caller(idToken).auth.update({
+        email: "someone@gmail.com",
+        firstName: "Test",
+        lastName: "User",
+      }),
+      "BAD_REQUEST",
+      "Only emails ending in umd.edu or hack4impact.org are allowed!",
+    );
   });
 
   it("requires a signed-in user", async () => {

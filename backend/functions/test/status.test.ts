@@ -179,4 +179,46 @@ describe("status.confirmDecision", () => {
     ).get();
     expect(confirmations.empty).toBe(true);
   });
+
+  it("checks the response's own form, not the one passed in", async () => {
+    const ctx = await submittedApplicant(ReviewStatus.Accepted);
+    const releasedForm = await seedForm({ decisionsReleased: true });
+    const api = caller(ctx.user.idToken);
+
+    await expectTRPCError(
+      api.status.confirmDecision({
+        ...confirmation(ctx),
+        formId: releasedForm.id,
+      }),
+      "BAD_REQUEST",
+      "Form does not match this response.",
+    );
+    await expectTRPCError(
+      api.status.confirmDecision(confirmation(ctx)),
+      "BAD_REQUEST",
+      "Decisions not yet released",
+    );
+  });
+
+  it("can't confirm with another applicant's status", async () => {
+    const accepted = await submittedApplicant(ReviewStatus.Accepted, {
+      decisionsReleased: true,
+    });
+    const ctx = await submittedApplicant(ReviewStatus.Denied, {
+      decisionsReleased: true,
+    });
+
+    await expectTRPCError(
+      caller(ctx.user.idToken).status.confirmDecision({
+        ...confirmation(ctx),
+        internalStatusId: accepted.internal.id,
+      }),
+      "FORBIDDEN",
+      "No decision found for this response.",
+    );
+    const confirmations = await appCollection(
+      FirestoreCollection.DecisionStatus,
+    ).get();
+    expect(confirmations.empty).toBe(true);
+  });
 });
