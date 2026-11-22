@@ -26,13 +26,30 @@ const ApplicationPage: React.FC = () => {
     setSelectedRoles,
   } = useForm();
 
-  const steps = useMemo(
-    () =>
+  const steps = useMemo(() => {
+    // sections where the applicant has answered at least one question
+    const editedSections = new Set(
+      response?.sectionResponses
+        .filter((s) =>
+          s.questions.some((q) =>
+            Array.isArray(q.response)
+              ? q.response.length > 0
+              : q.response.trim() !== "",
+          ),
+        )
+        .map((s) => s.sectionId) ?? [],
+    );
+
+    return (
       form?.sections
         .filter((section) => availableSections.includes(section.sectionId))
-        .map((s) => ({ label: s.sectionName, id: s.sectionId })) ?? [],
-    [availableSections, form],
-  );
+        .map((s) => ({
+          label: s.sectionName,
+          id: s.sectionId,
+          edited: editedSections.has(s.sectionId),
+        })) ?? []
+    );
+  }, [availableSections, form, response]);
 
   const currentSection = useMemo(
     () => form?.sections.find((section) => section.sectionId === sectionId),

@@ -1,14 +1,31 @@
 import type { Timestamp } from "firebase/firestore";
 import { TriangleAlertIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 // 3 days
 const DUE_SOON_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 
 export default function DueSoonAlert({ dueDate }: { dueDate: Timestamp }) {
   const due = dueDate.toDate();
-  const msUntilDue = due.getTime() - Date.now();
 
-  if (msUntilDue <= 0 || msUntilDue > DUE_SOON_WINDOW_MS) return null;
+  const shouldShow = () => {
+    const msUntilDue = due.getTime() - Date.now();
+    return msUntilDue > 0 && msUntilDue <= DUE_SOON_WINDOW_MS;
+  };
+
+  const [show, setShow] = useState(shouldShow());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setShow(shouldShow());
+    }, 1000 * 60);
+
+    return () => {
+      clearInterval(timer);
+    };
+  });
+
+  if (!show) return null;
 
   return (
     <div
