@@ -42,7 +42,8 @@ const FormInputSchema = z.custom<
 
 async function uploadRubrics(
   collection:
-    FirestoreCollection.Rubrics | FirestoreCollection.InterviewRubrics,
+    | FirestoreCollection.Rubrics
+    | FirestoreCollection.InterviewRubrics,
   rubrics: RoleReviewRubric[],
 ) {
   // Fail fast on duplicate IDs in the payload
