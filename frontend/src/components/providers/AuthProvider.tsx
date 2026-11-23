@@ -68,14 +68,7 @@ export default function AuthProvider(props: AuthProviderProps) {
     return onAuthStateChange(async (userInfo) => {
       console.log(`Auth state changed: ${userInfo?.email}`);
 
-      // clear cache when logged in user changes
-      const uid = userInfo?.uid ?? null;
-      if (uid !== lastUid.current) {
-        lastUid.current = uid;
-        await clearQueryCache();
-      }
-
-      if (userInfo != null) {
+      if (userInfo !== null) {
         const user = await trpcClient.users.me.query();
 
         setAuthState({
@@ -91,6 +84,13 @@ export default function AuthProvider(props: AuthProviderProps) {
           user: undefined,
           isLoading: false,
         });
+      }
+
+      // clear cache when logged in user changes
+      const uid = userInfo?.uid ?? null;
+      if (uid && uid !== lastUid.current) {
+        lastUid.current = uid;
+        await clearQueryCache();
       }
     });
   }, []);
