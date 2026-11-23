@@ -199,6 +199,7 @@ export const applicationRouter = router({
   listForForm: reviewCapableProcedure
     .input(z.object({ formId: z.string().min(1) }))
     .query(async ({ input }): Promise<ApplicationResponseDTO[]> => {
+      //TODO: pending refactor, filter here for only responses the user can read
       return (
         await appCollection(FirestoreCollection.ApplicationResponses)
           .where("applicationFormId", "==", input.formId)
