@@ -18,8 +18,7 @@ type ProfileWithClientTimestamp<T> = T & { dateCreated: TimestampLike };
 export type ApplicantUserProfile =
   ProfileWithClientTimestamp<ApplicantUserProfileBase>;
 
-type ReviewerUserProfile =
-  ProfileWithClientTimestamp<ReviewerUserProfileBase>;
+type ReviewerUserProfile = ProfileWithClientTimestamp<ReviewerUserProfileBase>;
 
 export type BoardUserProfile = ProfileWithClientTimestamp<BoardUserProfileBase>;
 
