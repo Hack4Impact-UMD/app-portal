@@ -53,6 +53,17 @@ export function assertCanReadResponse(
   throw new TRPCError({ code: "FORBIDDEN" });
 }
 
+export async function getAssignedResponses(reviewerId: string) {
+  const reviewAssignments = appCollection(FirestoreCollection.ReviewAssignments);
+  const interviewAssignments = appCollection(FirestoreCollection.InterviewAssignments);
+
+  const reviewResponseIds = (await reviewAssignments.where("reviewerId", "==", reviewerId).get()).docs.map(d => d.data().applicationResponseId);
+  const interviewResponseIds = (await interviewAssignments.where("interviewerId", "==", reviewerId).get()).docs.map(d => d.data().applicationResponseId);
+
+  return [...new Set([...reviewResponseIds, ...interviewResponseIds])];
+}
+
+
 export function isBoardOrAbove(user: UserProfile) {
   return (
     user.role === PermissionRole.Board ||
