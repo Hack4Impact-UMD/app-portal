@@ -33,6 +33,7 @@ import { validateResponses } from "../../utils/validateResponses";
 import {
   assertCanReadForm,
   assertCanReadResponse,
+  getAssignedResponses,
   requireUser,
 } from "../access";
 import { SubmitValidationError } from "../errors";
@@ -190,13 +191,15 @@ export const applicationRouter = router({
           .get()
       ).data();
       if (!response) return null;
-      assertCanReadResponse(user, response);
+      const assigned = await getAssignedResponses(ctx.token.sub);
+      assertCanReadResponse(user, response, assigned);
       return response;
     }),
 
   listForForm: reviewCapableProcedure
     .input(z.object({ formId: z.string().min(1) }))
     .query(async ({ input }): Promise<ApplicationResponseDTO[]> => {
+      //TODO: pending refactor, filter here for only responses the user can read
       return (
         await appCollection(FirestoreCollection.ApplicationResponses)
           .where("applicationFormId", "==", input.formId)
