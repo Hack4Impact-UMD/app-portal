@@ -50,7 +50,7 @@ export default function AuthProvider(props: AuthProviderProps) {
         setAuthState({
           ...authState,
           user: {
-            ...authState.user!,
+            ...authState.user,
             applicantRolePreferences: vars,
           },
         });

@@ -74,7 +74,7 @@ export function AssignedReviewsPage() {
           </Button>
         </div>
         <AssignedReviewsTable
-          responseId={responseId!}
+          responseId={responseId}
           formId={response.applicationFormId}
           search=""
           statusFilter={statusFilter}

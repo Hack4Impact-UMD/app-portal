@@ -79,8 +79,8 @@ export function ReviewerAssignmentsPage() {
           </Button>
         </div>
         <ReviewerAssignmentsTable
-          reviewerId={reviewerId!}
-          formId={formId!}
+          reviewerId={reviewerId}
+          formId={formId}
           search=""
           statusFilter={statusFilter}
         />

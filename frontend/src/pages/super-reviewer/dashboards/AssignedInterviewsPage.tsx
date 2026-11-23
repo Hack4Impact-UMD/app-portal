@@ -74,7 +74,7 @@ export function AssignedInterviewsPage() {
           </Button>
         </div>
         <AssignedInterviewsTable
-          responseId={responseId!}
+          responseId={responseId}
           search=""
           statusFilter={statusFilter}
         />

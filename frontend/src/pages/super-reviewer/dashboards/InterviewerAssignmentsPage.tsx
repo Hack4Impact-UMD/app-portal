@@ -83,8 +83,8 @@ export function InterviewerAssignmentsPage() {
           </Button>
         </div>
         <InterviewerAssignmentsTable
-          interviewerId={interviewerId!}
-          formId={formId!}
+          interviewerId={interviewerId}
+          formId={formId}
           search=""
           statusFilter={statusFilter}
         />

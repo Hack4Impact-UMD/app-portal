@@ -48,7 +48,7 @@ export default function FormProvider() {
       for (const section of data.response.sectionResponses) {
         const roleResponse = section.questions.find(
           (q) => q.questionId === rsid,
-        ) as QuestionResponse | undefined;
+        );
         if (roleResponse) {
           setSelectedRoles(roleResponse.response as ApplicantRole[]);
         }

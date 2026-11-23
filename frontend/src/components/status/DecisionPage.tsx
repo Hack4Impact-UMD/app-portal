@@ -116,8 +116,7 @@ function DecisionPage() {
             <h2 className="text-blue text-2xl">
               Your Hack4Impact-UMD {form.semester}
               <br></br>
-              {displayApplicantRoleNameNoEmoji(role as ApplicantRole)}{" "}
-              Application
+              {displayApplicantRoleNameNoEmoji(role)} Application
             </h2>
           </div>
         </div>
