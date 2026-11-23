@@ -1,6 +1,5 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { ApplicationStatus, QuestionType } from "@app-portal/shared/constants";
-import type { QuestionResponse } from "@app-portal/shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Timestamp } from "firebase/firestore";
 import { useEffect, useMemo, useState, useCallback } from "react";
