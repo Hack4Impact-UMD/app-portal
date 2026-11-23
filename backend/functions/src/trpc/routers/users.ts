@@ -126,7 +126,7 @@ export const usersRouter = router({
       const collection = appCollection(FirestoreCollection.Users);
       const users = await getDocsById(collection, ids);
       const batch = db.batch();
-      for (const user of users.values()) {
+      for (const [id, user] of users) {
         const update: Record<string, unknown> = { role };
         if (
           role === PermissionRole.Reviewer &&
@@ -137,7 +137,7 @@ export const usersRouter = router({
         if (role === PermissionRole.Board && !("applicantRoles" in user)) {
           update.applicantRoles = [];
         }
-        batch.update(collection.doc(user.id), update);
+        batch.update(collection.doc(id), update);
       }
       await batch.commit();
     }),

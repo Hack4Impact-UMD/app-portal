@@ -2,12 +2,13 @@ import { PermissionRole } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { useMutation } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import ReviewerRoleSelectDialog from "@/components/reviewer/ReviewerRoleSelectDialog";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { auth } from "@/config/firebase";
+import { clearQueryCache } from "@/config/query";
 import { trpcClient } from "@/config/trpc";
 import { AuthContext } from "@/contexts/authContext";
 import {
@@ -61,9 +62,19 @@ export default function AuthProvider(props: AuthProviderProps) {
     },
   });
 
+  const lastUid = useRef<string | null>(null);
+
   useEffect(() => {
     return onAuthStateChange(async (userInfo) => {
       console.log(`Auth state changed: ${userInfo?.email}`);
+
+      // clear cache when logged in user changes
+      const uid = userInfo?.uid ?? null;
+      if (uid !== lastUid.current) {
+        lastUid.current = uid;
+        await clearQueryCache();
+      }
+
       if (userInfo != null) {
         const user = await trpcClient.users.me.query();
 
