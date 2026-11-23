@@ -11,11 +11,7 @@ import { z } from "zod";
 
 import { appCollection } from "../../utils/firestore";
 import { authedProcedure, roleProcedure, router } from "../init";
-
-const boardProcedure = roleProcedure([
-  PermissionRole.Board,
-  PermissionRole.SuperReviewer,
-]);
+import { boardProcedure } from "./rows/procedures";
 
 export const statusRouter = router({
   listForForm: boardProcedure

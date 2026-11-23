@@ -38,11 +38,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { interviewAssignmentQueries } from "@/hooks/useInterviewAssignments";
-import {
-  assignInterview,
-  removeInterviewAssignment,
-} from "@/services/interviewAssignmentService";
+import { trpc, trpcClient } from "@/config/trpc";
 import type { ReviewCapableUser } from "@/types/types";
 import { displayTimestamp } from "@/utils/dates";
 
@@ -76,7 +72,11 @@ export default function BoardInterviewsTable({
       responseId: string;
       role: ApplicantRole;
     }) => {
-      return await assignInterview(responseId, interviewer.id, role);
+      return await trpcClient.interviewAssignments.create.mutate({
+        applicationResponseId: responseId,
+        interviewerId: interviewer.id,
+        forRole: role,
+      });
     },
     onSuccess: () => {
       throwSuccessToast("Successfully assigned interviewer!");
@@ -90,7 +90,7 @@ export default function BoardInterviewsTable({
         queryKey: qualifiedRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        queryKey: interviewAssignmentQueries.root,
+        queryKey: trpc.interviewAssignments.pathKey(),
       });
     },
   });
@@ -112,7 +112,9 @@ export default function BoardInterviewsTable({
           "The interviewer has already started their interview for this assignment. It is not possible to delete it.",
         );
       }
-      return await removeInterviewAssignment(assignment.id);
+      return await trpcClient.interviewAssignments.delete.mutate({
+        id: assignment.id,
+      });
     },
     onSuccess: () => {
       throwSuccessToast("Successfully removed interviewer assignment!");
@@ -128,7 +130,7 @@ export default function BoardInterviewsTable({
         queryKey: qualifiedRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        queryKey: interviewAssignmentQueries.root,
+        queryKey: trpc.interviewAssignments.pathKey(),
       });
     },
   });

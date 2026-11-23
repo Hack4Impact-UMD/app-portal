@@ -50,13 +50,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { trpc } from "@/config/trpc";
-import { reviewAssignmentQueries } from "@/hooks/useReviewAssignments";
-import {
-  assignReview,
-  removeReviewAssignment,
-} from "@/services/reviewAssignmentService";
-import { getReviewDataForAssignment } from "@/services/reviewDataService";
+import { trpc, trpcClient } from "@/config/trpc";
 import { updateApplicationStatus } from "@/services/statusService";
 import type { ReviewCapableUser } from "@/types/types";
 import { displayTimestamp } from "@/utils/dates";
@@ -102,7 +96,11 @@ export default function SuperReviewerApplicationsTable({
       role: ApplicantRole;
     }) => {
       console.log("Adding assignment: ", reviewer.firstName, role, responseId);
-      return await assignReview(responseId, reviewer.id, role);
+      return await trpcClient.reviewAssignments.create.mutate({
+        applicationResponseId: responseId,
+        reviewerId: reviewer.id,
+        forRole: role,
+      });
     },
     onSuccess: () => {
       throwSuccessToast("Successfully assigned reviewer!");
@@ -118,7 +116,9 @@ export default function SuperReviewerApplicationsTable({
       queryClient.invalidateQueries({
         queryKey: reviewerRowsQueryRoot,
       });
-      queryClient.invalidateQueries({ queryKey: reviewAssignmentQueries.root });
+      queryClient.invalidateQueries({
+        queryKey: trpc.reviewAssignments.pathKey(),
+      });
     },
   });
 
@@ -129,11 +129,9 @@ export default function SuperReviewerApplicationsTable({
       assignment: AppReviewAssignment;
       pageIndex: number;
     }) => {
-      if ((await getReviewDataForAssignment(assignment)) !== undefined)
-        throw new Error(
-          "The reviewer has already started their review for this assignment. It is not possible to delete it.",
-        );
-      return await removeReviewAssignment(assignment.id);
+      return await trpcClient.reviewAssignments.delete.mutate({
+        id: assignment.id,
+      });
     },
     onSuccess: () => {
       throwSuccessToast("Successfully removed reviewer assignment!");
@@ -152,7 +150,7 @@ export default function SuperReviewerApplicationsTable({
         queryKey: reviewerRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        queryKey: reviewAssignmentQueries.root,
+        queryKey: trpc.reviewAssignments.pathKey(),
       });
     },
   });

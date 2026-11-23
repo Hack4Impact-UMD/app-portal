@@ -14,9 +14,8 @@ import {
   requireUser,
 } from "../access";
 import { authedProcedure, router, signedInProcedure } from "../init";
-import { REVIEW_CAPABLE_ROLES } from "./rows/helpers";
+import { loadActiveReviewers } from "./rows/loaders";
 import { reviewCapableProcedure } from "./rows/procedures";
-import type { AnyUserProfile } from "./rows/types";
 
 export const usersRouter = router({
   // The verify-email page needs the profile before the email is verified.
@@ -71,15 +70,7 @@ export const usersRouter = router({
   listReviewers: reviewCapableProcedure
     .input(z.object({ role: z.enum(ApplicantRole).optional() }).optional())
     .query(async ({ input }): Promise<UserProfileDTO[]> => {
-      const reviewers = (
-        await appCollection(FirestoreCollection.Users)
-          .where("role", "in", REVIEW_CAPABLE_ROLES)
-          .get()
-      ).docs
-        .map((d) => d.data() as AnyUserProfile)
-        // A missing `inactive` field never matches a Firestore query on it,
-        // so filter here instead.
-        .filter((r) => !r.inactive);
+      const reviewers = await loadActiveReviewers();
 
       const role = input?.role;
       if (!role) return reviewers as UserProfileDTO[];

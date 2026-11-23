@@ -134,3 +134,16 @@ export async function loadResponse(
   }
   return response;
 }
+
+export async function loadActiveReviewers() {
+  return (
+    (
+      await appCollection(FirestoreCollection.Users)
+        .where("role", "in", REVIEW_CAPABLE_ROLES)
+        .get()
+    ).docs
+      .map((d) => d.data() as AnyUserProfile)
+      // A missing `inactive` field never matches a Firestore query on it.
+      .filter((r) => !r.inactive)
+  );
+}

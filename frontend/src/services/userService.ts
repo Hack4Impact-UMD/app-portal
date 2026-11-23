@@ -114,7 +114,7 @@ export async function logoutUser() {
   await clearQueryCache();
 }
 
-export async function getUserById(id: string): Promise<UserProfile> {
+async function getUserById(id: string): Promise<UserProfile> {
   const users = appCollection(FirestoreCollection.Users);
   const userDoc = doc(users, id);
 

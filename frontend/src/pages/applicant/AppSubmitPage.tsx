@@ -8,10 +8,8 @@ import Section from "@/components/form/Section";
 import Loading from "@/components/Loading";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Button } from "@/components/ui/button";
-import { isTRPCClientError } from "@/config/trpc";
+import { isTRPCClientError, trpc } from "@/config/trpc";
 import { useMyApplicationResponseAndForm } from "@/hooks/useApplicationResponses";
-import { submitApplicationResponse } from "@/services/applicationResponsesService";
-import type { ApplicationResponse } from "@/types/types";
 
 export default function AppSubmitPage() {
   const { formId } = useParams();
@@ -21,10 +19,7 @@ export default function AppSubmitPage() {
     [],
   );
 
-  const submitMutation = useMutation({
-    mutationFn: (response: ApplicationResponse) =>
-      submitApplicationResponse(response),
-  });
+  const submitMutation = useMutation(trpc.application.submit.mutationOptions());
 
   if (isPending) return <Loading />;
   if (error) return <p>Something went wrong: {error.message}</p>;

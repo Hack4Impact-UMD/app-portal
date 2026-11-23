@@ -1,10 +1,14 @@
-import { PermissionRole } from "@app-portal/shared/constants";
+import {
+  FirestoreCollection,
+  PermissionRole,
+} from "@app-portal/shared/constants";
 import { TRPCError } from "@trpc/server";
 import { logger } from "firebase-functions";
 
 import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { UserProfile } from "../models/user";
+import { appCollection } from "../utils/firestore";
 import { REVIEW_CAPABLE_ROLES } from "./routers/rows/helpers";
 
 // Mirror the old Firestore rules so moving reads server-side doesn't widen access.
@@ -47,4 +51,21 @@ export function assertCanReadResponse(
   if (isReviewCapableUser(user) || response.userId === user.id) return;
   logger.warn(`User ${user.id} may not read response ${response.id}`);
   throw new TRPCError({ code: "FORBIDDEN" });
+}
+
+export function isBoardOrAbove(user: UserProfile) {
+  return (
+    user.role === PermissionRole.Board ||
+    user.role === PermissionRole.SuperReviewer
+  );
+}
+
+export async function loadResponse(id: string): Promise<ApplicationResponse> {
+  const response = (
+    await appCollection(FirestoreCollection.ApplicationResponses).doc(id).get()
+  ).data();
+  if (!response) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Response not found" });
+  }
+  return response;
 }

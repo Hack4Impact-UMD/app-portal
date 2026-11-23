@@ -4,7 +4,7 @@ import type {
   AppReviewAssignment,
   ApplicationReviewData,
 } from "@app-portal/shared/types";
-import { useQueries } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -24,7 +24,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { reviewAssignmentQueries } from "@/hooks/useReviewAssignments";
+import { trpc } from "@/config/trpc";
 import { useReviewersForRole } from "@/hooks/useReviewers";
 import { reviewingFor } from "@/services/reviewersService";
 import type { ReviewCapableUser } from "@/types/types";
@@ -57,27 +57,28 @@ function ReviewerSearchPopover({
   const { formId } = useParams<{ formId: string }>();
 
   const { data: reviewers, isPending, error } = useReviewersForRole(role);
-  const assignments = useQueries({
-    queries:
-      reviewers?.map((reviewer) => ({
-        ...reviewAssignmentQueries.detail(formId, reviewer.id),
-      })) ?? [],
-  });
+  const assignments = useQuery(
+    trpc.reviewAssignments.list.queryOptions(formId ? { formId } : skipToken),
+  );
+
+  const countByReviewer = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const a of assignments.data ?? []) {
+      counts.set(a.reviewerId, (counts.get(a.reviewerId) ?? 0) + 1);
+    }
+    return counts;
+  }, [assignments.data]);
 
   const validReviewers = useMemo(() => {
-    return reviewers?.filter((_, index) => {
-      const query = assignments[index];
-
-      if (query.data) {
-        const reviewerAssignments = query.data;
-        return !reviewerAssignments.find(
+    const assigned = new Set(
+      assignments.data
+        ?.filter(
           (a) => a.applicationResponseId === responseId && a.forRole === role,
-        );
-      } else {
-        return true;
-      }
-    });
-  }, [reviewers, assignments, responseId, role]);
+        )
+        .map((a) => a.reviewerId),
+    );
+    return reviewers?.filter((r) => !assigned.has(r.id));
+  }, [reviewers, assignments.data, responseId, role]);
 
   if (isPending)
     return (
@@ -99,47 +100,44 @@ function ReviewerSearchPopover({
       <CommandList className="max-h-42 overflow-y-auto">
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>
-          {validReviewers
-            ?.filter((r) => reviewers?.find((x) => x.id === r.id))
-            .map((reviewer) => {
-              const index = reviewers!.findIndex((r) => r.id === reviewer.id);
-              return (
-                <CommandItem
-                  key={reviewer.id}
-                  value={`${reviewer.firstName} ${reviewer.lastName}`}
-                  className="cursor-pointer flex flex-col gap-1 items-start"
-                  onSelect={() => onSelect(reviewer)}
-                >
-                  <p>
-                    {reviewer.firstName} {reviewer.lastName}{" "}
-                    {assignments[index].isPending ? (
-                      <Spinner className="size-3 inline ml-2" />
-                    ) : assignments[index].error ? (
-                      "N/A"
-                    ) : (
-                      `(${assignments[index].data?.length ?? "N/A"})`
-                    )}
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    {reviewer.role === PermissionRole.SuperReviewer ? (
-                      <span
-                        className={`text-xs bg-lightblue text-blue rounded-full px-2 py-1 text-center flex items-center max-w-fit justify-center`}
-                      >
-                        All Roles
-                      </span>
-                    ) : (
-                      reviewingFor(reviewer).map((role) => (
-                        <ApplicantRolePill
-                          key={role}
-                          role={role}
-                          className="text-xs"
-                        />
-                      ))
-                    )}
-                  </div>
-                </CommandItem>
-              );
-            })}
+          {validReviewers?.map((reviewer) => {
+            return (
+              <CommandItem
+                key={reviewer.id}
+                value={`${reviewer.firstName} ${reviewer.lastName}`}
+                className="cursor-pointer flex flex-col gap-1 items-start"
+                onSelect={() => onSelect(reviewer)}
+              >
+                <p>
+                  {reviewer.firstName} {reviewer.lastName}{" "}
+                  {assignments.isPending ? (
+                    <Spinner className="size-3 inline ml-2" />
+                  ) : assignments.error ? (
+                    "N/A"
+                  ) : (
+                    `(${countByReviewer.get(reviewer.id) ?? 0})`
+                  )}
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {reviewer.role === PermissionRole.SuperReviewer ? (
+                    <span
+                      className={`text-xs bg-lightblue text-blue rounded-full px-2 py-1 text-center flex items-center max-w-fit justify-center`}
+                    >
+                      All Roles
+                    </span>
+                  ) : (
+                    reviewingFor(reviewer).map((role) => (
+                      <ApplicantRolePill
+                        key={role}
+                        role={role}
+                        className="text-xs"
+                      />
+                    ))
+                  )}
+                </div>
+              </CommandItem>
+            );
+          })}
         </CommandGroup>
       </CommandList>
     </Command>
