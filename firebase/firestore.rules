@@ -1,169 +1,43 @@
 rules_version = '2';
 
+// All reads and writes go through the tRPC backend, which uses the Admin SDK
+// and bypasses these rules. The only client access left is the live
+// grading-job subscriptions.
 service cloud.firestore {
   match /databases/{database}/documents {
-  	function isAuthed() {
-    	return request.auth != null && request.auth.token.email_verified && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    function isAuthed() {
+      return request.auth != null && request.auth.token.email_verified && exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
-    
+
     function getCurrentUser() {
-    	return get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
     }
-    
-    function hasID(id) {
-    	return request.auth.uid == id;
-    }
-    
+
     function isApplicant() {
-    	return isAuthed() && getCurrentUser().data.role == "applicant";
+      return isAuthed() && getCurrentUser().data.role == "applicant";
     }
-    
+
     function isReviewer() {
-    	return isAuthed() && (getCurrentUser().data.role == "reviewer" || isBoard());
-    }
-
-    function isBoard() {
-    	return isAuthed() && (getCurrentUser().data.role == "board" || isSuperReviewer());
-    }
-    
-    function isSuperReviewer() {
-    	return isAuthed() && getCurrentUser().data.role == "super-reviewer";
-    }
-
-    function isResponseOpen(response) {
-      let formDocPath = /databases/$(database)/documents/application-forms/$(response.applicationFormId);
-      return exists(formDocPath) && request.time < get(formDocPath).data.dueDate;
-    }
-
-    function isActive() {
-      return !getCurrentUser().data.get('inactive', false);
+      return isAuthed() && (getCurrentUser().data.role in ["reviewer", "board", "super-reviewer"]);
     }
 
     function ownsResponse(responseId) {
       let responseDocPath = /databases/$(database)/documents/application-responses/$(responseId);
-      return exists(responseDocPath) && hasID(get(responseDocPath).data.userId);
-    }
-
-    // Private forms can invite users of any role (not just applicants), so
-    // reads and response creation/updates must also allow anyone on that
-    // form's invitedUsers list, not just isApplicant(). Both fields are
-    // optional, so forms predating this feature read as public.
-    // The *FormData variants take the form's data directly; use them whenever
-    // `resource.data` is already the form, since a get() on the very document
-    // being read costs an extra billed access and eats into the 10-per-request
-    // / 20-per-query document access limits.
-    function isInvitedToFormData(form) {
-      return isAuthed() && request.auth.uid in form.get('invitedUsers', []);
-    }
-
-    function canRespondToFormData(form) {
-      return (isApplicant() && !form.get('isPrivate', false)) || isInvitedToFormData(form);
-    }
-
-    // For rules on documents other than the form itself, where the form has to
-    // be fetched. Bound once so the whole check costs a single access.
-    function canRespondToForm(formId) {
-      let form = get(/databases/$(database)/documents/application-forms/$(formId));
-      return form != null && canRespondToFormData(form.data);
-    }
-
-    match /users/{user_id} {
-      // user documents can be read only by the user they represent or reviewers
-    	allow read: if isReviewer() || hasID(user_id);
-      // user documents can be written to only by the user they represent or super-reviewers
-      allow create: if false;
-      allow update: if (hasID(user_id) && (!request.resource.data.diff(resource.data).affectedKeys()
-        .hasAny(['role']))) || isSuperReviewer(); //IMPORTANT: Role can't be updated for security reasons unless by super reviewer!
-      allow delete: if isSuperReviewer();
-    }
-
-    match /application-forms/{form_id} {
-      allow read: if isReviewer() || canRespondToFormData(resource.data);
-      allow create: if isSuperReviewer();
-      allow update: if isSuperReviewer();
-      allow delete: if isSuperReviewer();
-    }
-
-    match /application-responses/{response_id} {
-      // NOTE: Cannot query in rules, so any reviewer can read any application.
-      // Frontend queries should filter this to only assigned applications.
-      allow read: if isReviewer() || hasID(resource.data.userId);
-      allow create: if canRespondToForm(request.resource.data.applicationFormId) && request.resource.data.status == 'in-progress' && isResponseOpen(request.resource.data) && hasID(request.resource.data.userId);
-      // A response belongs to one form and one user for its whole life. Both
-      // are pinned here because every other clause is checked against the
-      // pre-write document: without the pin, an owner could repoint an
-      // in-progress response at a private form they were never invited to (or
-      // at another user) and only the old, permitted values would be checked.
-      allow update: if canRespondToForm(resource.data.applicationFormId) && hasID(resource.data.userId) && resource.data.status == 'in-progress' && isResponseOpen(resource.data)
-        && request.resource.data.applicationFormId == resource.data.applicationFormId
-        && request.resource.data.userId == resource.data.userId;
-      allow delete: if (canRespondToForm(resource.data.applicationFormId) && hasID(resource.data.userId)) || isSuperReviewer();
-    }
-
-    match /review-assignments/{assignment_id} {
-      allow read: if isSuperReviewer() || isBoard() || (isReviewer() && hasID(resource.data.reviewerId));
-      allow write: if isSuperReviewer();
-    }
-
-    match /interview-assignments/{assignment_id} {
-      allow read: if isBoard() || (isReviewer() && hasID(resource.data.interviewerId));
-      allow create: if isBoard() && !isSuperReviewer();
-      allow update: if isBoard() && !isSuperReviewer() && getCurrentUser().data.applicantRoles.hasAny([resource.data.forRole]); 
-      allow delete: if isBoard() && !isSuperReviewer() && getCurrentUser().data.applicantRoles.hasAny([resource.data.forRole]); 
-    }
-
-    match /review-data/{review_id} {
-      allow read: if (isReviewer() && hasID(resource.data.reviewerId)) || isBoard() || isSuperReviewer();
-      allow create: if isReviewer() && hasID(request.resource.data.reviewerId) && isActive();
-      allow update: if isReviewer() && hasID(request.resource.data.reviewerId) && isActive();
-      allow delete: if isSuperReviewer() || hasID(resource.data.reviewerId);
-    }
-
-    match /interview-data/{review_id} {
-      allow read: if (isReviewer() && hasID(resource.data.interviewerId)) || isBoard();
-      allow create: if isReviewer() && hasID(request.resource.data.interviewerId) && isActive();
-      allow update: if isReviewer() && hasID(request.resource.data.interviewerId) && isActive();
-      allow delete: if isSuperReviewer() || hasID(resource.data.interviewerId);
-    }
-
-    match /app-status/{status_id} {
-      allow read: if isBoard();
-      allow write: if isSuperReviewer();
-    }
-
-    match /rubrics/{rubric_id} {
-      allow read: if isReviewer();
-      allow write: if isSuperReviewer();
-    }
-
-    match /interview-rubrics/{rubric_id} {
-      allow read: if isReviewer();
-      allow write: if isSuperReviewer();
-    }
-
-    match /decision-status/{response_id_user_id} {
-      allow read: if isSuperReviewer() || hasID(resource.data.userId);
-      allow write: if isSuperReviewer();
+      return exists(responseDocPath) && request.auth.uid == get(responseDocPath).data.userId;
     }
 
     match /grading-jobs-public/{job_id} {
       allow read: if isReviewer() || (isApplicant() && ownsResponse(resource.data.responseId));
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow write: if false;
     }
 
     match /grading-jobs-internal/{job_id} {
       allow read: if isReviewer();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-    
-    // by default, all documents should be inaccessible to reads and writes
-    match /{document=**} {
-      allow read: if false;
       allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
