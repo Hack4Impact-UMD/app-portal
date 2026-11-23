@@ -9,7 +9,7 @@ In addition, the project is integrated with [Professor](https://github.com/Hack4
 ## ✨ Features
 
 - **Role-specific workflows** for applicants, reviewers, board members, and admins.
-- **Dynamic applications** support role-specific sections, markdown, file uploads, autosave, and validation.
+- **Dynamic application forms** support role-specific sections, markdown, file uploads, autosave, and validation.
 - **Review interface** with access to rubrics, notes, command pallete, and autosave.
 - **Admin dashboards** manage review status, assignments, decisions, and confirmations.
 - **Auto-assignment algorithm** generates applicant-to-reviewer matches.
@@ -36,7 +36,7 @@ In addition, the project is integrated with [Professor](https://github.com/Hack4
 ### Backend
 
 - **Runtime:** [Node.js](https://nodejs.org/)
-- **Framework:** [Express](https://expressjs.com/)
+- **Framework:** [tRPC](https://trpc.io/)
 - **Platform:** [Firebase](https://firebase.google.com/) (Cloud Functions, Firestore, Authentication, Storage)
 - **Schema Validation:** [Zod](https://zod.dev/)
 - **Task Queue:** [Cloud Tasks](https://cloud.google.com/tasks)
