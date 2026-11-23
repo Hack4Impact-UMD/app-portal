@@ -1,25 +1,19 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
 import { z } from "zod";
 
+import { listReviewAssignmentsForForm } from "../../../services/reviewAssignments";
+import { listReviewDataForForm } from "../../../services/reviewData";
+import { listReviewCapableUsers } from "../../../services/users";
 import { groupBy } from "../../../utils/batch";
-import { appCollection } from "../../../utils/firestore";
 import { reviewingFor } from "./helpers";
-import { loadReviewCapableUsers } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
 
 export const reviewers = superReviewerProcedure
   .input(z.object({ formId: z.string() }))
   .query(async ({ input: { formId } }) => {
     const [reviewers, reviewData, assignments] = await Promise.all([
-      loadReviewCapableUsers(),
-      appCollection(FirestoreCollection.ReviewData)
-        .where("applicationFormId", "==", formId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
-      appCollection(FirestoreCollection.ReviewAssignments)
-        .where("formId", "==", formId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
+      listReviewCapableUsers(),
+      listReviewDataForForm(formId),
+      listReviewAssignmentsForForm(formId),
     ]);
 
     const assignmentsByReviewer = groupBy(assignments, (a) => a.reviewerId);

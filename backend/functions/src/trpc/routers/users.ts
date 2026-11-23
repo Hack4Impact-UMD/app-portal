@@ -1,8 +1,4 @@
-import {
-  ApplicantRole,
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
+import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
 import type {
   ReviewCapableUserDTO,
   UserProfileDTO,
@@ -11,44 +7,41 @@ import { TRPCError } from "@trpc/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { z } from "zod";
 
-import { db } from "../../index";
-import { getDocsById } from "../../utils/batch";
-import { appCollection } from "../../utils/firestore";
 import {
-  assertCanReadResponse,
-  getAssignedResponses,
-  isReviewCapableUser,
+  deleteUsers,
+  getUser,
+  listReviewCapableUsers,
+  listUsers,
+  setUsersRole,
+  updateUser,
+} from "../../services/users";
+import { canEditRolePreferences, canReadUser } from "../access";
+import { forbidden, orNotFound } from "../errors";
+import {
+  authedProcedure,
   requireUser,
-} from "../access";
-import { authedProcedure, router, signedInProcedure } from "../init";
+  router,
+  signedInProcedure,
+} from "../init";
+import { requireReadableResponse } from "../required";
 import { reviewingFor } from "./rows/helpers";
-import { loadReviewCapableUsers } from "./rows/loaders";
 import {
   reviewCapableProcedure,
   superReviewerProcedure,
 } from "./rows/procedures";
 
-// Reviewers and board members may edit their own roles; super-reviewers may
-// edit anyone's.
-async function loadEditablePreferences(
+async function rolePreferencesField(
   ctx: Parameters<typeof requireUser>[0],
   id: string,
 ) {
   const me = await requireUser(ctx);
-  if (me.role !== PermissionRole.SuperReviewer && me.id !== id) {
-    throw new TRPCError({ code: "FORBIDDEN" });
-  }
+  if (!canEditRolePreferences(me, id)) throw forbidden();
 
-  const ref = appCollection(FirestoreCollection.Users).doc(id);
-  const target = (await ref.get()).data();
-  if (!target) throw new TRPCError({ code: "NOT_FOUND" });
-
+  const target = orNotFound(await getUser(id));
   if (target.role === PermissionRole.Reviewer) {
-    return { ref, field: "applicantRolePreferences" as const };
+    return "applicantRolePreferences" as const;
   }
-  if (target.role === PermissionRole.Board) {
-    return { ref, field: "applicantRoles" as const };
-  }
+  if (target.role === PermissionRole.Board) return "applicantRoles" as const;
   throw new TRPCError({
     code: "BAD_REQUEST",
     message: `Role preferences cannot be changed for ${target.role}s.`,
@@ -57,59 +50,34 @@ async function loadEditablePreferences(
 
 export const usersRouter = router({
   // The verify-email page needs the profile before the email is verified.
-  me: signedInProcedure.query(async ({ ctx }): Promise<UserProfileDTO> => {
-    const user = await ctx.getUser();
-    if (!user) throw new TRPCError({ code: "NOT_FOUND" });
-    return user;
-  }),
+  me: signedInProcedure.query(
+    async ({ ctx }): Promise<UserProfileDTO> => orNotFound(await ctx.getUser()),
+  ),
 
   get: authedProcedure
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ input, ctx }): Promise<UserProfileDTO> => {
       const me = await requireUser(ctx);
-      if (input.id !== me.id && !isReviewCapableUser(me)) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
-
-      const user = (
-        await appCollection(FirestoreCollection.Users).doc(input.id).get()
-      ).data();
-      if (!user) throw new TRPCError({ code: "NOT_FOUND" });
-      return user;
+      if (!canReadUser(me, input.id)) throw forbidden();
+      return orNotFound(await getUser(input.id));
     }),
 
   getApplicantForResponse: authedProcedure
     .input(z.object({ responseId: z.string().min(1) }))
     .query(async ({ input, ctx }): Promise<UserProfileDTO> => {
       const me = await requireUser(ctx);
-      const response = (
-        await appCollection(FirestoreCollection.ApplicationResponses)
-          .doc(input.responseId)
-          .get()
-      ).data();
-      if (!response) throw new TRPCError({ code: "NOT_FOUND" });
-      const assigned = await getAssignedResponses(me.id);
-      assertCanReadResponse(me, response, assigned);
-
-      const user = (
-        await appCollection(FirestoreCollection.Users)
-          .doc(response.userId)
-          .get()
-      ).data();
-      if (!user) throw new TRPCError({ code: "NOT_FOUND" });
-      return user;
+      const response = await requireReadableResponse(me, input.responseId);
+      return orNotFound(await getUser(response.userId));
     }),
 
-  list: reviewCapableProcedure.query(async (): Promise<UserProfileDTO[]> => {
-    return (await appCollection(FirestoreCollection.Users).get()).docs.map(
-      (d) => d.data(),
-    );
-  }),
+  list: reviewCapableProcedure.query(
+    async (): Promise<UserProfileDTO[]> => listUsers(),
+  ),
 
   listReviewers: reviewCapableProcedure
     .input(z.object({ role: z.enum(ApplicantRole).optional() }).optional())
     .query(async ({ input }): Promise<ReviewCapableUserDTO[]> => {
-      const reviewers = await loadReviewCapableUsers();
+      const reviewers = await listReviewCapableUsers();
 
       const role = input?.role;
       if (!role) return reviewers;
@@ -124,42 +92,17 @@ export const usersRouter = router({
         role: z.enum(PermissionRole),
       }),
     )
-    .mutation(async ({ input: { ids, role } }) => {
-      const collection = appCollection(FirestoreCollection.Users);
-      const users = await getDocsById(collection, ids);
-      const batch = db.batch();
-      for (const [id, user] of users) {
-        const update: Record<string, unknown> = { role };
-        if (
-          role === PermissionRole.Reviewer &&
-          !("applicantRolePreferences" in user)
-        ) {
-          update.applicantRolePreferences = Object.values(ApplicantRole);
-        }
-        if (role === PermissionRole.Board && !("applicantRoles" in user)) {
-          update.applicantRoles = [];
-        }
-        batch.update(collection.doc(id), update);
-      }
-      await batch.commit();
-    }),
+    .mutation(({ input: { ids, role } }) => setUsersRole(ids, role)),
 
   setInactive: superReviewerProcedure
     .input(z.object({ id: z.string().min(1), inactive: z.boolean() }))
-    .mutation(async ({ input }) => {
-      await appCollection(FirestoreCollection.Users)
-        .doc(input.id)
-        .update({ inactive: input.inactive });
-    }),
+    .mutation(({ input }) =>
+      updateUser(input.id, { inactive: input.inactive }),
+    ),
 
   delete: superReviewerProcedure
     .input(z.object({ ids: z.array(z.string().min(1)).min(1).max(500) }))
-    .mutation(async ({ input }) => {
-      const collection = appCollection(FirestoreCollection.Users);
-      const batch = db.batch();
-      for (const id of input.ids) batch.delete(collection.doc(id));
-      await batch.commit();
-    }),
+    .mutation(({ input }) => deleteUsers(input.ids)),
 
   setRolePreferences: authedProcedure
     .input(
@@ -169,8 +112,8 @@ export const usersRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { ref, field } = await loadEditablePreferences(ctx, input.id);
-      await ref.update({ [field]: input.roles });
+      const field = await rolePreferencesField(ctx, input.id);
+      await updateUser(input.id, { [field]: input.roles });
     }),
 
   toggleRolePreference: authedProcedure
@@ -182,8 +125,8 @@ export const usersRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { ref, field } = await loadEditablePreferences(ctx, input.id);
-      await ref.update({
+      const field = await rolePreferencesField(ctx, input.id);
+      await updateUser(input.id, {
         [field]: input.enabled
           ? FieldValue.arrayUnion(input.role)
           : FieldValue.arrayRemove(input.role),

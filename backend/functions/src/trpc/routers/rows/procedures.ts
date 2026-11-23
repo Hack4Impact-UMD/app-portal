@@ -1,7 +1,7 @@
 import { PermissionRole } from "@app-portal/shared/constants";
 
+import { REVIEW_CAPABLE_ROLES } from "../../../models/user";
 import { roleProcedure } from "../../init";
-import { REVIEW_CAPABLE_ROLES } from "./helpers";
 
 export const superReviewerProcedure = roleProcedure([
   PermissionRole.SuperReviewer,

@@ -1,38 +1,22 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import {
-  ApplicationStatus,
-  FirestoreCollection,
-} from "@app-portal/shared/constants";
+import { ApplicationStatus } from "@app-portal/shared/constants";
 import type { InternalApplicationStatus } from "@app-portal/shared/types";
 import {
   bestGradingScore,
   countPreviouslyApplied,
 } from "@app-portal/shared/utils";
-import { TRPCError } from "@trpc/server";
 
-import type { ApplicationForm } from "../../../models/appForm";
-import type { ApplicationResponse } from "../../../models/appResponse";
-import { getDocsById, groupBy, queryWhereIn } from "../../../utils/batch";
-import { appCollection } from "../../../utils/firestore";
-import { isReviewCapable, REVIEW_CAPABLE_ROLES } from "./helpers";
-
-export async function loadForm(formId: string): Promise<ApplicationForm> {
-  const form = (
-    await appCollection(FirestoreCollection.ApplicationForms).doc(formId).get()
-  ).data();
-  if (!form) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Form not found" });
-  }
-  return form;
-}
+import { listForms } from "../../../services/forms";
+import { listJobsForResponses } from "../../../services/gradingJobs";
+import {
+  listResponsesForForm,
+  listResponsesForUsers,
+} from "../../../services/responses";
+import { listStatusesForResponses } from "../../../services/statuses";
+import { groupBy } from "../../../utils/batch";
 
 export async function loadExpandedSubmittedResponses(formId: string) {
-  const responses = (
-    await appCollection(FirestoreCollection.ApplicationResponses)
-      .where("applicationFormId", "==", formId)
-      .get()
-  ).docs.map((d) => d.data());
-
+  const responses = await listResponsesForForm(formId);
   return responses
     .filter((app) => app.status !== ApplicationStatus.InProgress)
     .flatMap((app) => app.rolesApplied.map((role) => ({ app, role }) as const));
@@ -43,11 +27,7 @@ export function responseRoleKey(responseId: string, role: ApplicantRole) {
 }
 
 export async function loadStatusesByResponseRole(responseIds: string[]) {
-  const statuses = await queryWhereIn(
-    appCollection(FirestoreCollection.ApplicationStatus),
-    "responseId",
-    responseIds,
-  );
+  const statuses = await listStatusesForResponses(responseIds);
   const byKey = new Map<string, InternalApplicationStatus>();
   for (const status of statuses) {
     const key = responseRoleKey(status.responseId, status.role);
@@ -57,11 +37,7 @@ export async function loadStatusesByResponseRole(responseIds: string[]) {
 }
 
 export async function loadBestGradingScores(responseIds: string[]) {
-  const jobs = await queryWhereIn(
-    appCollection(FirestoreCollection.GradingJobsPublic),
-    "responseId",
-    responseIds,
-  );
+  const jobs = await listJobsForResponses(responseIds);
   const byResponse = groupBy(jobs, (j) => j.responseId);
   const scores = new Map<string, number | null>();
   for (const [responseId, group] of byResponse) {
@@ -75,17 +51,12 @@ export async function loadBestGradingScores(responseIds: string[]) {
 
 export async function loadPreviouslyAppliedCounts(userIds: string[]) {
   const [responses, forms] = await Promise.all([
-    queryWhereIn(
-      appCollection(FirestoreCollection.ApplicationResponses),
-      "userId",
-      userIds,
-    ),
-    appCollection(FirestoreCollection.ApplicationForms).get(),
+    listResponsesForUsers(userIds),
+    listForms(),
   ]);
 
   const formActive = new Map<string, boolean>();
-  for (const doc of forms.docs) {
-    const form = doc.data();
+  for (const form of forms) {
     if (!formActive.has(form.id)) formActive.set(form.id, form.isActive);
   }
 
@@ -100,35 +71,4 @@ export async function loadPreviouslyAppliedCounts(userIds: string[]) {
     );
   }
   return counts;
-}
-
-export async function loadUsers(ids: Iterable<string>) {
-  return getDocsById(appCollection(FirestoreCollection.Users), ids);
-}
-
-export async function loadReviewCapableUsers() {
-  // NOTE: if the inactive field does not exist, querying on it never matches,
-  // so inactive users are filtered here instead.
-  return (
-    await appCollection(FirestoreCollection.Users)
-      .where("role", "in", REVIEW_CAPABLE_ROLES)
-      .get()
-  ).docs
-    .map((d) => d.data())
-    .filter(isReviewCapable)
-    .filter((u) => !u.inactive);
-}
-
-export async function loadResponse(
-  responseId: string,
-): Promise<ApplicationResponse> {
-  const response = (
-    await appCollection(FirestoreCollection.ApplicationResponses)
-      .doc(responseId)
-      .get()
-  ).data();
-  if (!response) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Response not found!" });
-  }
-  return response;
 }

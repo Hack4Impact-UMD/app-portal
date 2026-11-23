@@ -1,9 +1,11 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
 import { calculateInterviewScore } from "@app-portal/shared/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { appCollection } from "../../../utils/firestore";
+import { listInterviewAssignmentsForInterviewer } from "../../../services/interviewAssignments";
+import { listInterviewDataForInterviewer } from "../../../services/interviewData";
+import { getUser, getUsers } from "../../../services/users";
+import { requireForm } from "../../required";
 import {
   scoreWarning,
   requireUser,
@@ -11,7 +13,6 @@ import {
   reviewingFor,
   userSummary,
 } from "./helpers";
-import { loadForm, loadUsers } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
 
 export const interviewerAssignments = superReviewerProcedure
@@ -19,19 +20,10 @@ export const interviewerAssignments = superReviewerProcedure
   .query(async ({ input: { formId, interviewerId } }) => {
     const [form, interviewer, assignments, interviewerData] = await Promise.all(
       [
-        loadForm(formId),
-        loadUsers([interviewerId]).then((m) => m.get(interviewerId)),
-        appCollection(FirestoreCollection.InterviewAssignments)
-          .where("formId", "==", formId)
-          .where("interviewerId", "==", interviewerId)
-          .where("assignmentType", "==", "interview")
-          .get()
-          .then((s) => s.docs.map((d) => d.data())),
-        appCollection(FirestoreCollection.InterviewData)
-          .where("interviewerId", "==", interviewerId)
-          .where("applicationFormId", "==", formId)
-          .get()
-          .then((s) => s.docs.map((d) => d.data())),
+        requireForm(formId),
+        getUser(interviewerId),
+        listInterviewAssignmentsForInterviewer(formId, interviewerId),
+        listInterviewDataForInterviewer(formId, interviewerId),
       ],
     );
 
@@ -42,7 +34,7 @@ export const interviewerAssignments = superReviewerProcedure
       });
     }
 
-    const applicants = await loadUsers(assignments.map((a) => a.applicantId));
+    const applicants = await getUsers(assignments.map((a) => a.applicantId));
     const interviewByKey = firstByApplicantRole(interviewerData);
 
     const rows = assignments.map((assignment, index) => {

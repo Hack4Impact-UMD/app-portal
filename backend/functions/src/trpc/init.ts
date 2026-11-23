@@ -6,7 +6,7 @@ import { logger } from "firebase-functions";
 import { ZodError } from "zod";
 
 import type { UserProfile } from "../models/user";
-import { getUserById } from "../utils/users";
+import { getUser as fetchUser } from "../services/users";
 import type { Context } from "./context";
 import { RateLimitError, SubmitValidationError } from "./errors";
 import { transformer } from "./transformer";
@@ -91,7 +91,7 @@ export const signedInProcedure = publicProcedure.use(async ({ ctx, next }) => {
   }
 
   let userPromise: Promise<UserProfile | undefined> | undefined;
-  const getUser = () => (userPromise ??= getUserById(token.uid));
+  const getUser = () => (userPromise ??= fetchUser(token.uid));
 
   return next({ ctx: { token, getUser } });
 });
@@ -123,4 +123,17 @@ export function roleProcedure(roles: PermissionRole[]) {
 
     return next({ ctx: { user } });
   });
+}
+
+// The rules' isAuthed() also required the user doc to exist.
+export async function requireUser(ctx: {
+  token: { uid: string };
+  getUser: () => Promise<UserProfile | undefined>;
+}): Promise<UserProfile> {
+  const user = await ctx.getUser();
+  if (!user) {
+    logger.error(`requireUser: User with id ${ctx.token.uid} not found!`);
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+  return user;
 }

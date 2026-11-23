@@ -1,7 +1,4 @@
-import {
-  ApplicantRole,
-  FirestoreCollection,
-} from "@app-portal/shared/constants";
+import { ApplicantRole } from "@app-portal/shared/constants";
 import type { ApplicationInterviewData } from "@app-portal/shared/types";
 import { ApplicationInterviewDataSchema } from "@app-portal/shared/types";
 import { TRPCError } from "@trpc/server";
@@ -9,12 +6,16 @@ import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 
 import type { UserProfile } from "../../models/user";
-import { appCollection } from "../../utils/firestore";
-import { isBoardOrAbove, loadResponse, requireUser } from "../access";
-import { router } from "../init";
+import {
+  createInterviewData,
+  getInterviewData,
+  updateInterviewData,
+} from "../../services/interviewData";
+import { canReadAssignedData } from "../access";
+import { forbidden, orNotFound } from "../errors";
+import { requireUser, router } from "../init";
+import { requireResponse } from "../required";
 import { reviewCapableProcedure } from "./rows/procedures";
-
-const collection = () => appCollection(FirestoreCollection.InterviewData);
 
 function assertActive(user: UserProfile) {
   if (user.inactive) {
@@ -27,11 +28,8 @@ export const interviewDataRouter = router({
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ input, ctx }) => {
       const user = await requireUser(ctx);
-      const data = (await collection().doc(input.id).get()).data();
-      if (!data) throw new TRPCError({ code: "NOT_FOUND" });
-      if (!isBoardOrAbove(user) && data.interviewerId !== user.id) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+      const data = orNotFound(await getInterviewData(input.id));
+      if (!canReadAssignedData(user, data.interviewerId)) throw forbidden();
       return data;
     }),
 
@@ -44,7 +42,7 @@ export const interviewDataRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       assertActive(ctx.user);
-      const response = await loadResponse(input.applicationResponseId);
+      const response = await requireResponse(input.applicationResponseId);
 
       const data: ApplicationInterviewData = {
         id: uuidv4(),
@@ -57,7 +55,7 @@ export const interviewDataRouter = router({
         interviewerNotes: {},
         submitted: false,
       };
-      await collection().doc(data.id).create(data);
+      await createInterviewData(data);
       return data;
     }),
 
@@ -74,12 +72,8 @@ export const interviewDataRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       assertActive(ctx.user);
-      const ref = collection().doc(input.id);
-      const existing = (await ref.get()).data();
-      if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
-      if (existing.interviewerId !== ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
-      await ref.update(input.patch);
+      const existing = orNotFound(await getInterviewData(input.id));
+      if (existing.interviewerId !== ctx.user.id) throw forbidden();
+      await updateInterviewData(input.id, input.patch);
     }),
 });

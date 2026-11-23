@@ -1,30 +1,21 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { InternalApplicationStatus } from "@app-portal/shared/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { queryWhereIn } from "../../../utils/batch";
-import { appCollection } from "../../../utils/firestore";
+import { listConfirmationsForForm } from "../../../services/decisions";
+import { getStatusesByIds } from "../../../services/statuses";
+import { getUsers } from "../../../services/users";
 import { requireUser } from "./helpers";
-import { loadUsers } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
 
 export const acceptanceConfirmations = superReviewerProcedure
   .input(z.object({ formId: z.string() }))
   .query(async ({ input: { formId } }) => {
-    const confirmations = (
-      await appCollection(FirestoreCollection.DecisionStatus)
-        .where("formId", "==", formId)
-        .get()
-    ).docs.map((d) => d.data());
+    const confirmations = await listConfirmationsForForm(formId);
 
     const [applicants, statuses] = await Promise.all([
-      loadUsers(confirmations.map((c) => c.userId)),
-      queryWhereIn(
-        appCollection(FirestoreCollection.ApplicationStatus),
-        "id",
-        confirmations.map((c) => c.internalStatusId),
-      ),
+      getUsers(confirmations.map((c) => c.userId)),
+      getStatusesByIds(confirmations.map((c) => c.internalStatusId)),
     ]);
 
     const statusById = new Map<string, InternalApplicationStatus>();

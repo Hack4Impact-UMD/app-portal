@@ -1,3 +1,4 @@
+import { PermissionRole } from "@app-portal/shared/constants";
 import type {
   ApplicantUserProfileBase,
   BoardUserProfileBase,
@@ -14,3 +15,15 @@ export type ReviewCapableProfile =
   | WithDateCreated<BoardUserProfileBase>
   | WithDateCreated<SuperReviewerUserProfileBase>;
 export type UserProfile = ApplicantProfile | ReviewCapableProfile;
+
+export const REVIEW_CAPABLE_ROLES = [
+  PermissionRole.Reviewer,
+  PermissionRole.SuperReviewer,
+  PermissionRole.Board,
+];
+
+export function isReviewCapable(
+  user: UserProfile,
+): user is ReviewCapableProfile {
+  return REVIEW_CAPABLE_ROLES.includes(user.role);
+}

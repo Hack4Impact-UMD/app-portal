@@ -3,13 +3,8 @@ import { isInternalApplicant } from "@app-portal/shared/utils";
 import { TRPCError } from "@trpc/server";
 import { logger } from "firebase-functions";
 
-import type { UserProfile, ReviewCapableProfile } from "../../../models/user";
-
-export const REVIEW_CAPABLE_ROLES = [
-  PermissionRole.Reviewer,
-  PermissionRole.SuperReviewer,
-  PermissionRole.Board,
-];
+import type { UserProfile } from "../../../models/user";
+import { isReviewCapable } from "../../../models/user";
 
 export function scoreWarning(message: string) {
   logger.warn(`Score calculation: ${message}`);
@@ -24,12 +19,6 @@ export function reviewingFor(user: UserProfile): ApplicantRole[] {
     return Object.values(ApplicantRole); // NOTE: dor can review all roles
   }
   return [];
-}
-
-export function isReviewCapable(
-  user: UserProfile,
-): user is ReviewCapableProfile {
-  return REVIEW_CAPABLE_ROLES.includes(user.role);
 }
 
 export function assignedUserName(

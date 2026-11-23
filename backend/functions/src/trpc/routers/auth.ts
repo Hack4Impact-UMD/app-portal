@@ -1,6 +1,5 @@
 import {
   ApplicationStatus,
-  FirestoreCollection,
   ReviewStatus,
   PermissionRole,
 } from "@app-portal/shared/constants";
@@ -17,10 +16,13 @@ import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { v4 as uuidv4 } from "uuid";
 
-import { db } from "../../index";
 import type { ApplicationResponse } from "../../models/appResponse";
 import type { UserProfile } from "../../models/user";
-import { appCollection } from "../../utils/firestore";
+import { runTransaction } from "../../services/db";
+import { getForm } from "../../services/forms";
+import { setResponse } from "../../services/responses";
+import { createStatus } from "../../services/statuses";
+import { createUser, getUser, updateUser } from "../../services/users";
 import {
   authedProcedure,
   publicProcedure,
@@ -81,9 +83,7 @@ export const authRouter = router({
           inactive: false, // active by default
         };
 
-        await appCollection(FirestoreCollection.Users)
-          .doc(userRecord.uid)
-          .create(user);
+        await createUser(user);
 
         logger.info(
           `Successfully created user doc for ${user.firstName} ${user.lastName} (${user.email}) with ID: ${user.id}`,
@@ -123,9 +123,7 @@ export const authRouter = router({
           `Successfully updated auth user for UID: ${updatedUserRecord.uid}`,
         );
 
-        // will throw if doc doesn't exist
-        const userRef = appCollection(FirestoreCollection.Users).doc(uid);
-        await userRef.update({
+        await updateUser(uid, {
           email: updateForm.email,
           firstName: updateForm.firstName,
           lastName: updateForm.lastName,
@@ -134,7 +132,7 @@ export const authRouter = router({
         logger.info(`Successfully updated user doc for UID: ${uid}`);
 
         // fetch updated user to return, necessary to update app state immediately
-        const finalUser = (await userRef.get()).data();
+        const finalUser = await getUser(uid);
 
         if (!finalUser) {
           logger.error(`User doc undefined after update for UID: ${uid}`);
@@ -153,11 +151,7 @@ export const authRouter = router({
   createInternalApplicant: roleProcedure([PermissionRole.SuperReviewer])
     .input(createInternalApplicantSchema)
     .mutation(async ({ input: requestData }) => {
-      const formSnap = await appCollection(FirestoreCollection.ApplicationForms)
-        .doc(requestData.formId)
-        .get();
-
-      if (!formSnap.exists || !formSnap.data()) {
+      if (!(await getForm(requestData.formId))) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: `Application form with ID ${requestData.formId} could not be retrieved`,
@@ -166,10 +160,7 @@ export const authRouter = router({
 
       // note: internal applicants are only given a user doc, not auth.
       // any other code where doc/auth are manipulated together must be updated.
-      const usersCollection = appCollection(FirestoreCollection.Users);
       const userId = uuidv4();
-
-      const batch = db.batch();
 
       const newUser: UserProfile = {
         id: userId,
@@ -183,8 +174,6 @@ export const authRouter = router({
         inactiveApplications: [],
         inactive: false,
       };
-
-      batch.set(usersCollection.doc(userId), newUser);
 
       logger.info(
         `created internal applicant ${newUser.firstName} ${newUser.lastName} with ID: ${newUser.id}`,
@@ -204,32 +193,22 @@ export const authRouter = router({
         dateSubmitted: Timestamp.now(),
       };
 
-      batch.set(
-        appCollection(FirestoreCollection.ApplicationResponses).doc(
-          applicationResponseId,
-        ),
-        newApplicationResponse,
-      );
-
-      const statusCollection = appCollection(
-        FirestoreCollection.ApplicationStatus,
-      );
-
-      for (const role of requestData.rolesApplied) {
-        const statusId = uuidv4();
-        const newStatus: InternalApplicationStatus = {
-          id: statusId,
+      const newStatuses = requestData.rolesApplied.map(
+        (role): InternalApplicationStatus => ({
+          id: uuidv4(),
           formId: requestData.formId,
           role: role,
           responseId: applicationResponseId,
           status: ReviewStatus.Interview,
           isQualified: true,
-        };
+        }),
+      );
 
-        batch.set(statusCollection.doc(statusId), newStatus);
-      }
-
-      await batch.commit();
+      await runTransaction(async (tx) => {
+        await createUser(newUser, tx);
+        setResponse(newApplicationResponse, tx);
+        for (const status of newStatuses) createStatus(status, tx);
+      });
       logger.info(
         `submitted response and qualified status documents for internal applicant ${userId}`,
       );

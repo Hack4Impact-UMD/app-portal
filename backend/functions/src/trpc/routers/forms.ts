@@ -1,21 +1,21 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { ApplicationFormDTO } from "@app-portal/shared/types";
 import { isDecided } from "@app-portal/shared/utils";
 import { TRPCError } from "@trpc/server";
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
-import { db } from "../../index";
-import { appCollection } from "../../utils/firestore";
 import {
-  assertCanReadForm,
-  assertCanReadResponse,
-  canReadForm,
-  getAssignedResponses,
-  requireUser,
-} from "../access";
-import { authedProcedure, router } from "../init";
-import { loadForm } from "./rows/loaders";
+  listActiveForms,
+  listForms,
+  listFormsInvitingUser,
+  setActiveForm,
+  updateForm,
+} from "../../services/forms";
+import { listStatusesForForm } from "../../services/statuses";
+import { canReadForm } from "../access";
+import { forbidden } from "../errors";
+import { authedProcedure, requireUser, router } from "../init";
+import { requireForm, requireReadableResponse } from "../required";
 import {
   reviewCapableProcedure,
   superReviewerProcedure,
@@ -26,8 +26,10 @@ export const formsRouter = router({
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ input, ctx }): Promise<ApplicationFormDTO> => {
       const user = await requireUser(ctx);
-      const form = await loadForm(input.id);
-      assertCanReadForm(user, form);
+      const form = await requireForm(input.id);
+      if (!canReadForm(user, form)) {
+        throw forbidden(`User ${user.id} may not read form ${form.id}`);
+      }
       return form;
     }),
 
@@ -35,65 +37,40 @@ export const formsRouter = router({
     .input(z.object({ responseId: z.string().min(1) }))
     .query(async ({ input, ctx }): Promise<ApplicationFormDTO> => {
       const user = await requireUser(ctx);
-      const response = (
-        await appCollection(FirestoreCollection.ApplicationResponses)
-          .doc(input.responseId)
-          .get()
-      ).data();
-      if (!response) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "No response" });
-      }
-      const assigned = await getAssignedResponses(ctx.token.sub);
-      assertCanReadResponse(user, response, assigned);
+      const response = await requireReadableResponse(user, input.responseId);
 
-      const form = await loadForm(response.applicationFormId);
-      assertCanReadForm(user, form);
+      const form = await requireForm(response.applicationFormId);
+      if (!canReadForm(user, form)) {
+        throw forbidden(`User ${user.id} may not read form ${form.id}`);
+      }
       return form;
     }),
 
   list: reviewCapableProcedure.query(
-    async (): Promise<ApplicationFormDTO[]> => {
-      return (
-        await appCollection(FirestoreCollection.ApplicationForms).get()
-      ).docs.map((d) => ({ ...d.data(), id: d.id }));
-    },
+    async (): Promise<ApplicationFormDTO[]> => listForms(),
   ),
 
   // An uninvited private form reads as no active form, as it did under the rules.
   active: authedProcedure.query(
     async ({ ctx }): Promise<ApplicationFormDTO | null> => {
       const user = await requireUser(ctx);
-      const forms = (
-        await appCollection(FirestoreCollection.ApplicationForms)
-          .where("isActive", "==", true)
-          .get()
-      ).docs.map((d) => d.data());
-
+      const forms = await listActiveForms();
       return forms.find((f) => canReadForm(user, f)) ?? null;
     },
   ),
 
   invited: authedProcedure.query(
-    async ({ ctx }): Promise<ApplicationFormDTO[]> => {
-      return (
-        await appCollection(FirestoreCollection.ApplicationForms)
-          .where("invitedUsers", "array-contains", ctx.token.uid)
-          .get()
-      ).docs.map((d) => d.data());
-    },
+    async ({ ctx }): Promise<ApplicationFormDTO[]> =>
+      listFormsInvitingUser(ctx.token.uid),
   ),
 
   setDecisionsReleased: superReviewerProcedure
     .input(z.object({ id: z.string().min(1), released: z.boolean() }))
     .mutation(async ({ input }) => {
-      await loadForm(input.id);
+      await requireForm(input.id);
       if (input.released) {
-        const statuses = await appCollection(
-          FirestoreCollection.ApplicationStatus,
-        )
-          .where("formId", "==", input.id)
-          .get();
-        if (statuses.docs.some((d) => !isDecided(d.data().status))) {
+        const statuses = await listStatusesForForm(input.id);
+        if (statuses.some((s) => !isDecided(s.status))) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
             message:
@@ -101,35 +78,23 @@ export const formsRouter = router({
           });
         }
       }
-      await appCollection(FirestoreCollection.ApplicationForms)
-        .doc(input.id)
-        .update({ decisionsReleased: input.released });
+      await updateForm(input.id, { decisionsReleased: input.released });
     }),
 
-  // Only one form may be active at a time.
   setActive: superReviewerProcedure
     .input(z.object({ id: z.string().min(1), active: z.boolean() }))
     .mutation(async ({ input }) => {
-      await loadForm(input.id);
-      const forms = appCollection(FirestoreCollection.ApplicationForms);
-      const batch = db.batch();
-      batch.update(forms.doc(input.id), { isActive: input.active });
-      if (input.active) {
-        const others = await forms.where("isActive", "==", true).get();
-        for (const d of others.docs) {
-          if (d.id !== input.id) batch.update(d.ref, { isActive: false });
-        }
-      }
-      await batch.commit();
+      await requireForm(input.id);
+      await setActiveForm(input.id, input.active);
     }),
 
   setDueDate: superReviewerProcedure
     .input(z.object({ id: z.string().min(1), dueDate: z.date() }))
     .mutation(async ({ input }) => {
-      await loadForm(input.id);
-      await appCollection(FirestoreCollection.ApplicationForms)
-        .doc(input.id)
-        .update({ dueDate: Timestamp.fromDate(input.dueDate) });
+      await requireForm(input.id);
+      await updateForm(input.id, {
+        dueDate: Timestamp.fromDate(input.dueDate),
+      });
     }),
 
   setInvitedUsers: superReviewerProcedure
@@ -140,9 +105,7 @@ export const formsRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      await loadForm(input.id);
-      await appCollection(FirestoreCollection.ApplicationForms)
-        .doc(input.id)
-        .update({ invitedUsers: input.invitedUsers });
+      await requireForm(input.id);
+      await updateForm(input.id, { invitedUsers: input.invitedUsers });
     }),
 });
