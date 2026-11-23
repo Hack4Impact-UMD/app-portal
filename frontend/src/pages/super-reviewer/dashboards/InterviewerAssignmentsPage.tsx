@@ -6,7 +6,6 @@ import { useInterviewerAssignments } from "@/components/dor/InterviewerAssignmen
 import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import { Button } from "@/components/ui/button";
-import { reviewingFor } from "@/services/reviewersService";
 
 export function InterviewerAssignmentsPage() {
   const [statusFilter, setStatusFilter] = useState<
@@ -49,7 +48,7 @@ export function InterviewerAssignmentsPage() {
           <div>
             <p className="text-muted-foreground mb-3">ROLES ASSIGNED</p>
             <div className="flex flex-wrap gap-1">
-              {reviewingFor(interviewer).map((role, i) => (
+              {interviewer.roles.map((role, i) => (
                 <ApplicantRolePill key={i} role={role} />
               ))}
             </div>

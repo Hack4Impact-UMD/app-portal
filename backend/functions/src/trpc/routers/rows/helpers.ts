@@ -1,4 +1,5 @@
 import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
+import { isInternalApplicant } from "@app-portal/shared/utils";
 import { TRPCError } from "@trpc/server";
 import { logger } from "firebase-functions";
 
@@ -40,6 +41,17 @@ export function assignedUserName(
   return isReviewCapable(user)
     ? name
     : `${name} (no longer ${label === "interviewer" ? "an" : "a"} ${label})`;
+}
+
+// Rows outlive role changes (an applicant may later become a reviewer), so they
+// carry only role-agnostic fields rather than a role-typed profile.
+export function userSummary(user: UserProfile) {
+  return {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    isInternal: isInternalApplicant(user),
+  };
 }
 
 export function requireUser(users: Map<string, UserProfile>, id: string) {

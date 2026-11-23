@@ -1,7 +1,4 @@
-import {
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
+import { FirestoreCollection } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
@@ -11,13 +8,15 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import type { ApplicationForm } from "../../../models/appForm";
-import type {
-  ApplicantProfile,
-  ReviewCapableProfile,
-} from "../../../models/user";
 import { queryWhereIn } from "../../../utils/batch";
 import { appCollection } from "../../../utils/firestore";
-import { REVIEW_CAPABLE_ROLES, scoreWarning, requireUser } from "./helpers";
+import {
+  REVIEW_CAPABLE_ROLES,
+  scoreWarning,
+  requireUser,
+  reviewingFor,
+  userSummary,
+} from "./helpers";
 import { loadForm, loadUsers } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
 
@@ -46,18 +45,12 @@ async function reviewAssignmentRows(
 
   return assignments.map((assignment, index) => {
     const applicant = requireUser(applicants, assignment.applicantId);
-    if (applicant.role !== PermissionRole.Applicant) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `User ${applicant.id} is not an applicant`,
-      });
-    }
     const review = reviewsByAssignment.get(
       `${assignment.applicantId}:${assignment.forRole}:${assignment.reviewerId}`,
     );
 
     return {
-      applicant: applicant as ApplicantProfile,
+      applicant: userSummary(applicant),
       applicantId: assignment.applicantId,
       applicantName: `${applicant.firstName} ${applicant.lastName}`,
       index: 1 + index,
@@ -103,7 +96,7 @@ export const reviewerAssignments = superReviewerProcedure
     }
 
     return {
-      reviewer: reviewer as ReviewCapableProfile,
+      reviewer: { ...userSummary(reviewer), roles: reviewingFor(reviewer) },
       numReviewed: reviewerData.filter((r) => r.submitted).length,
       rows: await reviewAssignmentRows(assignments, form),
     };

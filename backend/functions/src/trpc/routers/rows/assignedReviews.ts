@@ -3,13 +3,13 @@ import type { ApplicationReviewData } from "@app-portal/shared/types";
 import { calculateReviewScore } from "@app-portal/shared/utils";
 import { z } from "zod";
 
-import type { ApplicantProfile } from "../../../models/user";
 import { appCollection } from "../../../utils/firestore";
 import {
   scoreWarning,
   isReviewCapable,
   assignedUserName,
   requireUser,
+  userSummary,
 } from "./helpers";
 import { loadForm, loadUsers, loadResponse } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
@@ -66,7 +66,7 @@ export const assignedReviews = superReviewerProcedure
     });
 
     return {
-      applicant: requireUser(users, response.userId) as ApplicantProfile,
+      applicant: userSummary(requireUser(users, response.userId)),
       response,
       numReviewed: reviewData.filter((r) => r.submitted).length,
       rows,

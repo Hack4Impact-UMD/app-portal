@@ -8,7 +8,7 @@ import type { Timestamp } from "firebase-admin/firestore";
 
 type WithDateCreated<T> = T & { dateCreated: Timestamp };
 
-export type ApplicantProfile = WithDateCreated<ApplicantUserProfileBase>;
+type ApplicantProfile = WithDateCreated<ApplicantUserProfileBase>;
 export type ReviewCapableProfile =
   | WithDateCreated<ReviewerUserProfileBase>
   | WithDateCreated<BoardUserProfileBase>

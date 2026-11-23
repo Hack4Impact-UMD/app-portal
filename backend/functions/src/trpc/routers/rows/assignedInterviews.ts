@@ -3,13 +3,13 @@ import type { ApplicationInterviewData } from "@app-portal/shared/types";
 import { calculateInterviewScore } from "@app-portal/shared/utils";
 import { z } from "zod";
 
-import type { ApplicantProfile } from "../../../models/user";
 import { appCollection } from "../../../utils/firestore";
 import {
   scoreWarning,
   isReviewCapable,
   assignedUserName,
   requireUser,
+  userSummary,
 } from "./helpers";
 import { loadForm, loadUsers, loadResponse } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
@@ -67,7 +67,7 @@ export const assignedInterviews = superReviewerProcedure
     });
 
     return {
-      applicant: requireUser(users, response.userId) as ApplicantProfile,
+      applicant: userSummary(requireUser(users, response.userId)),
       response,
       numInterviewed: interviewData.filter((i) => i.submitted).length,
       rows,
