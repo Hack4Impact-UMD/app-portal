@@ -1,20 +1,29 @@
-import {
-  ApplicantRole,
-  FirestoreCollection,
-} from "@app-portal/shared/constants";
+import { ApplicantRole } from "@app-portal/shared/constants";
 import type { AppReviewAssignment } from "@app-portal/shared/types";
 import { TRPCError } from "@trpc/server";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 
-import { db } from "../../index";
 import type { ApplicationResponse } from "../../models/appResponse";
+import { getResponses, listResponsesForForm } from "../../services/responses";
+import {
+  createReviewAssignment,
+  createReviewAssignments,
+  deleteReviewAssignment,
+  getReviewAssignment,
+  listReviewAssignmentsForForm,
+  listReviewAssignmentsForReviewer,
+} from "../../services/reviewAssignments";
+import {
+  hasReviewStarted,
+  listReviewDataForForm,
+} from "../../services/reviewData";
+import { getUsers, listReviewCapableUsers } from "../../services/users";
 import { calculateBootcampAssignmentPlan } from "../../utils/autoAssign";
-import { getDocsById } from "../../utils/batch";
-import { appCollection } from "../../utils/firestore";
-import { isBoardOrAbove, loadResponse, requireUser } from "../access";
-import { router } from "../init";
-import { loadReviewCapableUsers } from "./rows/loaders";
+import { canReadAssignedData } from "../access";
+import { forbidden, orNotFound } from "../errors";
+import { requireUser, router } from "../init";
+import { requireResponse } from "../required";
 import {
   reviewCapableProcedure,
   superReviewerProcedure,
@@ -42,8 +51,6 @@ function buildAssignment(
   };
 }
 
-const BATCH_SIZE = 250;
-
 export const reviewAssignmentsRouter = router({
   autoAssignPlan: superReviewerProcedure
     .input(
@@ -55,25 +62,13 @@ export const reviewAssignmentsRouter = router({
     .query(async ({ input: { formId, exemptReviewerIds } }) => {
       const [allApplications, allReviewers, assignments, reviewData] =
         await Promise.all([
-          appCollection(FirestoreCollection.ApplicationResponses)
-            .where("applicationFormId", "==", formId)
-            .get()
-            .then((s) => s.docs.map((d) => d.data())),
-          loadReviewCapableUsers(),
-          appCollection(FirestoreCollection.ReviewAssignments)
-            .where("formId", "==", formId)
-            .get()
-            .then((s) => s.docs.map((d) => d.data())),
-          appCollection(FirestoreCollection.ReviewData)
-            .where("applicationFormId", "==", formId)
-            .get()
-            .then((s) => s.docs.map((d) => d.data())),
+          listResponsesForForm(formId),
+          listReviewCapableUsers(),
+          listReviewAssignmentsForForm(formId),
+          listReviewDataForForm(formId),
         ]);
 
-      const usersById = await getDocsById(
-        appCollection(FirestoreCollection.Users),
-        allApplications.map((a) => a.userId),
-      );
+      const usersById = await getUsers(allApplications.map((a) => a.userId));
 
       return calculateBootcampAssignmentPlan(
         formId,
@@ -91,39 +86,32 @@ export const reviewAssignmentsRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const user = await requireUser(ctx);
-      if (!isBoardOrAbove(user) && input.reviewerId !== user.id) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+      if (!canReadAssignedData(user, input.reviewerId)) throw forbidden();
 
-      let query = appCollection(FirestoreCollection.ReviewAssignments)
-        .where("formId", "==", input.formId)
-        .where("assignmentType", "==", "review");
-      if (input.reviewerId) {
-        query = query.where("reviewerId", "==", input.reviewerId);
-      }
-      return (await query.get()).docs.map((d) => d.data());
+      return input.reviewerId
+        ? listReviewAssignmentsForReviewer(input.formId, input.reviewerId)
+        : (await listReviewAssignmentsForForm(input.formId)).filter(
+            (a) => a.assignmentType === "review",
+          );
     }),
 
   create: superReviewerProcedure
     .input(AssignInput)
     .mutation(async ({ input }) => {
-      const response = await loadResponse(input.applicationResponseId);
+      const response = await requireResponse(input.applicationResponseId);
       const assignment = buildAssignment(
         response,
         input.reviewerId,
         input.forRole,
       );
-      await appCollection(FirestoreCollection.ReviewAssignments)
-        .doc(assignment.id)
-        .create(assignment);
+      await createReviewAssignment(assignment);
       return assignment;
     }),
 
   createMany: superReviewerProcedure
     .input(z.array(AssignInput).max(5000))
     .mutation(async ({ input }) => {
-      const responses = await getDocsById(
-        appCollection(FirestoreCollection.ApplicationResponses),
+      const responses = await getResponses(
         input.map((i) => i.applicationResponseId),
       );
 
@@ -138,41 +126,21 @@ export const reviewAssignmentsRouter = router({
         return buildAssignment(response, i.reviewerId, i.forRole);
       });
 
-      const collection = appCollection(FirestoreCollection.ReviewAssignments);
-      for (let i = 0; i < assignments.length; i += BATCH_SIZE) {
-        const batch = db.batch();
-        for (const a of assignments.slice(i, i + BATCH_SIZE)) {
-          batch.create(collection.doc(a.id), a);
-        }
-        await batch.commit();
-      }
+      await createReviewAssignments(assignments);
       return { count: assignments.length };
     }),
 
   delete: superReviewerProcedure
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ input }) => {
-      const ref = appCollection(FirestoreCollection.ReviewAssignments).doc(
-        input.id,
-      );
-      const assignment = (await ref.get()).data();
-      if (!assignment) throw new TRPCError({ code: "NOT_FOUND" });
-
-      const started = await appCollection(FirestoreCollection.ReviewData)
-        .where("applicantId", "==", assignment.applicantId)
-        .where("forRole", "==", assignment.forRole)
-        .where("applicationFormId", "==", assignment.formId)
-        .where("reviewerId", "==", assignment.reviewerId)
-        .limit(1)
-        .get();
-      if (!started.empty) {
+      const assignment = orNotFound(await getReviewAssignment(input.id));
+      if (await hasReviewStarted(assignment)) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message:
             "The reviewer has already started their review for this assignment. It is not possible to delete it.",
         });
       }
-
-      await ref.delete();
+      await deleteReviewAssignment(input.id);
     }),
 });

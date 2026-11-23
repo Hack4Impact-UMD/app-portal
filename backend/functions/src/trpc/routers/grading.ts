@@ -1,5 +1,4 @@
 import {
-  FirestoreCollection,
   GradingJobStatus,
   PermissionRole,
   STANDALONE_GRADING_RESPONSE_ID,
@@ -11,40 +10,41 @@ import {
 } from "@app-portal/shared/types";
 import { TRPCError } from "@trpc/server";
 import axios from "axios";
-import type { CollectionReference } from "firebase-admin/firestore";
 import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 
-import { db } from "../../index";
-import type { ApplicationForm } from "../../models/appForm";
 import type { GradingJobPublic } from "../../models/autograder";
+import { runTransaction } from "../../services/db";
+import {
+  createJob,
+  listJobsForResponse,
+  listJobsForResponseInTx,
+  markJobFailed,
+} from "../../services/gradingJobs";
 import type { GradingTaskPayload } from "../../utils/cloudTasks";
 import { publishGradingTask } from "../../utils/cloudTasks";
-import { appCollection } from "../../utils/firestore";
-import {
-  assertCanReadResponse,
-  getAssignedResponses,
-  loadResponse,
-  requireUser,
-} from "../access";
+import { canSubmitGrading } from "../access";
+import { forbidden } from "../errors";
 import {
   assertGradingRateLimit,
   gradingRateLimitError,
   RATE_LIMITER_MAX_JOBS,
   RATE_LIMITER_WINDOW_MS,
 } from "../guards";
-import { authedProcedure, roleProcedure, router } from "../init";
+import { authedProcedure, requireUser, roleProcedure, router } from "../init";
+import {
+  requireForm,
+  requireReadableResponse,
+  requireResponse,
+} from "../required";
 
 // Publishes a grading task to the Professor grader. In the emulator this POSTs
 // directly to the local grader and returns immediately (fire-and-forget); in
 // production it enqueues a Cloud Task. On publish failure the job is marked
 // Failed so it doesn't stay stuck in Queued.
-async function publishGradingJob(
-  gradingJobsPublicCollection: CollectionReference<GradingJobPublic>,
-  payload: GradingTaskPayload,
-) {
+async function publishGradingJob(payload: GradingTaskPayload) {
   const { jobId } = payload;
 
   if (process.env.FUNCTIONS_EMULATOR === "true") {
@@ -61,15 +61,9 @@ async function publishGradingJob(
           `Failed to make grading request locally for job ${jobId}: ${err}`,
         );
         // mark the job failed so it doesn't stay stuck in Queued
-        await gradingJobsPublicCollection
-          .doc(jobId)
-          .update({
-            status: GradingJobStatus.Failed,
-            updated: Timestamp.now(),
-          })
-          .catch((updateErr) => {
-            logger.error(`Failed to mark job ${jobId} as failed: ${updateErr}`);
-          });
+        await markJobFailed(jobId).catch((updateErr) => {
+          logger.error(`Failed to mark job ${jobId} as failed: ${updateErr}`);
+        });
       });
     return;
   }
@@ -79,10 +73,7 @@ async function publishGradingJob(
     logger.info(`Successfully published task ${taskName} for job ${jobId}`);
   } catch (err) {
     // mark the job failed so it doesn't stay stuck in Queued
-    await gradingJobsPublicCollection.doc(jobId).update({
-      status: GradingJobStatus.Failed,
-      updated: Timestamp.now(),
-    });
+    await markJobFailed(jobId);
     throw err;
   }
 }
@@ -92,18 +83,8 @@ export const gradingRouter = router({
     .input(z.object({ responseId: z.string().min(1) }))
     .query(async ({ input, ctx }) => {
       const user = await requireUser(ctx);
-      const assigned = await getAssignedResponses(user.id);
-      assertCanReadResponse(
-        user,
-        await loadResponse(input.responseId),
-        assigned,
-      );
-      return (
-        await appCollection(FirestoreCollection.GradingJobsPublic)
-          .where("responseId", "==", input.responseId)
-          .orderBy("started", "desc")
-          .get()
-      ).docs.map((d) => d.data());
+      await requireReadableResponse(user, input.responseId);
+      return listJobsForResponse(input.responseId);
     }),
 
   submit: roleProcedure([
@@ -122,53 +103,14 @@ export const gradingRouter = router({
 
       logger.info(`Received autograder request for responseId ${responseId}`);
 
-      const gradingJobsPublicCollection = appCollection(
-        FirestoreCollection.GradingJobsPublic,
-      );
-      const gradingJobsInternalCollection = appCollection(
-        FirestoreCollection.GradingJobsInternal,
-      );
+      const responseData = await requireResponse(responseId);
+      const form = await requireForm(responseData.applicationFormId);
 
-      const responseData = (
-        await appCollection(FirestoreCollection.ApplicationResponses)
-          .doc(responseId)
-          .get()
-      ).data();
-
-      if (!responseData) {
-        logger.warn(`Response ${responseId} not found`);
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Application response not found",
-        });
-      }
-
-      const formDoc = await appCollection(FirestoreCollection.ApplicationForms)
-        .doc(responseData.applicationFormId)
-        .get();
-
-      if (!formDoc.exists) {
-        logger.warn(`Form ${responseData.applicationFormId} not found`);
-        throw new TRPCError({ code: "NOT_FOUND", message: "Form not found" });
-      }
-
-      const form: ApplicationForm = formDoc.data() as ApplicationForm;
-
-      const isOwner = responseData.userId === userId;
-      const isAdmin = [
-        PermissionRole.Board,
-        PermissionRole.SuperReviewer,
-      ].includes(user.role);
-
-      if (!isOwner && !isAdmin) {
-        logger.warn(
+      if (!canSubmitGrading(user, responseData)) {
+        throw forbidden(
           `User ${userId} attempted to submit grading for response ${responseId} they don't own`,
+          "You do not have permission to submit an autograder request for this application",
         );
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have permission to submit an autograder request for this application",
-        });
       }
 
       const jobId = uuidv4();
@@ -184,14 +126,14 @@ export const gradingRouter = router({
       }
 
       // NOTE: cloud tasks publishing is outside this transaction right now, so docs may be created and left even if publish fails
-      const txResult = await db.runTransaction(async (transaction) => {
+      const txResult = await runTransaction(async (transaction) => {
         // validation: exit if user has existing running job
-        const existingJobsSnapshot = await transaction.get(
-          gradingJobsPublicCollection.where("responseId", "==", responseId),
+        const existingJobs = await listJobsForResponseInTx(
+          responseId,
+          transaction,
         );
 
-        const runningJobs = existingJobsSnapshot.docs.filter((doc) => {
-          const status = doc.data().status;
+        const runningJobs = existingJobs.filter(({ status }) => {
           return (
             status !== GradingJobStatus.Completed &&
             status !== GradingJobStatus.Failed
@@ -205,8 +147,8 @@ export const gradingRouter = router({
         // rate limit: enforce atomically here as a backstop against concurrent
         // submits that could both pass the preflight check
         const windowStart = now.toMillis() - RATE_LIMITER_WINDOW_MS;
-        const recentStartedMs = existingJobsSnapshot.docs
-          .map((doc) => doc.data().started.toMillis())
+        const recentStartedMs = existingJobs
+          .map((job) => job.started.toMillis())
           .filter((startedMs) => startedMs >= windowStart);
 
         if (recentStartedMs.length >= RATE_LIMITER_MAX_JOBS) {
@@ -236,8 +178,7 @@ export const gradingRouter = router({
           tests: {},
         };
 
-        transaction.set(gradingJobsPublicCollection.doc(jobId), publicJob);
-        transaction.set(gradingJobsInternalCollection.doc(jobId), internalJob);
+        createJob(publicJob, internalJob, transaction);
 
         return { type: "created" as const };
       });
@@ -258,7 +199,7 @@ export const gradingRouter = router({
       }
 
       logger.info(`Created Firestore documents for job ${jobId}`);
-      await publishGradingJob(gradingJobsPublicCollection, {
+      await publishGradingJob({
         jobId,
         responseId,
         repoURL,
@@ -284,13 +225,6 @@ export const gradingRouter = router({
     .mutation(async ({ input: { repoURL, testRepo } }) => {
       logger.info(
         `Received standalone autograder request for repo ${repoURL} against tests ${testRepo}`,
-      );
-
-      const gradingJobsPublicCollection = appCollection(
-        FirestoreCollection.GradingJobsPublic,
-      );
-      const gradingJobsInternalCollection = appCollection(
-        FirestoreCollection.GradingJobsInternal,
       );
 
       const jobId = uuidv4();
@@ -319,10 +253,7 @@ export const gradingRouter = router({
         tests: {},
       };
 
-      await db.runTransaction(async (tx) => {
-        tx.set(gradingJobsPublicCollection.doc(jobId), publicJob);
-        tx.set(gradingJobsInternalCollection.doc(jobId), internalJob);
-      });
+      await runTransaction(async (tx) => createJob(publicJob, internalJob, tx));
 
       logger.info(`Created Firestore documents for standalone job ${jobId}`);
 
@@ -333,7 +264,7 @@ export const gradingRouter = router({
         testRepo,
       };
 
-      await publishGradingJob(gradingJobsPublicCollection, payload);
+      await publishGradingJob(payload);
 
       return {
         status: "success" as const,

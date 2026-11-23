@@ -1,6 +1,5 @@
 import {
   ApplicationStatus,
-  FirestoreCollection,
   QuestionType,
   ReviewStatus,
   PermissionRole,
@@ -19,31 +18,39 @@ import {
   RoleReviewRubricSchema,
 } from "@app-portal/shared/types";
 import { TRPCError } from "@trpc/server";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 
-import { db } from "../../index";
 import type { ApplicationForm } from "../../models/appForm";
 import type { ApplicationResponse } from "../../models/appResponse";
-import { getDocsById } from "../../utils/batch";
-import { appCollection } from "../../utils/firestore";
-import { validateResponses } from "../../utils/validateResponses";
+import { runTransaction } from "../../services/db";
+import { createForm, getForm, getForms, setForm } from "../../services/forms";
+import { listInterviewAssignmentsForInterviewer } from "../../services/interviewAssignments";
 import {
-  assertCanReadForm,
-  assertCanReadResponse,
-  getAssignedResponses,
-  requireUser,
-} from "../access";
-import { SubmitValidationError } from "../errors";
+  createResponse,
+  findUserResponseForForm,
+  formHasResponses,
+  getResponse,
+  getResponses,
+  listResponsesForForm,
+  listResponsesForUser,
+  setResponse,
+  updateResponse,
+} from "../../services/responses";
+import { listReviewAssignmentsForReviewer } from "../../services/reviewAssignments";
+import type { RubricKind } from "../../services/rubrics";
+import { replaceRubricsForForm } from "../../services/rubrics";
+import { createStatus } from "../../services/statuses";
+import { addActiveApplication } from "../../services/users";
+import { validateResponses } from "../../utils/validateResponses";
+import { canReadForm, isBoardOrAbove } from "../access";
+import { forbidden, SubmitValidationError } from "../errors";
 import { assertCanRespondToForm } from "../guards";
-import { authedProcedure, roleProcedure, router } from "../init";
-import { loadForm } from "./rows/loaders";
+import { authedProcedure, requireUser, roleProcedure, router } from "../init";
+import { ensureCanReadResponse, requireForm } from "../required";
 import { reviewCapableProcedure } from "./rows/procedures";
-
-// gRPC status code Firestore returns when create() hits an existing document.
-const ALREADY_EXISTS = 6;
 
 // Form IDs are used verbatim as Firestore document IDs.
 const FORM_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/;
@@ -54,12 +61,7 @@ const FormInputSchema = z.custom<
   ApplicationFormBase & { dueDate: TimestampLike }
 >((v) => typeof v === "object" && v !== null);
 
-async function uploadRubrics(
-  collection:
-    | FirestoreCollection.Rubrics
-    | FirestoreCollection.InterviewRubrics,
-  rubrics: RoleReviewRubric[],
-) {
+async function uploadRubrics(kind: RubricKind, rubrics: RoleReviewRubric[]) {
   // Fail fast on duplicate IDs in the payload
   const seen = new Set<string>();
   const formIds = new Set<string>();
@@ -94,20 +96,7 @@ async function uploadRubrics(
 
   const formId = [...formIds][0];
 
-  const rubricsCollection = appCollection(collection);
-  const existingRubricsForForm = (
-    await rubricsCollection.where("formId", "==", formId).get()
-  ).docs;
-
-  await db.runTransaction(async (transaction) => {
-    existingRubricsForForm.forEach((existing) =>
-      transaction.delete(rubricsCollection.doc(existing.id)),
-    );
-
-    rubrics.forEach((rubric) => {
-      transaction.set(rubricsCollection.doc(rubric.id), rubric);
-    });
-  });
+  await replaceRubricsForForm(kind, formId, rubrics);
 
   logger.info(`Successfully uploaded ${rubrics.length} rubrics.`);
   return { status: "success" as const, count: rubrics.length };
@@ -145,13 +134,8 @@ function emptyResponse(userId: string, form: ApplicationForm) {
 
 export const applicationRouter = router({
   mine: authedProcedure.query(
-    async ({ ctx }): Promise<ApplicationResponseDTO[]> => {
-      return (
-        await appCollection(FirestoreCollection.ApplicationResponses)
-          .where("userId", "==", ctx.token.uid)
-          .get()
-      ).docs.map((d) => d.data());
-    },
+    async ({ ctx }): Promise<ApplicationResponseDTO[]> =>
+      listResponsesForUser(ctx.token.uid),
   ),
 
   mineWithSemester: authedProcedure.query(
@@ -160,16 +144,8 @@ export const applicationRouter = router({
     }): Promise<
       (ApplicationResponseDTO & { semester: string; active: boolean })[]
     > => {
-      const responses = (
-        await appCollection(FirestoreCollection.ApplicationResponses)
-          .where("userId", "==", ctx.token.uid)
-          .get()
-      ).docs.map((d) => d.data());
-
-      const forms = await getDocsById(
-        appCollection(FirestoreCollection.ApplicationForms),
-        responses.map((r) => r.applicationFormId),
-      );
+      const responses = await listResponsesForUser(ctx.token.uid);
+      const forms = await getForms(responses.map((r) => r.applicationFormId));
 
       return responses.flatMap((response) => {
         const form = forms.get(response.applicationFormId);
@@ -185,27 +161,32 @@ export const applicationRouter = router({
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ input, ctx }): Promise<ApplicationResponseDTO | null> => {
       const user = await requireUser(ctx);
-      const response = (
-        await appCollection(FirestoreCollection.ApplicationResponses)
-          .doc(input.id)
-          .get()
-      ).data();
+      const response = await getResponse(input.id);
       if (!response) return null;
-      const assigned = await getAssignedResponses(ctx.token.sub);
-      assertCanReadResponse(user, response, assigned);
+      await ensureCanReadResponse(user, response);
       return response;
     }),
 
   listForForm: reviewCapableProcedure
     .input(z.object({ formId: z.string().min(1) }))
-    .query(async ({ input }): Promise<ApplicationResponseDTO[]> => {
-      //TODO: pending refactor, filter here for only responses the user can read
-      return (
-        await appCollection(FirestoreCollection.ApplicationResponses)
-          .where("applicationFormId", "==", input.formId)
-          .get()
-      ).docs.map((d) => d.data());
-    }),
+    .query(
+      async ({ input: { formId }, ctx }): Promise<ApplicationResponseDTO[]> => {
+        if (isBoardOrAbove(ctx.user)) return listResponsesForForm(formId);
+
+        // Plain reviewers only see responses they're assigned to, matching
+        // canReadResponse.
+        const [reviews, interviews] = await Promise.all([
+          listReviewAssignmentsForReviewer(formId, ctx.user.id),
+          listInterviewAssignmentsForInterviewer(formId, ctx.user.id),
+        ]);
+        const responses = await getResponses(
+          [...reviews, ...interviews].map((a) => a.applicationResponseId),
+        );
+        return [...responses.values()].filter(
+          (r) => r.applicationFormId === formId,
+        );
+      },
+    ),
 
   // A query because the page loads it like one; idempotent after the first call.
   getOrCreate: authedProcedure
@@ -220,18 +201,12 @@ export const applicationRouter = router({
       }> => {
         const uid = ctx.token.uid;
         const user = await requireUser(ctx);
-        const form = await loadForm(input.formId);
-        assertCanReadForm(user, form);
+        const form = await requireForm(input.formId);
+        if (!canReadForm(user, form)) {
+          throw forbidden(`User ${user.id} may not read form ${form.id}`);
+        }
 
-        const responses = appCollection(
-          FirestoreCollection.ApplicationResponses,
-        );
-        const existingQuery = responses
-          .where("userId", "==", uid)
-          .where("applicationFormId", "==", form.id)
-          .limit(1);
-
-        const existing = (await existingQuery.get()).docs[0]?.data();
+        const existing = await findUserResponseForForm(uid, form.id);
         if (existing) return { form, response: existing };
 
         await assertCanRespondToForm(uid, user, undefined, form.id);
@@ -243,15 +218,13 @@ export const applicationRouter = router({
         }
 
         // Concurrent first visits must not create two responses.
-        const response = await db.runTransaction(async (tx) => {
-          const raced = (await tx.get(existingQuery)).docs[0]?.data();
+        const response = await runTransaction(async (tx) => {
+          const raced = await findUserResponseForForm(uid, form.id, tx);
           if (raced) return raced;
 
           const created = emptyResponse(uid, form);
-          tx.create(responses.doc(created.id), created);
-          tx.update(appCollection(FirestoreCollection.Users).doc(uid), {
-            activeApplications: FieldValue.arrayUnion(form.id),
-          });
+          createResponse(created, tx);
+          addActiveApplication(uid, form.id, tx);
           return created;
         });
 
@@ -272,21 +245,11 @@ export const applicationRouter = router({
 
       logger.info(`${ctx.token.email} is submitting an application!`);
 
-      const applicationResponseCollection = appCollection(
-        FirestoreCollection.ApplicationResponses,
-      );
-      const statusCollection = appCollection(
-        FirestoreCollection.ApplicationStatus,
-      );
-      const responseRef = applicationResponseCollection.doc(
-        applicationResponse.id,
-      );
-
       // Read-check-write in a transaction so two concurrent submits (or a
       // save racing a submit) can't both pass the in-progress check.
-      const newApp = await db.runTransaction(async (tx) => {
+      const newApp = await runTransaction(async (tx) => {
         // check that the correct user is updating the application
-        const existing = (await tx.get(responseRef)).data();
+        const existing = await getResponse(applicationResponse.id, tx);
         if (!existing) {
           logger.warn(
             `Application response ${applicationResponse.id} not found`,
@@ -313,13 +276,7 @@ export const applicationRouter = router({
         }
 
         // Check that the response is submitted before the due date specified by the application form
-        const form = (
-          await tx.get(
-            appCollection(FirestoreCollection.ApplicationForms).doc(
-              existing.applicationFormId,
-            ),
-          )
-        ).data();
+        const form = await getForm(existing.applicationFormId, tx);
         if (!form) {
           logger.warn(
             `Application form ${existing.applicationFormId} not found`,
@@ -361,7 +318,7 @@ export const applicationRouter = router({
           status: ApplicationStatus.Submitted,
           dateSubmitted: Timestamp.now(),
         };
-        tx.update(responseRef, submitted);
+        updateResponse(submitted.id, submitted, tx);
 
         for (const role of applicationResponse.rolesApplied) {
           logger.info(
@@ -376,7 +333,7 @@ export const applicationRouter = router({
             isQualified: false,
           };
 
-          tx.set(statusCollection.doc(status.id), status);
+          createStatus(status, tx);
         }
 
         return submitted;
@@ -411,15 +368,10 @@ export const applicationRouter = router({
         status: ApplicationStatus.InProgress,
       };
 
-      const applicationResponsesCollection = appCollection(
-        FirestoreCollection.ApplicationResponses,
-      );
-      const responseRef = applicationResponsesCollection.doc(newAppResponse.id);
-
       // Transaction so a save can't flip a response back to in-progress
       // after a concurrent submit has marked it submitted.
-      await db.runTransaction(async (tx) => {
-        const existingResp = (await tx.get(responseRef)).data();
+      await runTransaction(async (tx) => {
+        const existingResp = await getResponse(newAppResponse.id, tx);
 
         if (!existingResp) {
           logger.warn(
@@ -447,7 +399,7 @@ export const applicationRouter = router({
           });
         }
 
-        tx.set(responseRef, newAppResponse);
+        setResponse(newAppResponse, tx);
       });
       logger.info(
         `Saved ApplicationResponse with ID: ${newAppResponse.id} for user ${newAppResponse.userId}`,
@@ -482,13 +434,9 @@ export const applicationRouter = router({
         });
       }
 
-      const formsCollection = appCollection(
-        FirestoreCollection.ApplicationForms,
-      );
+      const existingForm = await getForm(formData.id);
 
-      const existingFormDoc = await formsCollection.doc(formData.id).get();
-
-      if (createOnly && existingFormDoc.exists) {
+      if (createOnly && existingForm) {
         logger.warn(`Form ${formData.id} already exists`);
         throw new TRPCError({
           code: "CONFLICT",
@@ -496,23 +444,7 @@ export const applicationRouter = router({
         });
       }
 
-      const existingResponses =
-        (
-          await appCollection(FirestoreCollection.ApplicationResponses)
-            .where("applicationFormId", "==", formData.id)
-            .get()
-        ).docs.length > 0;
-
-      if (existingFormDoc.exists && existingResponses) {
-        const existingForm = existingFormDoc.data();
-        if (!existingForm) {
-          logger.warn(`Existing form ${formData.id} could not be retrieved`);
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Existing form could not be retrieved",
-          });
-        }
-
+      if (existingForm && (await formHasResponses(formData.id))) {
         const existingSectionIds = existingForm.sections.map(
           (s) => s.sectionId,
         );
@@ -564,28 +496,22 @@ export const applicationRouter = router({
         });
       }
 
-      const form = {
+      const form: ApplicationForm = {
         ...formData,
         dueDate: new Timestamp(dueDate.seconds, dueDate.nanoseconds),
       };
 
       if (createOnly) {
-        // create() fails with ALREADY_EXISTS if another request won the race
-        // between the check above and this write.
-        try {
-          await formsCollection.doc(form.id).create(form);
-        } catch (error) {
-          if ((error as { code?: number }).code === ALREADY_EXISTS) {
-            logger.warn(`Form ${form.id} already exists`);
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A form with this ID already exists",
-            });
-          }
-          throw error;
+        // Another request may have won the race since the check above.
+        if (!(await createForm(form))) {
+          logger.warn(`Form ${form.id} already exists`);
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "A form with this ID already exists",
+          });
         }
       } else {
-        await formsCollection.doc(form.id).set(form);
+        await setForm(form);
       }
       logger.info(`Created application form with ID: ${form.id}`);
 
@@ -594,11 +520,9 @@ export const applicationRouter = router({
 
   uploadRubrics: roleProcedure([PermissionRole.SuperReviewer])
     .input(z.array(RoleReviewRubricSchema))
-    .mutation(({ input }) => uploadRubrics(FirestoreCollection.Rubrics, input)),
+    .mutation(({ input }) => uploadRubrics("review", input)),
 
   uploadInterviewRubrics: roleProcedure([PermissionRole.SuperReviewer])
     .input(z.array(RoleReviewRubricSchema))
-    .mutation(({ input }) =>
-      uploadRubrics(FirestoreCollection.InterviewRubrics, input),
-    ),
+    .mutation(({ input }) => uploadRubrics("interview", input)),
 });

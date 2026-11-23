@@ -1,16 +1,13 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
 import { calculateReviewScore } from "@app-portal/shared/utils";
 import { z } from "zod";
 
-import { getDocsById } from "../../../utils/batch";
-import { appCollection } from "../../../utils/firestore";
+import { getResponses } from "../../../services/responses";
+import { listReviewAssignmentsForReviewer } from "../../../services/reviewAssignments";
+import { listReviewDataForReviewer } from "../../../services/reviewData";
+import { getUsers } from "../../../services/users";
+import { requireForm } from "../../required";
 import { scoreWarning, firstByApplicantRole } from "./helpers";
-import {
-  loadForm,
-  responseRoleKey,
-  loadPreviouslyAppliedCounts,
-  loadUsers,
-} from "./loaders";
+import { responseRoleKey, loadPreviouslyAppliedCounts } from "./loaders";
 import { reviewCapableProcedure } from "./procedures";
 
 export const myReviewAssignments = reviewCapableProcedure
@@ -18,27 +15,15 @@ export const myReviewAssignments = reviewCapableProcedure
   .query(async ({ input: { formId }, ctx }) => {
     const reviewerId = ctx.token.uid;
     const [form, assignments, myReviews] = await Promise.all([
-      loadForm(formId),
-      appCollection(FirestoreCollection.ReviewAssignments)
-        .where("formId", "==", formId)
-        .where("reviewerId", "==", reviewerId)
-        .where("assignmentType", "==", "review")
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
-      appCollection(FirestoreCollection.ReviewData)
-        .where("reviewerId", "==", reviewerId)
-        .where("applicationFormId", "==", formId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
+      requireForm(formId),
+      listReviewAssignmentsForReviewer(formId, reviewerId),
+      listReviewDataForReviewer(formId, reviewerId),
     ]);
 
     const applicantIds = [...new Set(assignments.map((a) => a.applicantId))];
     const [applicants, responses, previouslyApplied] = await Promise.all([
-      loadUsers(applicantIds),
-      getDocsById(
-        appCollection(FirestoreCollection.ApplicationResponses),
-        assignments.map((a) => a.applicationResponseId),
-      ),
+      getUsers(applicantIds),
+      getResponses(assignments.map((a) => a.applicationResponseId)),
       loadPreviouslyAppliedCounts(applicantIds),
     ]);
     const reviewByKey = firstByApplicantRole(myReviews);

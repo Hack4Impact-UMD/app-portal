@@ -1,48 +1,36 @@
-import {
-  ApplicantRole,
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
+import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
 import type { InterviewAssignment } from "@app-portal/shared/types";
-import { TRPCError } from "@trpc/server";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 
-import type { UserProfile } from "../../models/user";
-import { appCollection } from "../../utils/firestore";
-import { isBoardOrAbove, loadResponse, requireUser } from "../access";
-import { roleProcedure, router } from "../init";
+import {
+  createInterviewAssignment,
+  deleteInterviewAssignment,
+  getInterviewAssignment,
+  listInterviewAssignmentsForResponse,
+} from "../../services/interviewAssignments";
+import { canReadAssignedData, managesInterviewRole } from "../access";
+import { forbidden, orNotFound } from "../errors";
+import { requireUser, roleProcedure, router } from "../init";
+import { requireResponse } from "../required";
 import { reviewCapableProcedure } from "./rows/procedures";
 
 // The old rules barred super-reviewers from managing interview assignments.
 const boardOnlyProcedure = roleProcedure([PermissionRole.Board]);
 
-function assertManagesRole(user: UserProfile, role: ApplicantRole) {
-  if (
-    user.role !== PermissionRole.Board ||
-    !user.applicantRoles?.includes(role)
-  ) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "You don't manage interviews for this role.",
-    });
-  }
-}
+const NOT_MANAGER = "You don't manage interviews for this role.";
 
 export const interviewAssignmentsRouter = router({
   listForResponse: reviewCapableProcedure
     .input(z.object({ responseId: z.string().min(1) }))
     .query(async ({ input, ctx }) => {
       const user = await requireUser(ctx);
-      const assignments = (
-        await appCollection(FirestoreCollection.InterviewAssignments)
-          .where("applicationResponseId", "==", input.responseId)
-          .get()
-      ).docs.map((d) => d.data());
-
-      return isBoardOrAbove(user)
-        ? assignments
-        : assignments.filter((a) => a.interviewerId === user.id);
+      const assignments = await listInterviewAssignmentsForResponse(
+        input.responseId,
+      );
+      return assignments.filter((a) =>
+        canReadAssignedData(user, a.interviewerId),
+      );
     }),
 
   create: boardOnlyProcedure
@@ -54,8 +42,10 @@ export const interviewAssignmentsRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      assertManagesRole(ctx.user, input.forRole);
-      const response = await loadResponse(input.applicationResponseId);
+      if (!managesInterviewRole(ctx.user, input.forRole)) {
+        throw forbidden(undefined, NOT_MANAGER);
+      }
+      const response = await requireResponse(input.applicationResponseId);
 
       const assignment: InterviewAssignment = {
         id: uuidv4(),
@@ -66,21 +56,17 @@ export const interviewAssignmentsRouter = router({
         formId: response.applicationFormId,
         interviewerId: input.interviewerId,
       };
-      await appCollection(FirestoreCollection.InterviewAssignments)
-        .doc(assignment.id)
-        .create(assignment);
+      await createInterviewAssignment(assignment);
       return assignment;
     }),
 
   delete: boardOnlyProcedure
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ input, ctx }) => {
-      const ref = appCollection(FirestoreCollection.InterviewAssignments).doc(
-        input.id,
-      );
-      const assignment = (await ref.get()).data();
-      if (!assignment) throw new TRPCError({ code: "NOT_FOUND" });
-      assertManagesRole(ctx.user, assignment.forRole);
-      await ref.delete();
+      const assignment = orNotFound(await getInterviewAssignment(input.id));
+      if (!managesInterviewRole(ctx.user, assignment.forRole)) {
+        throw forbidden(undefined, NOT_MANAGER);
+      }
+      await deleteInterviewAssignment(input.id);
     }),
 });

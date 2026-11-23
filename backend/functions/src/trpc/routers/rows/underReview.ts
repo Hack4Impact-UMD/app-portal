@@ -1,7 +1,4 @@
-import {
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
+import { PermissionRole } from "@app-portal/shared/constants";
 import {
   calculateReviewScore,
   isInternalApplicant,
@@ -9,18 +6,19 @@ import {
 import { z } from "zod";
 
 import type { ReviewCapableProfile } from "../../../models/user";
-import { groupBy, queryWhereIn } from "../../../utils/batch";
-import { appCollection } from "../../../utils/firestore";
+import { listReviewAssignmentsForResponses } from "../../../services/reviewAssignments";
+import { listReviewDataForForm } from "../../../services/reviewData";
+import { getUsers } from "../../../services/users";
+import { groupBy } from "../../../utils/batch";
 import { roleProcedure } from "../../init";
+import { requireForm } from "../../required";
 import { scoreWarning, requireUser } from "./helpers";
 import {
-  loadForm,
   loadExpandedSubmittedResponses,
   responseRoleKey,
   loadStatusesByResponseRole,
   loadBestGradingScores,
   loadPreviouslyAppliedCounts,
-  loadUsers,
 } from "./loaders";
 
 export const underReview = roleProcedure([
@@ -30,7 +28,7 @@ export const underReview = roleProcedure([
   .input(z.object({ formId: z.string() }))
   .query(async ({ input: { formId } }) => {
     const [form, applications] = await Promise.all([
-      loadForm(formId),
+      requireForm(formId),
       loadExpandedSubmittedResponses(formId),
     ]);
 
@@ -45,16 +43,9 @@ export const underReview = roleProcedure([
       statuses,
       previouslyApplied,
     ] = await Promise.all([
-      loadUsers(userIds),
-      appCollection(FirestoreCollection.ReviewData)
-        .where("applicationFormId", "==", formId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
-      queryWhereIn(
-        appCollection(FirestoreCollection.ReviewAssignments),
-        "applicationResponseId",
-        responseIds,
-      ),
+      getUsers(userIds),
+      listReviewDataForForm(formId),
+      listReviewAssignmentsForResponses(responseIds),
       loadBestGradingScores(responseIds),
       loadStatusesByResponseRole(responseIds),
       loadPreviouslyAppliedCounts(userIds),
@@ -67,7 +58,7 @@ export const underReview = roleProcedure([
       assignments,
       (a) => a.applicationResponseId,
     );
-    const reviewers = await loadUsers(assignments.map((a) => a.reviewerId));
+    const reviewers = await getUsers(assignments.map((a) => a.reviewerId));
 
     return applications.map(({ app, role }, index) => {
       const user = requireUser(users, app.userId);

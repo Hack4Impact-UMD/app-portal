@@ -1,7 +1,3 @@
-import {
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
 import { TRPCError } from "@trpc/server";
 import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
@@ -9,15 +5,16 @@ import { logger } from "firebase-functions";
 import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { UserProfile } from "../models/user";
-import { appCollection } from "../utils/firestore";
+import { getForm } from "../services/forms";
+import { listJobsStartedSince } from "../services/gradingJobs";
+import { getResponse } from "../services/responses";
+import { canRespondToForm } from "./access";
 import { RateLimitError } from "./errors";
 
-// Private forms can invite users of any role, so submitting/saving a
-// response for one of those forms must be allowed for the invited user even
-// if their role isn't Applicant. The persisted response's applicationFormId
-// is the source of truth for which form governs this request — a caller
-// could otherwise supply an applicationFormId for a form they're invited to
-// while acting on a response that actually belongs to a different form.
+// The persisted response's applicationFormId is the source of truth for which
+// form governs this request — a caller could otherwise supply an
+// applicationFormId for a form they're invited to while acting on a response
+// that actually belongs to a different form.
 export async function assertCanRespondToForm(
   uid: string,
   user: UserProfile | undefined,
@@ -34,19 +31,11 @@ export async function assertCanRespondToForm(
   let formId: string | undefined;
 
   try {
-    const responses = appCollection(FirestoreCollection.ApplicationResponses);
-    existingResponse = responseId
-      ? (await responses.doc(responseId).get()).data()
-      : undefined;
-
+    existingResponse = responseId ? await getResponse(responseId) : undefined;
     // No existing response yet (e.g. first save): fall back to the
     // caller-supplied form ID since there's no canonical one to check against.
     formId = existingResponse?.applicationFormId ?? inputFormId;
-
-    if (formId) {
-      const forms = appCollection(FirestoreCollection.ApplicationForms);
-      form = (await forms.doc(formId).get()).data();
-    }
+    if (formId) form = await getForm(formId);
   } catch (error) {
     logger.error("assertCanRespondToForm: Firestore lookup failed", error);
     throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", cause: error });
@@ -59,25 +48,12 @@ export async function assertCanRespondToForm(
     throw new TRPCError({ code: "FORBIDDEN" });
   }
 
-  if (formId) {
-    // A form ID that resolves to nothing is not a public form — without the
-    // existence check `!form?.isPrivate` would wave through any applicant
-    // pointing at a form that doesn't exist. Mirrors the `exists()` guard in
-    // the Firestore rules.
-    if (form && user.role === PermissionRole.Applicant && !form.isPrivate) {
-      return;
-    }
-    if (form?.invitedUsers?.includes(uid)) {
-      return;
-    }
-  } else if (user.role === PermissionRole.Applicant) {
-    return;
+  if (!canRespondToForm(user, formId, form)) {
+    logger.warn(
+      `assertCanRespondToForm: User ${uid} has role ${user.role} and is not invited to form ${formId}`,
+    );
+    throw new TRPCError({ code: "FORBIDDEN" });
   }
-
-  logger.warn(
-    `assertCanRespondToForm: User ${uid} has role ${user.role} and is not invited to form ${formId}`,
-  );
-  throw new TRPCError({ code: "FORBIDDEN" });
 }
 
 // Maximum number of grading jobs allowed per response within the rate limit window.
@@ -130,20 +106,15 @@ export async function assertGradingRateLimit(
 ) {
   const windowStart = Timestamp.fromMillis(Date.now() - RATE_LIMITER_WINDOW_MS);
 
-  const recentJobsSnapshot = await appCollection(
-    FirestoreCollection.GradingJobsPublic,
-  )
-    .where("responseId", "==", responseId)
-    .where("started", ">=", windowStart)
-    .get();
+  const recentJobs = await listJobsStartedSince(responseId, windowStart);
 
-  if (recentJobsSnapshot.size >= RATE_LIMITER_MAX_JOBS) {
+  if (recentJobs.length >= RATE_LIMITER_MAX_JOBS) {
     logger.warn(
       `gradingRateLimiter: response ${responseId} exceeded the rate limit ` +
-        `(${recentJobsSnapshot.size} jobs in the last 30 minutes)`,
+        `(${recentJobs.length} jobs in the last 30 minutes)`,
     );
     throw gradingRateLimitError(
-      recentJobsSnapshot.docs.map((doc) => doc.data().started.toMillis()),
+      recentJobs.map((job) => job.started.toMillis()),
       setHeader,
     );
   }

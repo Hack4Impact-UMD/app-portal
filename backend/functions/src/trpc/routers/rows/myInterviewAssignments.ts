@@ -1,15 +1,17 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
 import { calculateInterviewScore } from "@app-portal/shared/utils";
 import { z } from "zod";
 
-import { appCollection } from "../../../utils/firestore";
+import { listInterviewAssignmentsForInterviewer } from "../../../services/interviewAssignments";
+import { listInterviewDataForInterviewer } from "../../../services/interviewData";
+import { getUsers } from "../../../services/users";
+import { requireForm } from "../../required";
 import {
   scoreWarning,
   requireUser,
   firstByApplicantRole,
   userSummary,
 } from "./helpers";
-import { loadForm, responseRoleKey, loadUsers } from "./loaders";
+import { responseRoleKey } from "./loaders";
 import { reviewCapableProcedure } from "./procedures";
 
 export const myInterviewAssignments = reviewCapableProcedure
@@ -17,21 +19,12 @@ export const myInterviewAssignments = reviewCapableProcedure
   .query(async ({ input: { formId }, ctx }) => {
     const interviewerId = ctx.token.uid;
     const [form, assignments, myInterviews] = await Promise.all([
-      loadForm(formId),
-      appCollection(FirestoreCollection.InterviewAssignments)
-        .where("formId", "==", formId)
-        .where("interviewerId", "==", interviewerId)
-        .where("assignmentType", "==", "interview")
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
-      appCollection(FirestoreCollection.InterviewData)
-        .where("interviewerId", "==", interviewerId)
-        .where("applicationFormId", "==", formId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
+      requireForm(formId),
+      listInterviewAssignmentsForInterviewer(formId, interviewerId),
+      listInterviewDataForInterviewer(formId, interviewerId),
     ]);
 
-    const applicants = await loadUsers(assignments.map((a) => a.applicantId));
+    const applicants = await getUsers(assignments.map((a) => a.applicantId));
     const interviewByKey = firstByApplicantRole(myInterviews);
 
     const rows = assignments.map((assignment, index) => {

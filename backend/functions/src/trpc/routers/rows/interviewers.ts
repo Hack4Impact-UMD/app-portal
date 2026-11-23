@@ -1,9 +1,9 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
 import { z } from "zod";
 
+import { listInterviewAssignmentsForForm } from "../../../services/interviewAssignments";
+import { listInterviewDataForForm } from "../../../services/interviewData";
+import { listReviewCapableUsers } from "../../../services/users";
 import { groupBy } from "../../../utils/batch";
-import { appCollection } from "../../../utils/firestore";
-import { loadReviewCapableUsers } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
 
 export const interviewers = superReviewerProcedure
@@ -12,15 +12,9 @@ export const interviewers = superReviewerProcedure
     // all reviewers are eligible for interviews, but some will never be
     // assigned interviews
     const [interviewers, interviewData, assignments] = await Promise.all([
-      loadReviewCapableUsers(),
-      appCollection(FirestoreCollection.InterviewData)
-        .where("applicationFormId", "==", formId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
-      appCollection(FirestoreCollection.InterviewAssignments)
-        .where("formId", "==", formId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
+      listReviewCapableUsers(),
+      listInterviewDataForForm(formId),
+      listInterviewAssignmentsForForm(formId),
     ]);
 
     const assignmentsByInterviewer = groupBy(

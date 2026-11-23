@@ -1,80 +1,35 @@
-import {
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
-import { TRPCError } from "@trpc/server";
-import { logger } from "firebase-functions";
+import type { ApplicantRole } from "@app-portal/shared/constants";
+import { PermissionRole } from "@app-portal/shared/constants";
 
 import type { ApplicationForm } from "../models/appForm";
 import type { ApplicationResponse } from "../models/appResponse";
 import type { UserProfile } from "../models/user";
-import { appCollection } from "../utils/firestore";
-import { REVIEW_CAPABLE_ROLES } from "./routers/rows/helpers";
+import { isReviewCapable } from "../models/user";
 
 // Mirror the old Firestore rules so moving reads server-side doesn't widen access.
-type UserContext = {
-  token: { uid: string };
-  getUser: () => Promise<UserProfile | undefined>;
-};
-
-// The rules' isAuthed() also required the user doc to exist.
-export async function requireUser(ctx: UserContext): Promise<UserProfile> {
-  const user = await ctx.getUser();
-  if (!user) {
-    logger.error(`requireUser: User with id ${ctx.token.uid} not found!`);
-    throw new TRPCError({ code: "FORBIDDEN" });
-  }
-  return user;
-}
-
-export function isReviewCapableUser(user: UserProfile) {
-  return REVIEW_CAPABLE_ROLES.includes(user.role);
-}
 
 export function canReadForm(user: UserProfile, form: ApplicationForm) {
-  if (isReviewCapableUser(user)) return true;
+  if (isReviewCapable(user)) return true;
   if (user.role === PermissionRole.Applicant && !form.isPrivate) return true;
   return form.invitedUsers?.includes(user.id) ?? false;
 }
 
-export function assertCanReadForm(user: UserProfile, form: ApplicationForm) {
-  if (!canReadForm(user, form)) {
-    logger.warn(`User ${user.id} may not read form ${form.id}`);
-    throw new TRPCError({ code: "FORBIDDEN" });
-  }
-}
-
-export function assertCanReadResponse(
+// Plain reviewers may only read responses they're assigned to review or
+// interview.
+export function canReadResponse(
   user: UserProfile,
   response: ApplicationResponse,
-  assigned?: Set<string>,
+  isAssigned: boolean,
 ) {
-  if (
+  return (
     isBoardOrAbove(user) ||
-    (isReviewCapableUser(user) && assigned?.has(response.id)) ||
+    (isReviewCapable(user) && isAssigned) ||
     response.userId === user.id
-  )
-    return;
-  logger.warn(`User ${user.id} may not read response ${response.id}`);
-  throw new TRPCError({ code: "FORBIDDEN" });
+  );
 }
 
-export async function getAssignedResponses(reviewerId: string) {
-  const reviewAssignments = appCollection(
-    FirestoreCollection.ReviewAssignments,
-  );
-  const interviewAssignments = appCollection(
-    FirestoreCollection.InterviewAssignments,
-  );
-
-  const reviewResponseIds = (
-    await reviewAssignments.where("reviewerId", "==", reviewerId).get()
-  ).docs.map((d) => d.data().applicationResponseId);
-  const interviewResponseIds = (
-    await interviewAssignments.where("interviewerId", "==", reviewerId).get()
-  ).docs.map((d) => d.data().applicationResponseId);
-
-  return new Set([...reviewResponseIds, ...interviewResponseIds]);
+export function canReadUser(user: UserProfile, targetId: string) {
+  return targetId === user.id || isReviewCapable(user);
 }
 
 export function isBoardOrAbove(user: UserProfile) {
@@ -84,12 +39,44 @@ export function isBoardOrAbove(user: UserProfile) {
   );
 }
 
-export async function loadResponse(id: string): Promise<ApplicationResponse> {
-  const response = (
-    await appCollection(FirestoreCollection.ApplicationResponses).doc(id).get()
-  ).data();
-  if (!response) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Response not found" });
+// Review/interview data and assignments belong to the assigned user.
+export function canReadAssignedData(user: UserProfile, assigneeId?: string) {
+  return isBoardOrAbove(user) || assigneeId === user.id;
+}
+
+// Super-reviewers can't manage interview assignments, matching the old rules.
+export function managesInterviewRole(user: UserProfile, role: ApplicantRole) {
+  return (
+    user.role === PermissionRole.Board &&
+    (user.applicantRoles?.includes(role) ?? false)
+  );
+}
+
+// Private forms can invite users of any role. `formId` is undefined only when
+// there's no response yet and the caller supplied none; `form` is undefined
+// when the ID doesn't resolve, which must not count as a public form (mirrors
+// the rules' exists() guard).
+export function canRespondToForm(
+  user: UserProfile,
+  formId: string | undefined,
+  form: ApplicationForm | undefined,
+) {
+  if (!formId) return user.role === PermissionRole.Applicant;
+  if (form && user.role === PermissionRole.Applicant && !form.isPrivate) {
+    return true;
   }
-  return response;
+  return form?.invitedUsers?.includes(user.id) ?? false;
+}
+
+// Reviewers and board members may edit their own role preferences;
+// super-reviewers may edit anyone's.
+export function canEditRolePreferences(user: UserProfile, targetId: string) {
+  return user.role === PermissionRole.SuperReviewer || user.id === targetId;
+}
+
+export function canSubmitGrading(
+  user: UserProfile,
+  response: ApplicationResponse,
+) {
+  return response.userId === user.id || isBoardOrAbove(user);
 }

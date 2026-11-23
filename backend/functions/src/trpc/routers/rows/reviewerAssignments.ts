@@ -1,4 +1,3 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
@@ -8,15 +7,19 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import type { ApplicationForm } from "../../../models/appForm";
-import { queryWhereIn } from "../../../utils/batch";
-import { appCollection } from "../../../utils/firestore";
+import { listReviewAssignmentsForReviewer } from "../../../services/reviewAssignments";
+import {
+  listReviewDataForReviewer,
+  listReviewDataForReviewers,
+} from "../../../services/reviewData";
+import { getUser, getUsers } from "../../../services/users";
+import { requireForm } from "../../required";
 import {
   scoreWarning,
   requireUser,
   reviewingFor,
   userSummary,
 } from "./helpers";
-import { loadForm, loadUsers } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
 
 async function reviewAssignmentRows(
@@ -25,16 +28,8 @@ async function reviewAssignmentRows(
 ) {
   const reviewerIds = [...new Set(assignments.map((a) => a.reviewerId))];
   const [applicants, reviewData] = await Promise.all([
-    loadUsers(assignments.map((a) => a.applicantId)),
-    queryWhereIn(
-      appCollection(FirestoreCollection.ReviewData).where(
-        "applicationFormId",
-        "==",
-        form.id,
-      ),
-      "reviewerId",
-      reviewerIds,
-    ),
+    getUsers(assignments.map((a) => a.applicantId)),
+    listReviewDataForReviewers(form.id, reviewerIds),
   ]);
   const reviewsByAssignment = new Map<string, ApplicationReviewData>();
   for (const review of reviewData) {
@@ -72,19 +67,10 @@ export const reviewerAssignments = superReviewerProcedure
   .input(z.object({ formId: z.string(), reviewerId: z.string() }))
   .query(async ({ input: { formId, reviewerId } }) => {
     const [form, reviewer, assignments, reviewerData] = await Promise.all([
-      loadForm(formId),
-      loadUsers([reviewerId]).then((m) => m.get(reviewerId)),
-      appCollection(FirestoreCollection.ReviewAssignments)
-        .where("formId", "==", formId)
-        .where("reviewerId", "==", reviewerId)
-        .where("assignmentType", "==", "review")
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
-      appCollection(FirestoreCollection.ReviewData)
-        .where("reviewerId", "==", reviewerId)
-        .where("applicationFormId", "==", formId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
+      requireForm(formId),
+      getUser(reviewerId),
+      listReviewAssignmentsForReviewer(formId, reviewerId),
+      listReviewDataForReviewer(formId, reviewerId),
     ]);
 
     if (!reviewer) {

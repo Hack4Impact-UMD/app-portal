@@ -1,6 +1,5 @@
 import {
   ApplicantRole,
-  FirestoreCollection,
   ReviewStatus,
   PermissionRole,
 } from "@app-portal/shared/constants";
@@ -10,8 +9,22 @@ import { TRPCError } from "@trpc/server";
 import { logger } from "firebase-functions";
 import { z } from "zod";
 
-import { db } from "../../index";
-import { appCollection } from "../../utils/firestore";
+import {
+  getConfirmation,
+  responseHasConfirmation,
+  setConfirmation,
+} from "../../services/decisions";
+import { getForm } from "../../services/forms";
+import { getResponse } from "../../services/responses";
+import {
+  denyStatuses,
+  getStatus,
+  getStatusesByIds,
+  getStatusForResponseRole,
+  listStatusesForForm,
+  updateStatus,
+} from "../../services/statuses";
+import { orNotFound } from "../errors";
 import { authedProcedure, roleProcedure, router } from "../init";
 import { boardProcedure, superReviewerProcedure } from "./rows/procedures";
 
@@ -29,64 +42,35 @@ export const statusRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      const ref = appCollection(FirestoreCollection.ApplicationStatus).doc(
-        input.id,
-      );
-      if (!(await ref.get()).exists) throw new TRPCError({ code: "NOT_FOUND" });
-      await ref.update(input.patch);
+      orNotFound(await getStatus(input.id));
+      await updateStatus(input.id, input.patch);
     }),
 
   rejectUndecided: superReviewerProcedure
     .input(z.object({ formId: z.string().min(1) }))
     .mutation(async ({ input }) => {
-      const undecided = (
-        await appCollection(FirestoreCollection.ApplicationStatus)
-          .where("formId", "==", input.formId)
-          .get()
-      ).docs.filter((d) => !isDecided(d.data().status));
-
-      const BATCH_SIZE = 250;
-      for (let i = 0; i < undecided.length; i += BATCH_SIZE) {
-        const batch = db.batch();
-        for (const d of undecided.slice(i, i + BATCH_SIZE)) {
-          batch.update(d.ref, { status: ReviewStatus.Denied });
-        }
-        await batch.commit();
-      }
+      const undecided = (await listStatusesForForm(input.formId)).filter(
+        (s) => !isDecided(s.status),
+      );
+      await denyStatuses(undecided.map((s) => s.id));
       return { count: undecided.length };
     }),
 
   listForForm: boardProcedure
     .input(z.object({ formId: z.string().min(1) }))
-    .query(async ({ input }) => {
-      return (
-        await appCollection(FirestoreCollection.ApplicationStatus)
-          .where("formId", "==", input.formId)
-          .get()
-      ).docs.map((d) => d.data());
-    }),
+    .query(({ input }) => listStatusesForForm(input.formId)),
 
   getConfirmation: authedProcedure
     .input(z.object({ responseId: z.string().min(1) }))
-    .query(async ({ input, ctx }) => {
-      const confirmation = (
-        await appCollection(FirestoreCollection.DecisionStatus)
-          .where("userId", "==", ctx.token.uid)
-          .where("responseId", "==", input.responseId)
-          .limit(1)
-          .get()
-      ).docs[0]?.data();
-      return confirmation ?? null;
-    }),
+    .query(
+      async ({ input, ctx }) =>
+        (await getConfirmation(ctx.token.uid, input.responseId)) ?? null,
+    ),
 
   get: authedProcedure
     .input(z.object({ responseId: z.string(), role: z.enum(ApplicantRole) }))
     .query(async ({ input: { responseId, role }, ctx }) => {
-      const responseDoc = (
-        await appCollection(FirestoreCollection.ApplicationResponses)
-          .doc(responseId)
-          .get()
-      ).data();
+      const responseDoc = await getResponse(responseId);
 
       if (!responseDoc) {
         logger.warn(`Application response ${responseId} not found`);
@@ -97,17 +81,11 @@ export const statusRouter = router({
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
-      const [status, form] = await Promise.all([
-        appCollection(FirestoreCollection.ApplicationStatus)
-          .where("role", "==", role)
-          .where("responseId", "==", responseId)
-          .get(),
-        appCollection(FirestoreCollection.ApplicationForms)
-          .doc(responseDoc.applicationFormId)
-          .get(),
+      const [data, form] = await Promise.all([
+        getStatusForResponseRole(responseId, role),
+        getForm(responseDoc.applicationFormId),
       ]);
 
-      const data = status.docs[0]?.data();
       if (!data) {
         logger.warn(
           `Application status not found for response ${responseId} and role ${role}`,
@@ -115,7 +93,7 @@ export const statusRouter = router({
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      const released = form.data()?.decisionsReleased;
+      const released = form?.decisionsReleased;
       if (released === undefined) {
         logger.warn(
           `Application form ${responseDoc.applicationFormId} not found`,
@@ -125,7 +103,7 @@ export const statusRouter = router({
 
       if (released) {
         return {
-          id: status.docs[0].id,
+          id: data.id,
           status: data.status as ReviewStatus | "decided",
           role: data.role,
           released: true,
@@ -149,7 +127,7 @@ export const statusRouter = router({
       }
 
       return {
-        id: status.docs[0].id,
+        id: data.id,
         status: publicStatus as ReviewStatus | "decided",
         role: data.role,
         released: false,
@@ -159,19 +137,8 @@ export const statusRouter = router({
   confirmDecision: roleProcedure([PermissionRole.Applicant])
     .input(DecisionConfirmationSchema)
     .mutation(async ({ input, ctx }) => {
-      const decisionStatusCollection = appCollection(
-        FirestoreCollection.DecisionStatus,
-      );
-      const formCollection = appCollection(
-        FirestoreCollection.ApplicationForms,
-      );
-      const responseCollection = appCollection(
-        FirestoreCollection.ApplicationResponses,
-      );
       const { responseId, userId, internalStatusId } = input;
-      const response = (
-        await responseCollection.doc(input.responseId).get()
-      ).data();
+      const response = await getResponse(input.responseId);
 
       // Check if user is editing their own decision
       if (userId !== ctx.token.uid || response?.userId !== ctx.token.uid) {
@@ -194,9 +161,7 @@ export const statusRouter = router({
         });
       }
 
-      const form = (
-        await formCollection.doc(response.applicationFormId).get()
-      ).data();
+      const form = await getForm(response.applicationFormId);
       if (!form?.decisionsReleased) {
         logger.warn("Decisions not yet released");
         throw new TRPCError({
@@ -206,10 +171,7 @@ export const statusRouter = router({
       }
 
       // Check if confirmation already exists for this responseId
-      const existingConfirmation = await decisionStatusCollection
-        .where("responseId", "==", responseId)
-        .get();
-      if (!existingConfirmation.empty) {
+      if (await responseHasConfirmation(responseId)) {
         logger.warn(
           `Confirmation already exists for responseId: ${responseId}`,
         );
@@ -220,13 +182,9 @@ export const statusRouter = router({
       }
 
       // Look up applicant’s internal decision in app-status
-      const statusDocs = await appCollection(
-        FirestoreCollection.ApplicationStatus,
-      )
-        .where("id", "==", internalStatusId)
-        .get();
+      const [statusDoc] = await getStatusesByIds([internalStatusId]);
 
-      if (statusDocs.empty) {
+      if (!statusDoc) {
         logger.warn(
           `No app-status record found for internalStatusId: ${internalStatusId}`,
         );
@@ -235,8 +193,6 @@ export const statusRouter = router({
           message: "No decision found for this response.",
         });
       }
-
-      const statusDoc = statusDocs.docs[0].data();
 
       if (statusDoc.responseId !== responseId) {
         logger.warn(
@@ -258,7 +214,7 @@ export const statusRouter = router({
         });
       }
 
-      await decisionStatusCollection.doc(`${responseId}_${userId}`).set(input);
+      await setConfirmation(input);
 
       logger.info(`Created confirmation for responseId: ${responseId}`);
       return { message: "Confirmation recorded successfully." };

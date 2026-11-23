@@ -1,17 +1,10 @@
-import {
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
+import { PermissionRole } from "@app-portal/shared/constants";
 
-import { appCollection } from "../../../utils/firestore";
+import { listUsersByRole } from "../../../services/users";
 import { superReviewerProcedure } from "./procedures";
 
 export const boardMembers = superReviewerProcedure.query(async () => {
-  const boardMembers = (
-    await appCollection(FirestoreCollection.Users)
-      .where("role", "==", PermissionRole.Board)
-      .get()
-  ).docs.map((d) => d.data());
+  const boardMembers = await listUsersByRole(PermissionRole.Board);
 
   return boardMembers.map((boardMember, index) => ({
     index: 1 + index,

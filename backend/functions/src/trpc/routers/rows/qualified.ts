@@ -1,7 +1,4 @@
-import {
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
+import { PermissionRole } from "@app-portal/shared/constants";
 import {
   calculateInterviewScore,
   calculateReviewScore,
@@ -9,17 +6,21 @@ import {
 } from "@app-portal/shared/utils";
 import { z } from "zod";
 
-import { groupBy, queryWhereIn } from "../../../utils/batch";
-import { appCollection } from "../../../utils/firestore";
+import { isReviewCapable } from "../../../models/user";
+import { listInterviewAssignmentsForResponses } from "../../../services/interviewAssignments";
+import { listInterviewDataForForm } from "../../../services/interviewData";
+import { listReviewDataForForm } from "../../../services/reviewData";
+import { listQualifiedStatusesForForm } from "../../../services/statuses";
+import { getUsers } from "../../../services/users";
+import { groupBy } from "../../../utils/batch";
 import { roleProcedure } from "../../init";
-import { isReviewCapable, scoreWarning, requireUser } from "./helpers";
+import { requireForm } from "../../required";
+import { scoreWarning, requireUser } from "./helpers";
 import {
-  loadForm,
   loadExpandedSubmittedResponses,
   responseRoleKey,
   loadStatusesByResponseRole,
   loadBestGradingScores,
-  loadUsers,
 } from "./loaders";
 
 export const qualified = roleProcedure([
@@ -34,13 +35,9 @@ export const qualified = roleProcedure([
         : undefined;
 
     const [form, expanded, qualifiedStatuses] = await Promise.all([
-      loadForm(formId),
+      requireForm(formId),
       loadExpandedSubmittedResponses(formId),
-      appCollection(FirestoreCollection.ApplicationStatus)
-        .where("formId", "==", formId)
-        .where("isQualified", "==", true)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
+      listQualifiedStatusesForForm(formId),
     ]);
 
     const qualifiedSet = new Set(
@@ -62,20 +59,10 @@ export const qualified = roleProcedure([
       gradingScores,
       statuses,
     ] = await Promise.all([
-      loadUsers(applications.map(({ app }) => app.userId)),
-      queryWhereIn(
-        appCollection(FirestoreCollection.InterviewAssignments),
-        "applicationResponseId",
-        responseIds,
-      ),
-      appCollection(FirestoreCollection.InterviewData)
-        .where("applicationFormId", "==", formId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
-      appCollection(FirestoreCollection.ReviewData)
-        .where("applicationFormId", "==", formId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
+      getUsers(applications.map(({ app }) => app.userId)),
+      listInterviewAssignmentsForResponses(responseIds),
+      listInterviewDataForForm(formId),
+      listReviewDataForForm(formId),
       loadBestGradingScores(responseIds),
       loadStatusesByResponseRole(responseIds),
     ]);
@@ -90,7 +77,7 @@ export const qualified = roleProcedure([
     const reviewsByKey = groupBy(reviewData, (r) =>
       responseRoleKey(r.applicationResponseId, r.forRole),
     );
-    const interviewers = await loadUsers(
+    const interviewers = await getUsers(
       interviewAssignments.map((a) => a.interviewerId),
     );
 

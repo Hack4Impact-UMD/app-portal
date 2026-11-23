@@ -1,37 +1,32 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { ApplicationReviewData } from "@app-portal/shared/types";
 import { calculateReviewScore } from "@app-portal/shared/utils";
 import { z } from "zod";
 
-import { appCollection } from "../../../utils/firestore";
+import { isReviewCapable } from "../../../models/user";
+import { listReviewAssignmentsForResponse } from "../../../services/reviewAssignments";
+import { listReviewDataForResponse } from "../../../services/reviewData";
+import { getUsers } from "../../../services/users";
+import { requireForm, requireResponse } from "../../required";
 import {
   scoreWarning,
-  isReviewCapable,
   assignedUserName,
   requireUser,
   userSummary,
 } from "./helpers";
-import { loadForm, loadUsers, loadResponse } from "./loaders";
 import { boardProcedure } from "./procedures";
 
 export const assignedReviews = boardProcedure
   .input(z.object({ responseId: z.string() }))
   .query(async ({ input: { responseId } }) => {
     const [response, assignments, reviewData] = await Promise.all([
-      loadResponse(responseId),
-      appCollection(FirestoreCollection.ReviewAssignments)
-        .where("applicationResponseId", "==", responseId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
-      appCollection(FirestoreCollection.ReviewData)
-        .where("applicationResponseId", "==", responseId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
+      requireResponse(responseId),
+      listReviewAssignmentsForResponse(responseId),
+      listReviewDataForResponse(responseId),
     ]);
 
     const [form, users] = await Promise.all([
-      loadForm(response.applicationFormId),
-      loadUsers([response.userId, ...assignments.map((a) => a.reviewerId)]),
+      requireForm(response.applicationFormId),
+      getUsers([response.userId, ...assignments.map((a) => a.reviewerId)]),
     ]);
 
     const reviewByKey = new Map<string, ApplicationReviewData>();

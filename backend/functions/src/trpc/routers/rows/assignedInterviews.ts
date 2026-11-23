@@ -1,37 +1,32 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { ApplicationInterviewData } from "@app-portal/shared/types";
 import { calculateInterviewScore } from "@app-portal/shared/utils";
 import { z } from "zod";
 
-import { appCollection } from "../../../utils/firestore";
+import { isReviewCapable } from "../../../models/user";
+import { listInterviewAssignmentsForResponse } from "../../../services/interviewAssignments";
+import { listInterviewDataForResponse } from "../../../services/interviewData";
+import { getUsers } from "../../../services/users";
+import { requireForm, requireResponse } from "../../required";
 import {
   scoreWarning,
-  isReviewCapable,
   assignedUserName,
   requireUser,
   userSummary,
 } from "./helpers";
-import { loadForm, loadUsers, loadResponse } from "./loaders";
 import { boardProcedure } from "./procedures";
 
 export const assignedInterviews = boardProcedure
   .input(z.object({ responseId: z.string() }))
   .query(async ({ input: { responseId } }) => {
     const [response, assignments, interviewData] = await Promise.all([
-      loadResponse(responseId),
-      appCollection(FirestoreCollection.InterviewAssignments)
-        .where("applicationResponseId", "==", responseId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
-      appCollection(FirestoreCollection.InterviewData)
-        .where("applicationResponseId", "==", responseId)
-        .get()
-        .then((s) => s.docs.map((d) => d.data())),
+      requireResponse(responseId),
+      listInterviewAssignmentsForResponse(responseId),
+      listInterviewDataForResponse(responseId),
     ]);
 
     const [form, users] = await Promise.all([
-      loadForm(response.applicationFormId),
-      loadUsers([response.userId, ...assignments.map((a) => a.interviewerId)]),
+      requireForm(response.applicationFormId),
+      getUsers([response.userId, ...assignments.map((a) => a.interviewerId)]),
     ]);
 
     const interviewByKey = new Map<string, ApplicationInterviewData>();
