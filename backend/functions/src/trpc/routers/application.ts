@@ -27,22 +27,25 @@ import type { ApplicationForm } from "../../models/appForm";
 import type { ApplicationResponse } from "../../models/appResponse";
 import { runTransaction } from "../../services/db";
 import { createForm, getForm, getForms, setForm } from "../../services/forms";
+import { listInterviewAssignmentsForInterviewer } from "../../services/interviewAssignments";
 import {
   createResponse,
   findUserResponseForForm,
   formHasResponses,
   getResponse,
+  getResponses,
   listResponsesForForm,
   listResponsesForUser,
   setResponse,
   updateResponse,
 } from "../../services/responses";
+import { listReviewAssignmentsForReviewer } from "../../services/reviewAssignments";
 import type { RubricKind } from "../../services/rubrics";
 import { replaceRubricsForForm } from "../../services/rubrics";
 import { createStatus } from "../../services/statuses";
 import { addActiveApplication } from "../../services/users";
 import { validateResponses } from "../../utils/validateResponses";
-import { canReadForm } from "../access";
+import { canReadForm, isBoardOrAbove } from "../access";
 import { forbidden, SubmitValidationError } from "../errors";
 import { assertCanRespondToForm } from "../guards";
 import { authedProcedure, requireUser, roleProcedure, router } from "../init";
@@ -166,10 +169,23 @@ export const applicationRouter = router({
 
   listForForm: reviewCapableProcedure
     .input(z.object({ formId: z.string().min(1) }))
-    // TODO: filter here for only responses the user can read
     .query(
-      async ({ input }): Promise<ApplicationResponseDTO[]> =>
-        listResponsesForForm(input.formId),
+      async ({ input: { formId }, ctx }): Promise<ApplicationResponseDTO[]> => {
+        if (isBoardOrAbove(ctx.user)) return listResponsesForForm(formId);
+
+        // Plain reviewers only see responses they're assigned to, matching
+        // canReadResponse.
+        const [reviews, interviews] = await Promise.all([
+          listReviewAssignmentsForReviewer(formId, ctx.user.id),
+          listInterviewAssignmentsForInterviewer(formId, ctx.user.id),
+        ]);
+        const responses = await getResponses(
+          [...reviews, ...interviews].map((a) => a.applicationResponseId),
+        );
+        return [...responses.values()].filter(
+          (r) => r.applicationFormId === formId,
+        );
+      },
     ),
 
   // A query because the page loads it like one; idempotent after the first call.

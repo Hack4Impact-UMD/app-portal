@@ -242,7 +242,7 @@ export async function seedStatus(
   return doc;
 }
 
-async function seedAssignment(
+export async function seedAssignment(
   kind: "review" | "interview",
   assigneeId: string,
   response: ApplicationResponse,

@@ -15,6 +15,7 @@ import {
   expectTRPCError,
   getDoc,
   resetEmulators,
+  seedAssignment,
   seedForm,
   seedResponse,
   seedStatus,
@@ -136,6 +137,34 @@ describe("application reads", () => {
       const res = await caller(idToken).application.get({ id: responseId });
       expect(res?.id).toBe(responseId);
     });
+  });
+
+  it("listForForm limits plain reviewers to their assigned responses", async () => {
+    const form = await seedForm();
+    const otherForm = await seedForm();
+    const applicants = await Promise.all([1, 2, 3].map(() => createUser()));
+    const [reviewed, interviewed, unassigned] = await Promise.all(
+      applicants.map((a) => seedResponse(a.uid, form.id)),
+    );
+    const elsewhere = await seedResponse(applicants[0].uid, otherForm.id);
+
+    const reviewer = await createUser({ role: PermissionRole.Reviewer });
+    const board = await createUser({ role: PermissionRole.Board });
+    await seedAssignment("review", reviewer.uid, reviewed);
+    await seedAssignment("interview", reviewer.uid, interviewed);
+    await seedAssignment("review", reviewer.uid, elsewhere);
+
+    const ids = async (idToken: string) =>
+      (await caller(idToken).application.listForForm({ formId: form.id }))
+        .map((r) => r.id)
+        .sort();
+
+    expect(await ids(reviewer.idToken)).toEqual(
+      [reviewed.id, interviewed.id].sort(),
+    );
+    expect(await ids(board.idToken)).toEqual(
+      [reviewed.id, interviewed.id, unassigned.id].sort(),
+    );
   });
 
   it("mineWithSemester joins the form", async () => {

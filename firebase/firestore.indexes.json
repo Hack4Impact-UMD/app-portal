@@ -59,6 +59,34 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "review-assignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "reviewerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "applicationResponseId",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "interview-assignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "interviewerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "applicationResponseId",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
