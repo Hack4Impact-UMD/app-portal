@@ -181,9 +181,9 @@ export default function ReviewerInterviewsTable({
             return getStatus(reviewA) - getStatus(reviewB);
           },
           filterFn: (row, columnId, filterValue) => {
-            const value = row.getValue(columnId) as
-              | ApplicationInterviewData
-              | undefined;
+            const value = row.getValue<ApplicationInterviewData | undefined>(
+              columnId,
+            );
 
             const isInterviewData = (
               v: unknown,

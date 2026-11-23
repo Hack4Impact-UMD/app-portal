@@ -127,7 +127,7 @@ export default function AcceptanceConfirmationTable({
             );
           },
           filterFn: (row, columnId, filterValue) => {
-            const value = row.getValue(columnId) as "accepted" | "denied";
+            const value = row.getValue<"accepted" | "denied">(columnId);
 
             if (filterValue === "all") return true;
             else if (filterValue === "accepted") return value === "accepted";

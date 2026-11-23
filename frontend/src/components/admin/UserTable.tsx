@@ -356,7 +356,7 @@ export default function UserTable({
             );
           },
           cell: ({ row }) => {
-            const ts = row.getValue("dateCreated") as Timestamp;
+            const ts = row.getValue<Timestamp>("dateCreated");
             return (
               <span>
                 {ts.toDate().toLocaleDateString() +

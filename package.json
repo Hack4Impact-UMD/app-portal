@@ -20,14 +20,14 @@
         "knip:fix": "knip --fix"
     },
     "devDependencies": {
-        "@types/node": "^25.9.1",
-        "concurrently": "^10.0.0",
-        "firebase-tools": "15.4.0",
-        "isolate-package": "^1.33.0",
-        "knip": "^6.14.2",
+        "@types/node": "^25.9.9",
+        "concurrently": "^10.0.7",
+        "firebase-tools": "15.37.0",
+        "isolate-package": "^1.38.0",
+        "knip": "^6.48.0",
         "oxfmt": "^0.50.0",
-        "oxlint": "^1.65.0",
-        "oxlint-tsgolint": "^0.22.1",
+        "oxlint": "^1.94.0",
+        "oxlint-tsgolint": "^7.0.2008",
         "typescript": "~5.9.3",
         "vitest": "^5.1.1"
     }
