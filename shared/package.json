@@ -27,7 +27,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
     "lint": "oxlint .",
     "lint:ci": "oxlint . --format=github",
     "lint:fix": "oxlint . --fix",
@@ -36,5 +36,8 @@
   },
   "dependencies": {
     "zod": "catalog:"
+  },
+  "devDependencies": {
+    "vitest": "^5.1.1"
   }
 }

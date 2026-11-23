@@ -35,7 +35,10 @@ declare global {
   var FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string | undefined;
 }
 
-if (import.meta.env.MODE === "development") {
+const appCheckDisabled =
+  import.meta.env.DEV && import.meta.env.VITE_APPCHECK_DISABLED === "true";
+
+if (import.meta.env.MODE === "development" && !appCheckDisabled) {
   console.warn("====USING APPCHECK DEBUG TOKEN====");
   console.warn(
     "IMPORTANT: The app won't work locally if this token is not registered!",
@@ -47,10 +50,12 @@ if (import.meta.env.MODE === "development") {
     import.meta.env.VITE_APPCHECK_DEBUG_TOKEN ?? true;
 }
 
-export const appCheck = initializeAppCheck(app, {
-  provider: new ReCaptchaEnterpriseProvider(SITE_KEY),
-  isTokenAutoRefreshEnabled: true,
-});
+export const appCheck = appCheckDisabled
+  ? undefined
+  : initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider(SITE_KEY),
+      isTokenAutoRefreshEnabled: true,
+    });
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);
