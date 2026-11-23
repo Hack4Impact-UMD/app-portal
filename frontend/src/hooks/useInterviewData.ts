@@ -16,8 +16,6 @@ import {
   getInterviewDataForInterviewer,
 } from "@/services/interviewDataService";
 
-import { useAuth } from "./useAuth";
-
 const interviewDataRoot = "interview-data" as const;
 
 const interviewDataQueries = {
@@ -122,26 +120,4 @@ export function useUpdateInterviewData(interviewDataId: string) {
       });
     },
   });
-}
-
-export function useInterviewDataForResponse(applicationResponseId?: string) {
-  return useQuery(
-    interviewDataQueries.byApplicationResponse(applicationResponseId),
-  );
-}
-
-export function useInterviewDataForForm(formId?: string) {
-  return useQuery(interviewDataQueries.byForm(formId));
-}
-
-export function useInterviewDataForInterviewer(
-  formId?: string,
-  interviewerId?: string,
-) {
-  return useQuery(interviewDataQueries.byInterviewer(formId, interviewerId));
-}
-
-export function useMyInterviews(formId: string) {
-  const { user } = useAuth();
-  return useQuery(interviewDataQueries.mine(formId, user?.id));
 }

@@ -1,9 +1,5 @@
 import { FirestoreCollection } from "@app-portal/shared/constants";
-import type { ApplicantRole } from "@app-portal/shared/constants";
-import type {
-  InterviewAssignment,
-  ApplicationInterviewData,
-} from "@app-portal/shared/types";
+import type { ApplicationInterviewData } from "@app-portal/shared/types";
 import {
   doc,
   getDoc,
@@ -16,23 +12,6 @@ import {
 import { v4 as uuidv4 } from "uuid";
 
 import { appCollection } from "./firestore";
-
-export async function getInterviewDataForResponseRole(
-  formId: string,
-  responseId: string,
-  role: ApplicantRole,
-) {
-  const interviewData = appCollection(FirestoreCollection.InterviewData);
-  const q = query(
-    interviewData,
-    where("applicationFormId", "==", formId),
-    where("applicationResponseId", "==", responseId),
-    where("forRole", "==", role),
-  );
-  const result = await getDocs(q);
-
-  return result.docs.map((doc) => doc.data());
-}
 
 export async function getInterviewDataById(id: string) {
   const interviewData = appCollection(FirestoreCollection.InterviewData);
@@ -49,24 +28,6 @@ export async function updateInterviewData(
   const interviewRef = doc(interviewData, interviewDataId);
 
   await updateDoc(interviewRef, update);
-}
-
-export async function getInterviewDataForAssignment(
-  assignment: InterviewAssignment,
-) {
-  const reviewData = appCollection(FirestoreCollection.InterviewData);
-  const q = query(
-    reviewData,
-    where("applicantId", "==", assignment.applicantId),
-    where("forRole", "==", assignment.forRole),
-    where("applicationFormId", "==", assignment.formId),
-    where("interviewerId", "==", assignment.interviewerId),
-  );
-  const result = await getDocs(q);
-
-  if (result.docs.length < 1) return undefined;
-
-  return result.docs[0].data();
 }
 
 export async function createInterviewData(

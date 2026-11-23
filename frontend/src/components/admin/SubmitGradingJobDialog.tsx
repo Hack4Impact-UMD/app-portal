@@ -65,7 +65,6 @@ export default function SubmitGradingJobDialog({
       {
         responseId: normalizedResponseId,
         repoURL: repoPath,
-        token: (await token()) ?? "",
       },
       {
         onSuccess: (jobId) => {

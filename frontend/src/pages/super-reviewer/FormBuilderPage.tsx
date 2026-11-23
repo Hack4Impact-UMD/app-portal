@@ -140,7 +140,7 @@ export default function FormBuilderPage() {
         dueDate: dueDate,
       };
 
-      uploadForm({ form: formWithTimestamp, token: (await token()) ?? "" });
+      uploadForm({ form: formWithTimestamp });
     } catch (error) {
       console.error("Upload error:", error);
       throwErrorToast(

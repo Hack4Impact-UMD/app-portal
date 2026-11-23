@@ -28,7 +28,7 @@ const allowedStatuses: Set<string> = new Set([
 ]);
 
 function DecisionPage() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const { responseId, role } = useParams<{
     responseId: string;
     role: ApplicantRole;
@@ -68,10 +68,7 @@ function DecisionPage() {
         internalStatusId: appStatus.id,
       };
 
-      return createDecisionConfirmation(
-        decisionConfirmation,
-        (await token()) ?? "",
-      );
+      return createDecisionConfirmation(decisionConfirmation);
     },
     onSuccess: (_, status) => {
       throwSuccessToast(

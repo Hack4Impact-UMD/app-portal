@@ -14,21 +14,15 @@ import {
   applicationResponseQueries,
   useMyApplicationResponseAndForm,
 } from "@/hooks/useApplicationResponses";
-import { useAuth } from "@/hooks/useAuth";
 import { saveApplicationResponse } from "@/services/applicationResponsesService";
 import type { ApplicationResponse } from "@/types/types";
 
 export default function FormProvider() {
   const queryClient = useQueryClient();
   const { formId, sectionId } = useParams();
-  const { token } = useAuth();
   const { data, isPending, error } = useMyApplicationResponseAndForm(formId);
   const saveMutation = useMutation({
-    mutationFn: async (r: ApplicationResponse) => {
-      const tok = await token();
-      if (!tok) throw new Error("Not authenticated");
-      return await saveApplicationResponse(r, tok);
-    },
+    mutationFn: (r: ApplicationResponse) => saveApplicationResponse(r),
   });
   const [response, setResponse] = useState<ApplicationResponse | undefined>();
   const [selectedRoles, setSelectedRoles] = useState<ApplicantRole[]>([]);

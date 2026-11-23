@@ -16,21 +16,18 @@ import { Button } from "@/components/ui/button";
 import { boardMemberQueries } from "@/hooks/useBoardMembers";
 import { getBoardMemberById } from "@/services/boardService";
 import { setBoardApplicantRoles } from "@/services/userService";
-import type { BoardUserProfile } from "@/types/types";
 
 import { BoardRoleSelect } from "./BoardRoleSelect";
 import type { BoardRow } from "./useRows";
-import { useRows } from "./useRows";
+import { boardRowsQueryRoot, useRows } from "./useRows";
 
 type BoardMembersTableProps = {
-  boardMembers: BoardUserProfile[];
   search: string;
   rowCount?: number;
   statusFilter: "all" | "complete" | "pending" | "unassigned";
 };
 
 export function BoardMembersTable({
-  boardMembers,
   search,
   rowCount = 20,
 }: BoardMembersTableProps) {
@@ -51,9 +48,10 @@ export function BoardMembersTable({
       return await setBoardApplicantRoles(boardId, newRoles);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: boardMemberQueries.root,
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: boardMemberQueries.root }),
+        queryClient.invalidateQueries({ queryKey: boardRowsQueryRoot }),
+      ]);
       throwSuccessToast("Successfully added role!");
     },
     onError: (error) => {
@@ -77,9 +75,10 @@ export function BoardMembersTable({
       return await setBoardApplicantRoles(boardId, newRoles);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: boardMemberQueries.root,
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: boardMemberQueries.root }),
+        queryClient.invalidateQueries({ queryKey: boardRowsQueryRoot }),
+      ]);
       throwSuccessToast("Successfully removed role!");
     },
     onError: (error) => {
@@ -144,7 +143,7 @@ export function BoardMembersTable({
     [columnHelper, addRoleMutation, removeRoleMutation, pagination.pageIndex],
   );
 
-  const { data: rows, isPending, error } = useRows(boardMembers);
+  const { data: rows, isPending, error } = useRows();
 
   if (isPending)
     return (
@@ -174,7 +173,7 @@ export function BoardMembersTable({
       <div className="flex flex-row gap-2">
         <span>
           Page {pagination.pageIndex + 1} of{" "}
-          {Math.max(Math.ceil(boardMembers.length / rowCount), 1)}
+          {Math.max(Math.ceil((rows?.length ?? 0) / rowCount), 1)}
         </span>
         <div className="ml-auto">
           <Button
@@ -192,7 +191,7 @@ export function BoardMembersTable({
           <Button
             variant="outline"
             disabled={
-              (pagination.pageIndex + 1) * rowCount >= boardMembers.length
+              (pagination.pageIndex + 1) * rowCount >= (rows?.length ?? 0)
             }
             onClick={() =>
               setPagination({

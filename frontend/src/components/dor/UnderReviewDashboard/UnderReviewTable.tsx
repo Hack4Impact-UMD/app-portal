@@ -58,7 +58,7 @@ import {
 } from "@/services/reviewAssignmentService";
 import { getReviewDataForAssignment } from "@/services/reviewDataService";
 import { updateApplicationStatus } from "@/services/statusService";
-import type { ApplicationResponse, ReviewCapableUser } from "@/types/types";
+import type { ReviewCapableUser } from "@/types/types";
 import { displayTimestamp } from "@/utils/dates";
 import { displayReviewStatus } from "@/utils/display";
 
@@ -73,7 +73,6 @@ import {
 } from "./useRows";
 
 type SuperReviewerApplicationsTableProps = {
-  applications: ApplicationResponse[];
   search: string;
   rowCount?: number;
   roleFilter: "all" | ApplicantRole;
@@ -81,7 +80,6 @@ type SuperReviewerApplicationsTableProps = {
 };
 
 export default function SuperReviewerApplicationsTable({
-  applications,
   search,
   formId,
   rowCount = 20,
@@ -166,7 +164,7 @@ export default function SuperReviewerApplicationsTable({
       });
     },
     onMutate: async ({ status }) => {
-      const rowsOptions = underReviewRowsQueryOptions(applications, formId);
+      const rowsOptions = underReviewRowsQueryOptions(formId);
       await queryClient.cancelQueries({
         queryKey: rowsOptions.queryKey,
       });
@@ -174,7 +172,7 @@ export default function SuperReviewerApplicationsTable({
 
       queryClient.setQueryData(rowsOptions.queryKey, (old) => {
         if (!old) return old;
-        old?.map((row) => {
+        return old.map((row) => {
           if (row.status?.id === status.id) {
             return {
               ...row,
@@ -497,7 +495,7 @@ export default function SuperReviewerApplicationsTable({
     ],
   );
 
-  const { data: rows, isPending, error } = useRows(applications, formId);
+  const { data: rows, isPending, error } = useRows(formId);
 
   const handleCopyEmails = useCallback(async () => {
     if (!rows || rows.length === 0) {
@@ -591,7 +589,7 @@ export default function SuperReviewerApplicationsTable({
       <div className="flex flex-row gap-2">
         <span>
           Page {pagination.pageIndex + 1} of{" "}
-          {Math.max(Math.ceil(applications.length / rowCount), 1)}
+          {Math.max(Math.ceil((rows?.length ?? 0) / rowCount), 1)}
         </span>
         <div className="ml-auto">
           <Button
@@ -609,7 +607,7 @@ export default function SuperReviewerApplicationsTable({
           <Button
             variant="outline"
             disabled={
-              (pagination.pageIndex + 1) * rowCount >= applications.length
+              (pagination.pageIndex + 1) * rowCount >= (rows?.length ?? 0)
             }
             onClick={() =>
               setPagination({

@@ -5,7 +5,7 @@ import {
 } from "@app-portal/shared/constants";
 import { and, getDocs, or, query, where } from "firebase/firestore";
 
-import type { ReviewCapableUser, UserProfile } from "@/types/types";
+import type { ReviewCapableUser } from "@/types/types";
 
 import { appCollection } from "./firestore";
 import { getUserById } from "./userService";
@@ -66,8 +66,4 @@ export function reviewingFor(user: ReviewCapableUser) {
   } else {
     return [];
   }
-}
-
-export function reviewCapable(user: UserProfile): user is ReviewCapableUser {
-  return REVIEW_CAPABLE_ROLES.includes(user.role);
 }

@@ -1,4 +1,3 @@
-import type { DecisionConfirmation } from "@app-portal/shared/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
@@ -31,7 +30,6 @@ import type { DecisionRow } from "./useRows";
 import { useRows } from "./useRows";
 
 type AcceptanceConfirmationTableProps = {
-  confirmations: DecisionConfirmation[];
   search: string;
   rowCount?: number;
   decisionFilter: "all" | "accepted" | "denied";
@@ -39,7 +37,6 @@ type AcceptanceConfirmationTableProps = {
 };
 
 export default function AcceptanceConfirmationTable({
-  confirmations,
   search,
   rowCount = 20,
   decisionFilter = "all",
@@ -173,7 +170,7 @@ export default function AcceptanceConfirmationTable({
     [columnHelper, formId, navigate],
   );
 
-  const { data: rows, isPending, error } = useRows(confirmations, formId);
+  const { data: rows, isPending, error } = useRows(formId);
 
   const handleCopy = useCallback(async () => {
     if (!rows) {
@@ -238,7 +235,7 @@ export default function AcceptanceConfirmationTable({
       <div className="flex flex-row gap-2">
         <span>
           Page {pagination.pageIndex + 1} of{" "}
-          {Math.max(Math.ceil(confirmations.length / rowCount), 1)}
+          {Math.max(Math.ceil((rows?.length ?? 0) / rowCount), 1)}
         </span>
         <div className="ml-auto">
           <Button
@@ -256,7 +253,7 @@ export default function AcceptanceConfirmationTable({
           <Button
             variant="outline"
             disabled={
-              (pagination.pageIndex + 1) * rowCount >= confirmations.length
+              (pagination.pageIndex + 1) * rowCount >= (rows?.length ?? 0)
             }
             onClick={() =>
               setPagination({

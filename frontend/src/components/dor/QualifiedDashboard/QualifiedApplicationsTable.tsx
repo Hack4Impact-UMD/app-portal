@@ -46,7 +46,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { updateApplicationStatus } from "@/services/statusService";
-import type { ApplicationResponse, ReviewCapableUser } from "@/types/types";
+import type { ReviewCapableUser } from "@/types/types";
 import { displayTimestamp } from "@/utils/dates";
 import { displayReviewStatus } from "@/utils/display";
 
@@ -109,13 +109,11 @@ function StatusSelect({
 }
 
 export default function QualifiedApplicationsTable({
-  applications,
   search,
   formId,
   rowCount = 20,
   roleFilter = "all",
 }: {
-  applications: ApplicationResponse[];
   search: string;
   formId: string;
   rowCount?: number;
@@ -138,7 +136,7 @@ export default function QualifiedApplicationsTable({
       newStatus: ReviewStatus;
     }) => updateApplicationStatus(statusId, { status: newStatus }),
     onMutate: async ({ statusId, newStatus }) => {
-      const queryKey = qualifiedRowsQueryOptions(applications, formId).queryKey;
+      const queryKey = qualifiedRowsQueryOptions(formId).queryKey;
       await queryClient.cancelQueries({ queryKey });
 
       const previousRows = queryClient.getQueryData(queryKey);
@@ -185,7 +183,7 @@ export default function QualifiedApplicationsTable({
     },
   });
 
-  const { data: rows, isPending, error } = useRows(applications, formId);
+  const { data: rows, isPending, error } = useRows(formId);
 
   const columnHelper = createColumnHelper<QualifiedAppRow>();
   const cols = useMemo(
@@ -526,7 +524,7 @@ export default function QualifiedApplicationsTable({
       <div className="flex flex-row gap-2">
         <span>
           Page {pagination.pageIndex + 1} of{" "}
-          {Math.max(Math.ceil(applications.length / rowCount), 1)}
+          {Math.max(Math.ceil((rows?.length ?? 0) / rowCount), 1)}
         </span>
         <div className="ml-auto">
           <Button
@@ -544,7 +542,7 @@ export default function QualifiedApplicationsTable({
           <Button
             variant="outline"
             disabled={
-              (pagination.pageIndex + 1) * rowCount >= applications.length
+              (pagination.pageIndex + 1) * rowCount >= (rows?.length ?? 0)
             }
             onClick={() =>
               setPagination({

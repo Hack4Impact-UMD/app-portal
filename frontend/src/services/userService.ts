@@ -4,7 +4,6 @@ import {
   PermissionRole,
 } from "@app-portal/shared/constants";
 import type { SectionResponse } from "@app-portal/shared/types";
-import axios, { AxiosError } from "axios";
 import type { User, UserInfo } from "firebase/auth";
 import {
   sendEmailVerification,
@@ -21,8 +20,9 @@ import {
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { API_URL, auth, db } from "@/config/firebase";
+import { auth, db } from "@/config/firebase";
 import { clearQueryCache } from "@/config/query";
+import { isTRPCClientError, trpcClient } from "@/config/trpc";
 import type {
   ApplicationResponse,
   BoardUserProfile,
@@ -30,7 +30,6 @@ import type {
   UserProfile,
 } from "@/types/types";
 
-import { getAppCheckToken } from "./appCheckService";
 import { appCollection } from "./firestore";
 
 export async function sendVerificationEmail(user: User) {
@@ -50,22 +49,12 @@ export async function registerUser(
   password: string,
 ): Promise<UserProfile> {
   try {
-    const createdUser = (
-      await axios.post(
-        API_URL + "/auth/register",
-        {
-          email: email,
-          password: password,
-          firstName: firstName,
-          lastName: lastName,
-        },
-        {
-          headers: {
-            "X-APPCHECK": await getAppCheckToken(),
-          },
-        },
-      )
-    ).data as UserProfile;
+    const createdUser = (await trpcClient.auth.register.mutate({
+      email,
+      password,
+      firstName,
+      lastName,
+    })) as UserProfile;
 
     const { user } = await signInWithEmailAndPassword(auth, email, password);
 
@@ -76,8 +65,8 @@ export async function registerUser(
 
     return createdUser;
   } catch (error) {
-    if (error instanceof AxiosError) {
-      const errorMessage = `Failed to register: ${error.message} (${error.response?.data})`;
+    if (isTRPCClientError(error)) {
+      const errorMessage = `Failed to register: ${error.message}`;
       throwErrorToast(errorMessage);
       throw new Error(errorMessage);
     } else {
@@ -92,30 +81,18 @@ export async function updateUser(
   lastName: string,
 ): Promise<UserProfile> {
   try {
-    const token = await auth.currentUser?.getIdToken();
-    if (!token) {
+    if (!auth.currentUser) {
       throw new Error("User must be authenticated to update profile");
     }
 
-    const response = await axios.post(
-      API_URL + "/auth/update",
-      {
-        email,
-        firstName,
-        lastName,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "X-APPCHECK": await getAppCheckToken(),
-        },
-      },
-    );
-
-    return response.data as UserProfile;
+    return (await trpcClient.auth.update.mutate({
+      email,
+      firstName,
+      lastName,
+    })) as UserProfile;
   } catch (error) {
-    if (error instanceof AxiosError) {
-      const errorMessage = `Failed to update user: ${error.message} (${error.response?.data})`;
+    if (isTRPCClientError(error)) {
+      const errorMessage = `Failed to update user: ${error.message}`;
       throwErrorToast(errorMessage);
       throw new Error(errorMessage);
     } else {
@@ -281,27 +258,15 @@ export async function createInternalApplicant(
   formId: string,
   rolesApplied: ApplicantRole[],
   sectionResponses: SectionResponse[],
-  token: string,
 ): Promise<{ user: UserProfile; applicationResponse: ApplicationResponse }> {
-  const appCheckToken = await getAppCheckToken();
-
-  const res = await axios.post(
-    API_URL + "/auth/create-internal-applicant",
-    {
+  // both user profile and response; should show name and response ID in confirmation
+  const { user, applicationResponse } =
+    await trpcClient.auth.createInternalApplicant.mutate({
       firstName,
       lastName,
       formId,
       rolesApplied,
       sectionResponses,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "X-APPCHECK": appCheckToken,
-      },
-    },
-  );
-
-  // both user profile and response; should show name and response ID in confirmation
-  return res.data;
+    });
+  return { user: user as UserProfile, applicationResponse };
 }

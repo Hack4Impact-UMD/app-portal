@@ -32,7 +32,6 @@ export default function UploadInterviewRubricDialog() {
     uploadInterviewRubrics(
       {
         interviewRubrics: APPLICATION_INTERVIEW_RUBRICS(selectedFormId),
-        token: (await token()) ?? "",
       },
       {
         onSuccess: () => {

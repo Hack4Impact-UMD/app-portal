@@ -1,75 +1,25 @@
-import type { ApplicantRole } from "@app-portal/shared/constants";
-import type {
-  InterviewAssignment,
-  ApplicationInterviewData,
-} from "@app-portal/shared/types";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, skipToken, useQuery } from "@tanstack/react-query";
 
-import { getApplicationForm } from "@/services/applicationFormsService";
-import { getInterviewDataForAssignment } from "@/services/interviewDataService";
-import { reviewCapable } from "@/services/reviewersService";
-import { getUserById } from "@/services/userService";
-import type { ReviewCapableUser } from "@/types/types";
-import { calculateInterviewScore } from "@/utils/scores";
+import { trpc } from "@/config/trpc";
+import type { RouterOutputs } from "@/types/trpc";
 
-export type AssignedAppRow = {
-  index: number;
-  interviewer: ReviewCapableUser;
-  interviewerName: string;
-  role: ApplicantRole;
-  applicantId: string;
-  formId: string;
-  score?: {
-    value: number;
-    outOf: number;
-  };
-  interview: ApplicationInterviewData | undefined;
-  responseId: string;
-};
+type AssignedInterviews = RouterOutputs["rows"]["assignedInterviews"];
+export type AssignedAppRow = AssignedInterviews["rows"][number];
 
-const assignedInterviewRowsQueryRoot = ["assigned-interview-rows"] as const;
+function assignedInterviewsQueryOptions(responseId: string | undefined) {
+  return trpc.rows.assignedInterviews.queryOptions(
+    responseId ? { responseId } : skipToken,
+    { placeholderData: keepPreviousData },
+  );
+}
 
-export function useRows(assignments: InterviewAssignment[], formId: string) {
+export function useAssignedInterviews(responseId: string | undefined) {
+  return useQuery(assignedInterviewsQueryOptions(responseId));
+}
+
+export function useRows(responseId: string | undefined) {
   return useQuery({
-    queryKey: [
-      ...assignedInterviewRowsQueryRoot,
-      assignments.map((a) => a.id).sort(),
-      formId,
-    ],
-    placeholderData: (prev) => prev,
-    queryFn: async () => {
-      const form = await getApplicationForm(formId);
-      return Promise.all(
-        assignments.map(async (assignment, index) => {
-          const [interviewer, interview] = await Promise.all([
-            getUserById(assignment.interviewerId),
-            getInterviewDataForAssignment(assignment),
-          ]);
-
-          if (!interviewer || !reviewCapable(interviewer))
-            throw new Error("Invalid interviewer!");
-
-          const row: AssignedAppRow = {
-            interviewer: interviewer,
-            applicantId: assignment.applicantId,
-            interviewerName: `${interviewer.firstName} ${interviewer.lastName}`,
-            index: 1 + index,
-            formId: assignment.formId,
-            responseId: assignment.applicationResponseId,
-            role: assignment.forRole,
-            interview: interview,
-            score:
-              interview && interview.submitted
-                ? {
-                    value: calculateInterviewScore(interview, form),
-                    outOf: 4, // NOTE: All scores are assumed to be out of 4
-                  }
-                : undefined,
-          };
-
-          return row;
-        }),
-      );
-    },
+    ...assignedInterviewsQueryOptions(responseId),
+    select: (data: AssignedInterviews) => data.rows,
   });
 }

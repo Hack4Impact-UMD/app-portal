@@ -2,7 +2,6 @@ import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { InterviewAssignment } from "@app-portal/shared/types";
 import {
-  and,
   deleteDoc,
   doc,
   getDocs,
@@ -49,25 +48,6 @@ export async function removeInterviewAssignment(assignmentId: string) {
   await deleteDoc(assignment);
 }
 
-export async function getInterviewAssignments(
-  formId: string,
-  interviewerId: string,
-): Promise<InterviewAssignment[]> {
-  const assignments = appCollection(FirestoreCollection.InterviewAssignments);
-  const q = query(
-    assignments,
-    and(
-      where("formId", "==", formId),
-      where("interviewerId", "==", interviewerId),
-      where("assignmentType", "==", "interview"),
-    ),
-  );
-
-  const res = await getDocs(q);
-
-  return res.docs.map((d) => d.data());
-}
-
 export async function getInterviewAssignmentsForApplication(
   responseId: string,
 ): Promise<InterviewAssignment[]> {
@@ -76,13 +56,6 @@ export async function getInterviewAssignmentsForApplication(
     assignments,
     where("applicationResponseId", "==", responseId),
   );
-
-  return (await getDocs(q)).docs.map((d) => d.data());
-}
-
-export async function getInterviewAssignmentsForForm(formId: string) {
-  const assignments = appCollection(FirestoreCollection.InterviewAssignments);
-  const q = query(assignments, where("formId", "==", formId));
 
   return (await getDocs(q)).docs.map((d) => d.data());
 }

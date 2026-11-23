@@ -4,6 +4,7 @@
     "esModuleInterop": true,
     "moduleResolution": "bundler",
     "customConditions": ["source"],
+    "noEmit": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "outDir": "lib",

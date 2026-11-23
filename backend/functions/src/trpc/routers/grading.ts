@@ -9,33 +9,26 @@ import {
   submitGradingJobSchema,
   submitStandaloneGradingJobSchema,
 } from "@app-portal/shared/types";
+import { TRPCError } from "@trpc/server";
 import axios from "axios";
-import type { Response, Request } from "express";
-import { Router } from "express";
 import type { CollectionReference } from "firebase-admin/firestore";
 import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { v4 as uuidv4 } from "uuid";
 
-import { db } from "../index";
+import { db } from "../../index";
+import type { ApplicationForm } from "../../models/appForm";
+import type { GradingJobPublic } from "../../models/autograder";
+import type { GradingTaskPayload } from "../../utils/cloudTasks";
+import { publishGradingTask } from "../../utils/cloudTasks";
+import { appCollection } from "../../utils/firestore";
 import {
-  isAuthenticated,
-  hasRoles,
-  getUserById,
-} from "../middleware/authentication";
-import {
-  computeRetryAfter,
-  gradingRateLimiter,
+  assertGradingRateLimit,
+  gradingRateLimitError,
   RATE_LIMITER_MAX_JOBS,
   RATE_LIMITER_WINDOW_MS,
-} from "../middleware/rateLimiter";
-import { validateSchema } from "../middleware/validation";
-import type { ApplicationForm } from "../models/appForm";
-import type { ApplicationResponse } from "../models/appResponse";
-import type { GradingJobPublic } from "../models/autograder";
-import type { GradingTaskPayload } from "../utils/cloudTasks";
-import { publishGradingTask } from "../utils/cloudTasks";
-import { appCollection } from "../utils/firestore";
+} from "../guards";
+import { roleProcedure, router } from "../init";
 
 // Publishes a grading task to the Professor grader. In the emulator this POSTs
 // directly to the local grader and returns immediately (fire-and-forget); in
@@ -87,80 +80,52 @@ async function publishGradingJob(
   }
 }
 
-const router = Router();
+export const gradingRouter = router({
+  submit: roleProcedure([
+    PermissionRole.Applicant,
+    PermissionRole.Board,
+    PermissionRole.SuperReviewer,
+  ])
+    .input(submitGradingJobSchema)
+    .mutation(async ({ input: { responseId, repoURL }, ctx }) => {
+      const setHeader = (name: string, value: string) =>
+        ctx.res.setHeader(name, value);
+      await assertGradingRateLimit(responseId, setHeader);
 
-router.post(
-  "/submit",
-  [
-    isAuthenticated,
-    hasRoles([
-      PermissionRole.Applicant,
-      PermissionRole.Board,
-      PermissionRole.SuperReviewer,
-    ]),
-    validateSchema(submitGradingJobSchema),
-    gradingRateLimiter,
-  ],
-  async (req: Request, res: Response) => {
-    try {
-      const { responseId, repoURL } = req.body;
-      const userId = req.token?.uid;
-      const user = await getUserById(userId ?? "");
-
-      if (!userId || !user) {
-        return res.status(401).send("Unauthorized");
-      }
+      const userId = ctx.token.uid;
+      const user = ctx.user;
 
       logger.info(`Received autograder request for responseId ${responseId}`);
 
-      const applicationResponseCollection = appCollection(
-        FirestoreCollection.ApplicationResponses,
-      );
       const gradingJobsPublicCollection = appCollection(
         FirestoreCollection.GradingJobsPublic,
       );
       const gradingJobsInternalCollection = appCollection(
         FirestoreCollection.GradingJobsInternal,
       );
-      const formsCollection = appCollection(
-        FirestoreCollection.ApplicationForms,
-      );
 
-      const responseDoc = await applicationResponseCollection
-        .doc(responseId)
-        .get();
+      const responseData = (
+        await appCollection(FirestoreCollection.ApplicationResponses)
+          .doc(responseId)
+          .get()
+      ).data();
 
-      if (!responseDoc.exists) {
-        logger.warn(`Response ${responseId} not found`);
-        return res.status(404).send("Application response not found");
-      }
-
-      const responseData: ApplicationResponse | undefined = responseDoc.data();
       if (!responseData) {
-        logger.warn(
-          `Attempted to retrieve response with id: ${responseId} unsuccessfully`,
-        );
-        return res.status(404).send("Application response not found");
+        logger.warn(`Response ${responseId} not found`);
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Application response not found",
+        });
       }
 
-      const formDoc = await formsCollection
+      const formDoc = await appCollection(FirestoreCollection.ApplicationForms)
         .doc(responseData.applicationFormId)
         .get();
 
       if (!formDoc.exists) {
         logger.warn(`Form ${responseData.applicationFormId} not found`);
-        return res.status(404).send("Form not found");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Form not found" });
       }
-
-      //const formResult = ApplicationFormSchema.safeParse(formDoc.data());
-
-      /*if (!formResult.success) {
-        logger.error(
-          `Invalid form ${responseData.applicationFormId} while submitting grading job`,
-          formResult.error,
-        );
-        return res.status(500).send("Invalid application form data");
-      }*/
 
       const form: ApplicationForm = formDoc.data() as ApplicationForm;
 
@@ -174,11 +139,11 @@ router.post(
         logger.warn(
           `User ${userId} attempted to submit grading for response ${responseId} they don't own`,
         );
-        return res
-          .status(403)
-          .send(
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
             "You do not have permission to submit an autograder request for this application",
-          );
+        });
       }
 
       const jobId = uuidv4();
@@ -187,9 +152,10 @@ router.post(
 
       if (!testRepo) {
         logger.warn(`Form ${form.id} is not configured for autograding`);
-        return res
-          .status(400)
-          .send("Application form is not configured for autograding");
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Application form is not configured for autograding",
+        });
       }
 
       // NOTE: cloud tasks publishing is outside this transaction right now, so docs may be created and left even if publish fails
@@ -212,7 +178,7 @@ router.post(
         }
 
         // rate limit: enforce atomically here as a backstop against concurrent
-        // submits that could both pass the preflight middleware check
+        // submits that could both pass the preflight check
         const windowStart = now.toMillis() - RATE_LIMITER_WINDOW_MS;
         const recentStartedMs = existingJobsSnapshot.docs
           .map((doc) => doc.data().started.toMillis())
@@ -222,7 +188,6 @@ router.post(
           return { type: "rate_limited" as const, recentStartedMs };
         }
 
-        // create: job docs and cloud tasks job
         const publicJob: GradingJobPublic = {
           id: jobId,
           responseId,
@@ -254,72 +219,44 @@ router.post(
 
       if (txResult.type === "duplicate") {
         logger.info(`Found existing running job for response ${responseId}`);
-        return res
-          .status(409)
-          .send("A grading job is already in progress for this application.");
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "A grading job is already in progress for this application.",
+        });
       }
 
       if (txResult.type === "rate_limited") {
         logger.warn(
           `Rate limit hit for response ${responseId} during transaction`,
         );
-        const { retryAtMs, retryInSeconds, retryInMinutes } = computeRetryAfter(
-          txResult.recentStartedMs,
-        );
-        res.set("Retry-After", String(retryInSeconds));
-        return res
-          .status(429)
-          .send(
-            `Too many grading jobs submitted for this application. ` +
-              `You can submit another request in about ${retryInMinutes} ` +
-              `minute${retryInMinutes === 1 ? "" : "s"} ` +
-              `(after ${new Date(retryAtMs).toISOString()}).`,
-          );
+        throw gradingRateLimitError(txResult.recentStartedMs, setHeader);
       }
 
       logger.info(`Created Firestore documents for job ${jobId}`);
-      const payload: GradingTaskPayload = {
+      await publishGradingJob(gradingJobsPublicCollection, {
         jobId,
         responseId,
         repoURL,
         testRepo,
-      };
+      });
 
-      await publishGradingJob(gradingJobsPublicCollection, payload);
-
-      return res.status(200).json({
-        status: "success",
+      return {
+        status: "success" as const,
         message: "Grading job queued successfully",
         jobId,
-      });
-    } catch (error) {
-      logger.error("Failed to submit grading job:", error);
-      return res.status(500).send("Failed to submit grading job");
-    }
-  },
-);
+      };
+    }),
 
-// Submit a standalone grading job: grade an arbitrary assessment repo against a
-// test repo, with no application response attached. Admin-only. Standalone jobs
-// share a sentinel responseId, so the response-scoped rate limiter and
-// duplicate check don't apply and aren't run here.
-router.post(
-  "/submit-standalone",
-  [
-    isAuthenticated,
-    hasRoles([PermissionRole.Board, PermissionRole.SuperReviewer]),
-    validateSchema(submitStandaloneGradingJobSchema),
-  ],
-  async (req: Request, res: Response) => {
-    try {
-      const { repoURL, testRepo } = req.body;
-      const userId = req.token?.uid;
-      const user = await getUserById(userId ?? "");
-
-      if (!userId || !user) {
-        return res.status(401).send("Unauthorized");
-      }
-
+  // Submit a standalone grading job: grade an arbitrary assessment repo against
+  // a test repo, with no application response attached. Admin-only. Standalone
+  // jobs share a sentinel responseId, so the response-scoped rate limiter and
+  // duplicate check don't apply and aren't run here.
+  submitStandalone: roleProcedure([
+    PermissionRole.Board,
+    PermissionRole.SuperReviewer,
+  ])
+    .input(submitStandaloneGradingJobSchema)
+    .mutation(async ({ input: { repoURL, testRepo } }) => {
       logger.info(
         `Received standalone autograder request for repo ${repoURL} against tests ${testRepo}`,
       );
@@ -373,16 +310,10 @@ router.post(
 
       await publishGradingJob(gradingJobsPublicCollection, payload);
 
-      return res.status(200).json({
-        status: "success",
+      return {
+        status: "success" as const,
         message: "Standalone grading job queued successfully",
         jobId,
-      });
-    } catch (error) {
-      logger.error("Failed to submit standalone grading job:", error);
-      return res.status(500).send("Failed to submit standalone grading job");
-    }
-  },
-);
-
-export default router;
+      };
+    }),
+});

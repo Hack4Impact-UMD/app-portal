@@ -1,13 +1,10 @@
-import bodyParser from "body-parser";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import cors from "cors";
 import express from "express";
+import { logger } from "firebase-functions";
 
-import appcheck from "./middleware/appcheck";
-import applicationRouter from "./routes/application";
-import authRouter from "./routes/auth";
-import gradingRouter from "./routes/grading";
-import statusRouter from "./routes/status";
-// import { uploadMockData } from "./utils/mockData";
+import { createContext } from "./trpc/context";
+import { appRouter } from "./trpc/routers";
 
 const app = express();
 
@@ -31,20 +28,28 @@ app.use(
 // standalone Express, where `rawBody` is undefined).
 app.use((req, res, next) => {
   if ((req as express.Request & { rawBody?: Buffer }).rawBody === undefined) {
-    bodyParser.json()(req, res, next);
+    express.json()(req, res, next);
   } else {
     next();
   }
 });
-app.use(appcheck);
 
-app.use("/auth", authRouter);
-app.use("/status", statusRouter);
-app.use("/application", applicationRouter);
-app.use("/autograder", gradingRouter);
+app.use(
+  "/trpc",
+  createExpressMiddleware({
+    router: appRouter,
+    createContext,
+    onError({ path, error }) {
+      if (error.code === "INTERNAL_SERVER_ERROR") {
+        logger.error(`tRPC ${path} failed:`, error);
+      } else {
+        logger.warn(`tRPC ${path}: ${error.code} ${error.message}`);
+      }
+    },
+  }),
+);
 
 app.get("/", (_, res) => {
-  // uploadMockData()
   res.status(200).json({
     status: "OK",
   });

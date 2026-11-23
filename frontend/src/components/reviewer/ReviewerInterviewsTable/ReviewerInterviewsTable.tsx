@@ -1,8 +1,5 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import type {
-  InterviewAssignment,
-  ApplicationInterviewData,
-} from "@app-portal/shared/types";
+import type { ApplicationInterviewData } from "@app-portal/shared/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
@@ -29,7 +26,6 @@ import type { InterviewAssignmentRow } from "./useRows";
 import { useRows } from "./useRows";
 
 type ReviewerApplicationsTableProps = {
-  assignments: InterviewAssignment[];
   search: string;
   rowCount?: number;
   statusFilter: "all" | "completed" | "pending";
@@ -37,7 +33,6 @@ type ReviewerApplicationsTableProps = {
 };
 
 export default function ReviewerInterviewsTable({
-  assignments,
   search,
   formId,
   rowCount = 20,
@@ -228,7 +223,7 @@ export default function ReviewerInterviewsTable({
     [columnHelper, handleInterview],
   );
 
-  const { data: rows, isPending, error } = useRows(assignments, formId);
+  const { data: rows, isPending, error } = useRows(formId);
 
   if (isPending || !rows)
     return (
@@ -263,7 +258,7 @@ export default function ReviewerInterviewsTable({
       <div className="flex flex-row gap-2">
         <span>
           Page {pagination.pageIndex + 1} of{" "}
-          {Math.max(Math.ceil(assignments.length / rowCount), 1)}
+          {Math.max(Math.ceil((rows?.length ?? 0) / rowCount), 1)}
         </span>
         <div className="ml-auto">
           <Button
@@ -281,7 +276,7 @@ export default function ReviewerInterviewsTable({
           <Button
             variant="outline"
             disabled={
-              (pagination.pageIndex + 1) * rowCount >= assignments.length
+              (pagination.pageIndex + 1) * rowCount >= (rows?.length ?? 0)
             }
             onClick={() =>
               setPagination({

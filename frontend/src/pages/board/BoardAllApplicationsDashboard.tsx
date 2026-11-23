@@ -1,13 +1,12 @@
-import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
+import { ApplicantRole } from "@app-portal/shared/constants";
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { BoardApplicationsTable } from "@/components/board/BoardApplicationsTable";
+import { useRows } from "@/components/dor/UnderReviewDashboard/useRows";
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
-import { useAllApplicationResponsesForForm } from "@/hooks/useApplicationResponses";
 import useSearch from "@/hooks/useSearch";
-import type { ApplicationResponse } from "@/types/types";
 import {
   applicantRoleColor,
   applicantRoleDarkColor,
@@ -18,41 +17,20 @@ export default function BoardAllApplicationsPage() {
   const { formId } = useParams<{ formId: string }>();
   const [roleFilter, setRoleFilter] = useState<"all" | ApplicantRole>("all");
 
-  const {
-    data: apps,
-    isPending,
-    error,
-  } = useAllApplicationResponsesForForm(formId ?? "");
+  const { data: rows, isPending, error } = useRows(formId);
   const { search } = useSearch();
-
-  const expandedSubmittedApps = useMemo(
-    () =>
-      apps
-        ?.filter((app) => app.status !== ApplicationStatus.InProgress)
-        ?.flatMap((app) =>
-          app.rolesApplied.map(
-            (role): ApplicationResponse => ({
-              ...app,
-              rolesApplied: [role],
-            }),
-          ),
-        ),
-    [apps],
-  );
 
   const applicationsByRole = useMemo(() => {
     const freqs: Map<ApplicantRole, number> = new Map();
-    expandedSubmittedApps?.forEach((app) => {
-      const role = app.rolesApplied[0];
-      freqs.set(role, (freqs.get(role) ?? 0) + 1);
+    rows?.forEach((row) => {
+      freqs.set(row.role, (freqs.get(row.role) ?? 0) + 1);
     });
-
     return freqs;
-  }, [expandedSubmittedApps]);
+  }, [rows]);
 
   if (!formId) return <p>No formId found! The url is probably malformed.</p>;
   if (error) return <p>Something went wrong: {error.message}</p>;
-  if (isPending || !expandedSubmittedApps) return <Loading />;
+  if (isPending || !rows) return <Loading />;
 
   return (
     <div>
@@ -62,7 +40,7 @@ export default function BoardAllApplicationsPage() {
 					${roleFilter === "all" ? "bg-[#4A280D] hover:bg-[#4A280D]/90 text-[#F1D5C4]" : "bg-[#F1D5C4] hover:bg-[#F1D5C4]/90 text-[#4A280D]"}`}
           onClick={() => setRoleFilter("all")}
         >
-          <span className="text-3xl">{expandedSubmittedApps.length}</span>
+          <span className="text-3xl">{rows.length}</span>
           <span className="mt-auto">Total Applications</span>
         </Button>
         {Object.values(ApplicantRole).map((role) => {
@@ -89,7 +67,6 @@ export default function BoardAllApplicationsPage() {
         })}
       </div>
       <BoardApplicationsTable
-        applications={expandedSubmittedApps}
         formId={formId}
         search={search}
         roleFilter={roleFilter}

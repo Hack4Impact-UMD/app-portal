@@ -42,7 +42,7 @@ function useTimelineStep() {
       const appStatuses = await Promise.all(
         activeApps.flatMap((app) =>
           app.rolesApplied.map(async (role) =>
-            getApplicationStatus((await token()) ?? "", app.id, role),
+            getApplicationStatus(app.id, role),
           ),
         ),
       );

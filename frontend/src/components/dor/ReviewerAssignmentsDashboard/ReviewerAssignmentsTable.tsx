@@ -1,7 +1,4 @@
-import type {
-  AppReviewAssignment,
-  ApplicationReviewData,
-} from "@app-portal/shared/types";
+import type { ApplicationReviewData } from "@app-portal/shared/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
@@ -22,16 +19,16 @@ import type { AssignedAppRow } from "./useRows";
 import { useRows } from "./useRows";
 
 type ReviewerAssignmentsTableProps = {
-  assignments: AppReviewAssignment[];
   search: string;
+  reviewerId: string;
   rowCount?: number;
   statusFilter: "all" | "reviewed" | "pending";
   formId: string;
 };
 
 export default function ReviewerAssignmentsTable({
-  assignments,
   search,
+  reviewerId,
   formId,
   rowCount = 20,
   statusFilter = "all",
@@ -234,7 +231,7 @@ export default function ReviewerAssignmentsTable({
     }
   }
 
-  const { data: rows, isPending, error } = useRows(assignments, formId);
+  const { data: rows, isPending, error } = useRows(formId, reviewerId);
 
   if (isPending || !rows)
     return (
@@ -269,7 +266,7 @@ export default function ReviewerAssignmentsTable({
       <div className="flex flex-row gap-2">
         <span>
           Page {pagination.pageIndex + 1} of{" "}
-          {Math.max(Math.ceil(assignments.length / rowCount), 1)}
+          {Math.max(Math.ceil((rows?.length ?? 0) / rowCount), 1)}
         </span>
         <div className="ml-auto">
           <Button
@@ -287,7 +284,7 @@ export default function ReviewerAssignmentsTable({
           <Button
             variant="outline"
             disabled={
-              (pagination.pageIndex + 1) * rowCount >= assignments.length
+              (pagination.pageIndex + 1) * rowCount >= (rows?.length ?? 0)
             }
             onClick={() =>
               setPagination({

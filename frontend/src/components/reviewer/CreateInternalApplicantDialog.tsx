@@ -22,7 +22,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useActiveForm } from "@/hooks/useApplicationForm";
 import { applicationResponseQueries } from "@/hooks/useApplicationResponses";
 import { applicationStatusQueries } from "@/hooks/useApplicationStatus";
-import { useAuth } from "@/hooks/useAuth";
 import { userQueries } from "@/hooks/useUsers";
 import { createInternalApplicant } from "@/services/userService";
 import { displayApplicantRoleName } from "@/utils/display";
@@ -41,8 +40,6 @@ export default function CreateInternalApplicantDialog() {
     isPending: isLoadingForm,
     error: formError,
   } = useActiveForm();
-
-  const { token } = useAuth();
 
   const reset = useCallback(() => {
     setFirstName("");
@@ -69,15 +66,6 @@ export default function CreateInternalApplicantDialog() {
         throw new Error("Invalid input or form!");
       }
 
-      if (!token) {
-        throw new Error("User must be authenticated!");
-      }
-
-      const tok = await token();
-      if (!tok) {
-        throw new Error("Failed to get authentication token!");
-      }
-
       const sectionResponses = generateSectionResponses(
         appForm.sections,
         rolesApplied,
@@ -90,7 +78,6 @@ export default function CreateInternalApplicantDialog() {
         appForm.id,
         rolesApplied,
         sectionResponses,
-        tok,
       );
     },
     onSuccess: (data) => {

@@ -16,8 +16,6 @@ import {
   updateReviewData,
 } from "@/services/reviewDataService";
 
-import { useAuth } from "./useAuth";
-
 const reviewDataRoot = "review-data" as const;
 
 const reviewDataQueries = {
@@ -124,23 +122,4 @@ export function useUpdateReviewData(reviewDataId: string) {
       });
     },
   });
-}
-
-export function useReviewDataForReviewer(formId?: string, reviewerId?: string) {
-  return useQuery(reviewDataQueries.byReviewer(formId, reviewerId));
-}
-
-export function useReviewDataForApplication(applicationResponseId?: string) {
-  return useQuery(
-    reviewDataQueries.byApplicationResponse(applicationResponseId),
-  );
-}
-
-export function useMyReviews(formId: string) {
-  const { user } = useAuth();
-  return useQuery(reviewDataQueries.mine(formId, user?.id));
-}
-
-export function useReviewDataForForm(formId?: string) {
-  return useQuery(reviewDataQueries.byForm(formId));
 }

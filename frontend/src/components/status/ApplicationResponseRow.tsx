@@ -1,6 +1,6 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { ReviewStatus } from "@app-portal/shared/constants";
-import type { Timestamp } from "firebase/firestore";
+import type { TimestampLike } from "@app-portal/shared/types";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
@@ -41,7 +41,7 @@ export function ApplicationResponseRow({
     [status],
   );
 
-  const formatDate = (timestamp: Timestamp) => {
+  const formatDate = (timestamp: TimestampLike) => {
     if (timestamp && timestamp.toDate) {
       return timestamp.toDate().toLocaleDateString("en-US", {
         year: "numeric",

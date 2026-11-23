@@ -1,8 +1,5 @@
 import { GradingJobStatus } from "@app-portal/shared/constants";
 
-import type { GradingJobPublic } from "@/types/types";
-import { getGradingJobMaxScore } from "@/utils/display";
-
 const gradingJobTerminalStatuses = [
   GradingJobStatus.Completed,
   GradingJobStatus.Failed,
@@ -53,25 +50,7 @@ export function extractGithubRepoPath(url: string): string | null {
   return `${match[1]}/${match[2]}`;
 }
 
-export function pickBestGradingJob(
-  jobs: GradingJobPublic[],
-): GradingJobPublic | null {
-  let best: GradingJobPublic | null = null;
-  let bestScore = -1;
-
-  for (const job of jobs) {
-    const maxScore = getGradingJobMaxScore(job);
-    if (maxScore <= 0) continue;
-
-    const score = job.score / maxScore;
-    if (score > bestScore) {
-      bestScore = score;
-      best = job;
-    }
-  }
-
-  return best ?? jobs[0] ?? null;
-}
+export { pickBestGradingJob } from "@app-portal/shared/utils";
 
 export function buildRepoCloneCommand(repoPath: string) {
   return `git clone https://$GITHUB_PAT@github.com/${repoPath}.git`;

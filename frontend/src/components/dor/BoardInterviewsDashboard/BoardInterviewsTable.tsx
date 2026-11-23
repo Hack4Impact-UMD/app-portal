@@ -43,19 +43,17 @@ import {
   assignInterview,
   removeInterviewAssignment,
 } from "@/services/interviewAssignmentService";
-import type { ApplicationResponse, ReviewCapableUser } from "@/types/types";
+import type { ReviewCapableUser } from "@/types/types";
 import { displayTimestamp } from "@/utils/dates";
 
 import { InterviewerSelect } from "./InterviewerSelect";
 
 export default function BoardInterviewsTable({
-  applications,
   search,
   formId,
   rowCount = 20,
   roleFilter = "all",
 }: {
-  applications: ApplicationResponse[];
   search: string;
   formId: string;
   rowCount?: number;
@@ -135,7 +133,7 @@ export default function BoardInterviewsTable({
     },
   });
 
-  const { data: rows, isPending, error } = useRows(applications, formId);
+  const { data: rows, isPending, error } = useRows(formId);
 
   const columnHelper = createColumnHelper<QualifiedAppRow>();
   const cols = useMemo(
@@ -392,7 +390,7 @@ export default function BoardInterviewsTable({
       <div className="flex flex-row gap-2">
         <span>
           Page {pagination.pageIndex + 1} of{" "}
-          {Math.max(Math.ceil(applications.length / rowCount), 1)}
+          {Math.max(Math.ceil((rows?.length ?? 0) / rowCount), 1)}
         </span>
         <div className="ml-auto">
           <Button
@@ -410,7 +408,7 @@ export default function BoardInterviewsTable({
           <Button
             variant="outline"
             disabled={
-              (pagination.pageIndex + 1) * rowCount >= applications.length
+              (pagination.pageIndex + 1) * rowCount >= (rows?.length ?? 0)
             }
             onClick={() =>
               setPagination({

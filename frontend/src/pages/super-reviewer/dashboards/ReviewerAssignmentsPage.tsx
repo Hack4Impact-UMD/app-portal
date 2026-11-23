@@ -1,13 +1,11 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { ReviewerAssignmentsTable } from "@/components/dor/ReviewerAssignmentsDashboard";
+import { useReviewerAssignments } from "@/components/dor/ReviewerAssignmentsDashboard/useRows";
 import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import { Button } from "@/components/ui/button";
-import { useReviewAssignments } from "@/hooks/useReviewAssignments";
-import { useReviewDataForReviewer } from "@/hooks/useReviewData";
-import { useReviewerForId } from "@/hooks/useReviewers";
 import { reviewingFor } from "@/services/reviewersService";
 
 export function ReviewerAssignmentsPage() {
@@ -19,39 +17,13 @@ export function ReviewerAssignmentsPage() {
     reviewerId: string;
   }>();
 
-  const {
-    data: assignedApps,
-    isPending: assignmentsPending,
-    error: assignmentsError,
-  } = useReviewAssignments(formId, reviewerId);
-  const {
-    data: reviewer,
-    isPending: applicantPending,
-    error: reviewerError,
-  } = useReviewerForId(reviewerId);
-  const {
-    data: reviews,
-    isPending: reviewsPending,
-    error: reviewsError,
-  } = useReviewDataForReviewer(formId, reviewerId);
+  const { data, isPending, error } = useReviewerAssignments(formId, reviewerId);
 
-  const numReviewed = useMemo(
-    () =>
-      reviews?.reduce((acc, review) => (review.submitted ? acc + 1 : acc), 0) ??
-      0,
-    [reviews],
-  );
+  if (!formId || !reviewerId) return <p>Form or reviewer ID not provided!</p>;
+  if (isPending) return <Loading />;
+  if (error) return <p>Failed to fetch assignments: {error.message}</p>;
 
-  if (assignmentsPending || applicantPending || reviewsPending)
-    return <Loading />;
-
-  if (assignmentsError)
-    return <p>Failed to fetch assignments: {assignmentsError.message}</p>;
-  if (reviewerError)
-    return <p>Failed to fetch applicant: {reviewerError.message}</p>;
-  if (reviewsError)
-    return <p>Failed to fetch reviews: {reviewsError.message}</p>;
-  if (!reviewer) return <p>Failed to fetch reviewer</p>;
+  const { reviewer, numReviewed, rows: assignedApps } = data;
 
   return (
     <div className="w-full h-full bg-lightgray flex flex-col items-center p-2 py-4">
@@ -108,7 +80,7 @@ export function ReviewerAssignmentsPage() {
           </Button>
         </div>
         <ReviewerAssignmentsTable
-          assignments={assignedApps}
+          reviewerId={reviewerId!}
           formId={formId!}
           search=""
           statusFilter={statusFilter}

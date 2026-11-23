@@ -1,65 +1,24 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { AssignedReviewsTable } from "@/components/dor/AssignedReviewsDashboard";
+import { useAssignedReviews } from "@/components/dor/AssignedReviewsDashboard/useRows";
 import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import { Button } from "@/components/ui/button";
-import { useApplicantForResponse } from "@/hooks/useApplicants";
-import { useApplicationResponse } from "@/hooks/useApplicationResponses";
-import { useReviewAssignmentsForResponse } from "@/hooks/useReviewAssignments";
-import { useReviewDataForApplication } from "@/hooks/useReviewData";
 
 export function AssignedReviewsPage() {
   const [statusFilter, setStatusFilter] = useState<
     "reviewed" | "pending" | "all"
   >("all");
   const { responseId } = useParams<{ responseId: string }>();
-  const {
-    data: assignedApps,
-    isPending: assignmentsPending,
-    error: assignmentsError,
-  } = useReviewAssignmentsForResponse(responseId);
-  const {
-    data: applicant,
-    isPending: applicantPending,
-    error: applicantError,
-  } = useApplicantForResponse(responseId);
-  const {
-    data: response,
-    isPending: responsePending,
-    error: responseError,
-  } = useApplicationResponse(responseId);
-  const {
-    data: reviews,
-    isPending: reviewsPending,
-    error: reviewsError,
-  } = useReviewDataForApplication(responseId);
+  const { data, isPending, error } = useAssignedReviews(responseId);
 
-  const numReviewed = useMemo(
-    () =>
-      reviews?.reduce((acc, review) => (review.submitted ? acc + 1 : acc), 0) ??
-      0,
-    [reviews],
-  );
+  if (!responseId) return <p>Response ID not provided!</p>;
+  if (isPending) return <Loading />;
+  if (error) return <p>Failed to fetch assignments: {error.message}</p>;
 
-  if (
-    assignmentsPending ||
-    applicantPending ||
-    responsePending ||
-    reviewsPending
-  )
-    return <Loading />;
-
-  if (assignmentsError)
-    return <p>Failed to fetch assignments: {assignmentsError.message}</p>;
-  if (applicantError)
-    return <p>Failed to fetch applicant: {applicantError.message}</p>;
-  if (responseError)
-    return <p>Failed to fetch response: {responseError.message}</p>;
-  if (reviewsError)
-    return <p>Failed to fetch reviws: {reviewsError.message}</p>;
-  if (!response) return <p>Failed to fetch reviews</p>;
+  const { applicant, response, numReviewed, rows: assignedApps } = data;
 
   return (
     <div className="w-full h-full bg-lightgray flex flex-col items-center p-2 py-4">
@@ -115,7 +74,7 @@ export function AssignedReviewsPage() {
           </Button>
         </div>
         <AssignedReviewsTable
-          assignments={assignedApps}
+          responseId={responseId!}
           formId={response.applicationFormId}
           search=""
           statusFilter={statusFilter}

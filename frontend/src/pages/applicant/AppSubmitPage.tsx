@@ -1,6 +1,5 @@
 import type { ValidationError } from "@app-portal/shared/types";
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { Timestamp } from "firebase/firestore";
 import { EditIcon } from "lucide-react";
 import { useState } from "react";
@@ -10,9 +9,8 @@ import Section from "@/components/form/Section";
 import Loading from "@/components/Loading";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Button } from "@/components/ui/button";
+import { isTRPCClientError } from "@/config/trpc";
 import { useMyApplicationResponseAndForm } from "@/hooks/useApplicationResponses";
-import { useAuth } from "@/hooks/useAuth";
-import type { ApplicationSubmitResponse } from "@/services/applicationResponsesService";
 import { submitApplicationResponse } from "@/services/applicationResponsesService";
 import type { ApplicationResponse } from "@/types/types";
 
@@ -20,14 +18,13 @@ export default function AppSubmitPage() {
   const { formId } = useParams();
   const navigate = useNavigate();
   const { data, isPending, error } = useMyApplicationResponseAndForm(formId);
-  const { token } = useAuth();
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
     [],
   );
 
   const submitMutation = useMutation({
-    mutationFn: async (response: ApplicationResponse) =>
-      submitApplicationResponse(response, (await token()) ?? ""),
+    mutationFn: (response: ApplicationResponse) =>
+      submitApplicationResponse(response),
   });
 
   if (isPending) return <Loading />;
@@ -44,14 +41,22 @@ export default function AppSubmitPage() {
       }
     } catch (err) {
       console.error("Submit error");
-      if (err instanceof AxiosError) {
-        const resp = err.response?.data as ApplicationSubmitResponse;
-        if (resp.status === "error") {
+      if (isTRPCClientError(err)) {
+        const errors = err.data?.validationErrors;
+        if (errors) {
           throwErrorToast("Oops, looks like you've missed some things!");
-          setValidationErrors(resp.validationErrors ?? []);
+          setValidationErrors(errors);
         } else if (Timestamp.now() > form.dueDate) {
           throwErrorToast("Due date has passed");
+        } else if (err.data?.zodIssues?.length) {
+          throwErrorToast(
+            err.data.zodIssues.map((issue) => issue.message).join("\n"),
+          );
+        } else {
+          throwErrorToast(err.message || "Failed to submit application");
         }
+      } else {
+        throwErrorToast("Failed to submit application");
       }
     }
   }

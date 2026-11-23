@@ -6,13 +6,13 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import axios from "axios";
 import type { DocumentReference } from "firebase/firestore";
 import { onSnapshot } from "firebase/firestore";
 import { useMemo, useSyncExternalStore } from "react";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwWarningToast } from "@/components/toasts/WarningToast";
+import { isTRPCClientError } from "@/config/trpc";
 import {
   getJobsForApplicationResponse,
   gradingJobDoc,
@@ -55,18 +55,18 @@ export function useSubmitGradingJob() {
     mutationFn: ({
       responseId,
       repoURL,
-      token,
     }: {
       responseId: string;
       repoURL: string;
-      token: string;
-    }) => submitGradingJob(responseId, repoURL, token),
+    }) => submitGradingJob(responseId, repoURL),
     onError: (error) => {
-      if (axios.isAxiosError(error) && error.response?.status === 429) {
+      if (
+        isTRPCClientError(error) &&
+        error.data?.code === "TOO_MANY_REQUESTS"
+      ) {
         throwWarningToast(
-          typeof error.response.data === "string"
-            ? error.response.data
-            : "Too many grading jobs submitted for this application. Please try again later.",
+          error.message ||
+            "Too many grading jobs submitted for this application. Please try again later.",
         );
         return;
       }
@@ -85,12 +85,10 @@ export function useSubmitStandaloneGradingJob() {
     mutationFn: ({
       repoURL,
       testRepo,
-      token,
     }: {
       repoURL: string;
       testRepo: string;
-      token: string;
-    }) => submitStandaloneGradingJob(repoURL, testRepo, token),
+    }) => submitStandaloneGradingJob(repoURL, testRepo),
     onError: (error) => {
       throwErrorToast(
         "Failed to submit standalone grading job: " + error.message,

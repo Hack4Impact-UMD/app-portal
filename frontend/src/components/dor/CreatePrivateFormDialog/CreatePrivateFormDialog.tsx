@@ -90,7 +90,7 @@ export default function CreatePrivateFormDialog({
     uploadForm(
       // createOnly so a taken ID is rejected by the backend rather than
       // silently overwriting the existing form with that ID.
-      { form: newForm, token: tok, createOnly: true },
+      { form: newForm, createOnly: true },
       {
         onSuccess: () => {
           throwSuccessToast(

@@ -1,25 +1,15 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { ReviewerApplicationsTable } from "@/components/reviewer/ReviewerApplicationsTable";
+import { useMyReviewAssignmentRows } from "@/components/reviewer/ReviewerApplicationsTable/useRows";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
-import { useMyReviewAssignments } from "@/hooks/useReviewAssignments";
-import { useMyReviews } from "@/hooks/useReviewData";
 import useSearch from "@/hooks/useSearch";
 
 export default function ReviewerApplicationsDashboard() {
   const { formId } = useParams();
-  const {
-    data: assignedApps,
-    isPending: assignmentsLoading,
-    error: assignmentsError,
-  } = useMyReviewAssignments(formId ?? "");
-  const {
-    data: reviews,
-    isPending: reviewsLoading,
-    error: reviewError,
-  } = useMyReviews(formId ?? "");
+  const { data, isPending, error } = useMyReviewAssignmentRows(formId);
   const { search } = useSearch();
   const [statusFilter, setStatusFilter] = useState<
     "all" | "reviewed" | "pending"
@@ -28,31 +18,18 @@ export default function ReviewerApplicationsDashboard() {
   //NOTE: Just for testing, duplicates a bunch of rows
   // const rows = useMemo(() => assignedApps?.flatMap(row => Array.from({ length: 100 }, () => row)) ?? [], [assignedApps])
 
-  const numReviewed = useMemo(
-    () =>
-      assignedApps?.filter((f) =>
-        reviews
-          ?.filter((r) => r.submitted && r.forRole === f.forRole)
-          ?.map((r) => r.applicationResponseId)
-          .includes(f.applicationResponseId),
-      ).length,
-    [reviews, assignedApps],
-  );
-
   if (!formId) return <p>Form ID not provided!</p>;
 
-  if (assignmentsLoading || reviewsLoading)
+  if (isPending)
     return (
       <div className="flex items-center justify-center p-4 w-full h-full">
         <Spinner />
       </div>
     );
-  if (assignmentsError)
-    return (
-      <p>Failed to fetch assigned applications: {assignmentsError.message}</p>
-    );
-  if (reviewError)
-    return <p>Failed to fetch assigned applications: {reviewError.message}</p>;
+  if (error)
+    return <p>Failed to fetch assigned applications: {error.message}</p>;
+
+  const { rows: assignedApps, numReviewed: numReviewed } = data;
 
   return (
     <div className="max-w-5xl w-full rounded bg-white flex flex-col gap-2">
@@ -88,7 +65,6 @@ export default function ReviewerApplicationsDashboard() {
         formId={formId}
         statusFilter={statusFilter}
         search={search}
-        assignments={assignedApps}
       />
     </div>
   );

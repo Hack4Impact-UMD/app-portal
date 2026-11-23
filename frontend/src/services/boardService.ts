@@ -1,13 +1,8 @@
-import {
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
+import { PermissionRole } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import { getDocs, query, where } from "firebase/firestore";
 
 import type { BoardUserProfile } from "@/types/types";
 
-import { appCollection } from "./firestore";
 import { getUserById } from "./userService";
 
 export async function getBoardMemberById(
@@ -34,16 +29,4 @@ export async function getApplicantRolesForBoardMember(
   } else {
     throw new Error("user is not a board member");
   }
-}
-
-export async function getAllBoardMembers(): Promise<BoardUserProfile[]> {
-  const users = appCollection(FirestoreCollection.Users);
-  const q = query(users, where("role", "==", PermissionRole.Board));
-
-  return (await getDocs(q)).docs
-    .map((d) => d.data() as BoardUserProfile)
-    .map((b) => ({
-      ...b,
-      applicantRoles: b.applicantRoles ?? [],
-    }));
 }
