@@ -1,11 +1,11 @@
-import type { Timestamp } from "firebase/firestore";
+import type { TimestampLike } from "@app-portal/shared/types";
 import { TriangleAlertIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 // 3 days
 const DUE_SOON_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 
-export default function DueSoonAlert({ dueDate }: { dueDate: Timestamp }) {
+export default function DueSoonAlert({ dueDate }: { dueDate: TimestampLike }) {
   const due = dueDate.toDate();
 
   const shouldShow = () => {

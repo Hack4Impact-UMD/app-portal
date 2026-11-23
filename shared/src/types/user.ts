@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { ApplicantRole, PermissionRole } from "../constants/index.js";
 import { SectionResponseSchema } from "./response.js";
+import type { WithTimestamps } from "./timestamp.js";
 
 export const UserProfileBaseSchema = z.object({
   id: z.string().nonempty(),
@@ -78,6 +79,13 @@ export type ReviewerUserProfileBase = z.infer<
 export type BoardUserProfileBase = z.infer<typeof BoardUserProfileBaseSchema>;
 export type SuperReviewerUserProfileBase = z.infer<
   typeof SuperReviewerUserProfileBaseSchema
+>;
+export type UserProfileDTO = WithTimestamps<
+  | ApplicantUserProfileBase
+  | ReviewerUserProfileBase
+  | BoardUserProfileBase
+  | SuperReviewerUserProfileBase,
+  "dateCreated"
 >;
 export type UserRegisterForm = z.infer<typeof userRegisterFormSchema>;
 export type UpdateUser = z.infer<typeof updateUserSchema>;

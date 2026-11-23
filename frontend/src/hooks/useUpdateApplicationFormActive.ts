@@ -2,12 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import {
-  getAllForms,
-  setApplicationFormActiveStatus,
-} from "@/services/applicationFormsService";
-
-import { formQueries } from "./useApplicationForm";
+import { trpc } from "@/config/trpc";
+import { setApplicationFormActiveStatus } from "@/services/applicationFormsService";
 
 export function useUpdateApplicationFormActive() {
   const queryClient = useQueryClient();
@@ -22,7 +18,9 @@ export function useUpdateApplicationFormActive() {
       await setApplicationFormActiveStatus(formId, active);
 
       if (active) {
-        const otherForms = (await getAllForms()).filter((f) => f.id !== formId);
+        const otherForms = (
+          await queryClient.fetchQuery(trpc.forms.list.queryOptions())
+        ).filter((f) => f.id !== formId);
         await Promise.all(
           otherForms.map(
             async (f) => await setApplicationFormActiveStatus(f.id, false),
@@ -38,7 +36,7 @@ export function useUpdateApplicationFormActive() {
       throwSuccessToast("Form active status updated successfully!");
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: formQueries.root });
+      await queryClient.invalidateQueries({ queryKey: trpc.forms.pathKey() });
     },
   });
 }

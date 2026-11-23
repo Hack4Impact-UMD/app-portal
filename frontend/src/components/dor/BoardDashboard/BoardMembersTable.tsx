@@ -1,3 +1,4 @@
+import { PermissionRole } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -13,8 +14,7 @@ import SortableHeader from "@/components/tables/SortableHeader";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { Button } from "@/components/ui/button";
-import { boardMemberQueries } from "@/hooks/useBoardMembers";
-import { getBoardMemberById } from "@/services/boardService";
+import { trpc } from "@/config/trpc";
 import { setBoardApplicantRoles } from "@/services/userService";
 
 import { BoardRoleSelect } from "./BoardRoleSelect";
@@ -42,14 +42,17 @@ export function BoardMembersTable({
       boardId: string;
       pageIndex: number;
     }) => {
+      const board = await queryClient.fetchQuery(
+        trpc.users.get.queryOptions({ id: boardId }),
+      );
       const prevRoles =
-        (await getBoardMemberById(boardId)).applicantRoles ?? [];
+        board.role === PermissionRole.Board ? (board.applicantRoles ?? []) : [];
       const newRoles = [...prevRoles, roleToAdd];
       return await setBoardApplicantRoles(boardId, newRoles);
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: boardMemberQueries.root }),
+        queryClient.invalidateQueries({ queryKey: trpc.users.get.pathKey() }),
         queryClient.invalidateQueries({ queryKey: boardRowsQueryRoot }),
       ]);
       throwSuccessToast("Successfully added role!");
@@ -69,14 +72,17 @@ export function BoardMembersTable({
       boardId: string;
       pageIndex: number;
     }) => {
+      const board = await queryClient.fetchQuery(
+        trpc.users.get.queryOptions({ id: boardId }),
+      );
       const prevRoles =
-        (await getBoardMemberById(boardId)).applicantRoles ?? [];
+        board.role === PermissionRole.Board ? (board.applicantRoles ?? []) : [];
       const newRoles = prevRoles.filter((role) => role !== roleToRemove);
       return await setBoardApplicantRoles(boardId, newRoles);
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: boardMemberQueries.root }),
+        queryClient.invalidateQueries({ queryKey: trpc.users.get.pathKey() }),
         queryClient.invalidateQueries({ queryKey: boardRowsQueryRoot }),
       ]);
       throwSuccessToast("Successfully removed role!");

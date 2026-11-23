@@ -1,4 +1,3 @@
-import type { ApplicantRole } from "@app-portal/shared/constants";
 import {
   FirestoreCollection,
   ReviewStatus,
@@ -14,18 +13,10 @@ import {
 } from "firebase/firestore";
 
 import { db } from "@/config/firebase";
-import { trpcClient } from "@/config/trpc";
 
 import { appCollection } from "./firestore";
 
-export async function getApplicationStatus(
-  responseId: string,
-  role: ApplicantRole,
-) {
-  return trpcClient.status.get.query({ responseId, role });
-}
-
-export async function getAllApplicationStatusesForForm(formId: string) {
+async function getAllApplicationStatusesForForm(formId: string) {
   const statusCollection = appCollection(FirestoreCollection.ApplicationStatus);
   const q = query(statusCollection, where("formId", "==", formId));
   const docsSnap = await getDocs(q);

@@ -38,11 +38,11 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { formQueries, useApplicationForm } from "@/hooks/useApplicationForm";
+import { trpc } from "@/config/trpc";
+import { useApplicationForm } from "@/hooks/useApplicationForm";
 import useSearch from "@/hooks/useSearch";
 import { setFormDecisionRelease } from "@/services/applicationFormsService";
 import {
-  getAllApplicationStatusesForForm,
   isDecided,
   rejectUndecidedApplicantsForForm,
 } from "@/services/statusService";
@@ -64,7 +64,9 @@ export default function SuperReviewerDashboardShell() {
       setReleaseConfirm("");
       if (!formId) throw new Error("Invalid form ID");
 
-      const statuses = await getAllApplicationStatusesForForm(formId);
+      const statuses = await queryClient.fetchQuery(
+        trpc.status.listForForm.queryOptions({ formId }),
+      );
 
       if (statuses.some((s) => !isDecided(s.status))) {
         throw new Error(
@@ -76,7 +78,7 @@ export default function SuperReviewerDashboardShell() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: formQueries.detail(formId).queryKey,
+        queryKey: trpc.forms.get.queryKey({ id: formId }),
       });
     },
     onError: (err) => {

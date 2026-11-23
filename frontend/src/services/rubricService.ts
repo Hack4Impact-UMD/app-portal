@@ -1,41 +1,11 @@
-import { FirestoreCollection } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { RoleReviewRubric } from "@app-portal/shared/types";
-import { getDocs, query, where } from "firebase/firestore";
 
-import { trpcClient } from "@/config/trpc";
 import type { ApplicationForm } from "@/types/types";
-
-import { appCollection } from "./firestore";
 
 export interface RubricValidationWarnings {
   missingInForm: Array<{ role: ApplicantRole; scoreKey: string }>;
   missingInRubric: Array<{ role: ApplicantRole; scoreWeight: string }>;
-}
-
-export async function getRoleRubricsForForm(
-  formId: string,
-): Promise<RoleReviewRubric[]> {
-  const rubrics = appCollection(FirestoreCollection.Rubrics);
-  const q = query(rubrics, where("formId", "==", formId));
-
-  return (await getDocs(q)).docs.map((d) => d.data());
-}
-
-export async function getRoleRubricsForFormRole(
-  formId: string,
-  role: ApplicantRole,
-): Promise<RoleReviewRubric[]> {
-  const rubrics = appCollection(FirestoreCollection.Rubrics);
-  const q = query(rubrics, where("formId", "==", formId));
-
-  return (await getDocs(q)).docs
-    .map((d) => d.data())
-    .filter((r) => r.roles.length === 0 || r.roles.includes(role));
-}
-
-export async function uploadRubrics(rubrics: RoleReviewRubric[]) {
-  return trpcClient.application.uploadRubrics.mutate(rubrics);
 }
 
 export function validateRubricScoreKeys(

@@ -10,13 +10,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import {
-  doc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  writeBatch,
-} from "firebase/firestore";
+import { doc, getDoc, updateDoc, writeBatch } from "firebase/firestore";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
@@ -112,7 +106,7 @@ export async function loginUser(
     await sendVerificationEmail(res.user);
   }
 
-  return await getUserById(res.user.uid);
+  return (await trpcClient.users.me.query()) as UserProfile;
 }
 
 export async function logoutUser() {
@@ -125,13 +119,6 @@ export async function getUserById(id: string): Promise<UserProfile> {
   const userDoc = doc(users, id);
 
   return (await getDoc(userDoc)).data() as UserProfile;
-}
-
-export async function getAllUsers(): Promise<UserProfile[]> {
-  const users = appCollection(FirestoreCollection.Users);
-  const results = await getDocs(users);
-
-  return results.docs.map((d) => d.data());
 }
 
 export async function updateUserRoles(

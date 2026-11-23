@@ -8,9 +8,9 @@ import ReviewerRoleSelectDialog from "@/components/reviewer/ReviewerRoleSelectDi
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { auth } from "@/config/firebase";
+import { trpcClient } from "@/config/trpc";
 import { AuthContext } from "@/contexts/authContext";
 import {
-  getUserById,
   loginUser,
   logoutUser,
   onAuthStateChange,
@@ -63,7 +63,7 @@ export default function AuthProvider(props: AuthProviderProps) {
     return onAuthStateChange(async (userInfo) => {
       console.log(`Auth state changed: ${userInfo?.email}`);
       if (userInfo != null) {
-        const user = await getUserById(userInfo.uid);
+        const user = (await trpcClient.users.me.query()) as UserProfile;
 
         setAuthState({
           isAuthed: true,

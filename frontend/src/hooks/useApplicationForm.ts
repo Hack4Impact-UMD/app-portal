@@ -2,16 +2,11 @@ import {
   useQuery,
   useMutation,
   useQueryClient,
-  queryOptions,
   skipToken,
 } from "@tanstack/react-query";
 
+import { trpc } from "@/config/trpc";
 import {
-  getActiveForm,
-  getAllForms,
-  getApplicationForm,
-  getApplicationFormForResponseId,
-  getInvitedFormsForUser,
   createApplicationForm,
   setApplicationFormDueDate,
   setApplicationFormInvitedUsers,
@@ -20,50 +15,33 @@ import type { ApplicationForm } from "@/types/types";
 
 import { useAuth } from "./useAuth";
 
-const formRoot = "form" as const;
-
-export const formQueries = {
-  root: [formRoot] as const,
-  all: queryOptions({
-    queryKey: [formRoot, "all"] as const,
-    queryFn: () => getAllForms(),
-  }),
-  detail: (formId?: string) =>
-    queryOptions({
-      queryKey: [formRoot, "formId", formId],
-      queryFn: formId ? () => getApplicationForm(formId) : skipToken,
-    }),
-  active: queryOptions({
-    queryKey: [formRoot, "active"] as const,
-    queryFn: () => getActiveForm(),
-  }),
-  byResponse: (responseId?: string) =>
-    queryOptions({
-      queryKey: [formRoot, "responseId", responseId] as const,
-      queryFn: responseId
-        ? () => getApplicationFormForResponseId(responseId)
-        : skipToken,
-    }),
-  invited: (userId?: string) =>
-    queryOptions({
-      queryKey: [formRoot, "invited", userId] as const,
-      queryFn: userId ? () => getInvitedFormsForUser(userId) : skipToken,
-    }),
-};
+export class NoActiveFormError extends Error {
+  constructor() {
+    super("No active form!");
+    this.name = "NoActiveFormError";
+  }
+}
 
 export function useAllApplicationForms() {
-  return useQuery(formQueries.all);
+  return useQuery(trpc.forms.list.queryOptions());
 }
 
 export function useApplicationForm(formId?: string, refetch = true) {
   return useQuery({
-    ...formQueries.detail(formId),
+    ...trpc.forms.get.queryOptions(formId ? { id: formId } : skipToken),
     refetchOnWindowFocus: refetch,
   });
 }
 
 export function useActiveForm() {
-  return useQuery(formQueries.active);
+  return useQuery(
+    trpc.forms.active.queryOptions(undefined, {
+      select: (form) => {
+        if (!form) throw new NoActiveFormError();
+        return form;
+      },
+    }),
+  );
 }
 
 export const useUploadApplicationForm = () => {
@@ -77,7 +55,7 @@ export const useUploadApplicationForm = () => {
       createOnly?: boolean;
     }) => createApplicationForm(form, { createOnly }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: formQueries.all.queryKey });
+      queryClient.invalidateQueries({ queryKey: trpc.forms.list.queryKey() });
     },
   });
 };
@@ -108,7 +86,7 @@ export const useDuplicateForm = () => {
       return await createApplicationForm(newForm, { createOnly: true });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: formQueries.root });
+      queryClient.invalidateQueries({ queryKey: trpc.forms.pathKey() });
     },
   });
 };
@@ -126,20 +104,24 @@ export function useUpdateApplicationFormDueDate() {
       await setApplicationFormDueDate(formId, dueDate);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: formQueries.root });
+      queryClient.invalidateQueries({ queryKey: trpc.forms.pathKey() });
     },
   });
 }
 
 export function useApplicationFormForResponseId(responseId?: string) {
-  return useQuery(formQueries.byResponse(responseId));
+  return useQuery(
+    trpc.forms.getForResponse.queryOptions(
+      responseId ? { responseId } : skipToken,
+    ),
+  );
 }
 
 export function useInvitedForms() {
-  const { user, isAuthed, isLoading } = useAuth();
+  const { isAuthed, isLoading } = useAuth();
 
   return useQuery({
-    ...formQueries.invited(user?.id),
+    ...trpc.forms.invited.queryOptions(),
     enabled: !isLoading && isAuthed,
     initialData: [],
   });
@@ -158,7 +140,7 @@ export function useUpdateFormInvitedUsers() {
       await setApplicationFormInvitedUsers(formId, invitedUsers);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: formQueries.root });
+      queryClient.invalidateQueries({ queryKey: trpc.forms.pathKey() });
     },
   });
 }

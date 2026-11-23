@@ -1,4 +1,5 @@
 import type { ApplicationReviewData } from "@app-portal/shared/types";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
@@ -13,7 +14,7 @@ import Spinner from "@/components/Spinner";
 import SortableHeader from "@/components/tables/SortableHeader";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Button } from "@/components/ui/button";
-import { getApplicationForm } from "@/services/applicationFormsService";
+import { trpc } from "@/config/trpc";
 
 import type { AssignedAppRow } from "./useRows";
 import { useRows } from "./useRows";
@@ -34,6 +35,7 @@ export default function AssignedReviewsTable({
   statusFilter = "all",
 }: AssignedReviewsTableProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -125,7 +127,9 @@ export default function AssignedReviewsTable({
     appReviewData: ApplicationReviewData | undefined,
     responseId: string,
   ) {
-    const form = await getApplicationForm(formId);
+    const form = await queryClient.fetchQuery(
+      trpc.forms.get.queryOptions({ id: formId }),
+    );
     if (appReviewData) {
       // there's an existing review, edit it
       navigate(

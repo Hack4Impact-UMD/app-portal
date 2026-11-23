@@ -22,9 +22,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { reviewerQueries } from "@/hooks/useReviewers";
-import { getReviewerById, reviewingFor } from "@/services/reviewersService";
+import { trpc } from "@/config/trpc";
+import { reviewingFor } from "@/services/reviewersService";
 import { setReviewCapableUserRolePreferences } from "@/services/userService";
+import type { ReviewCapableUser } from "@/types/types";
 
 import { RoleSelect } from "./RoleSelect";
 import type { ReviewerRow } from "./useRows";
@@ -56,7 +57,9 @@ export default function ReviewersTable({
       pageIndex: number;
     }) => {
       const prevRolePreferences = reviewingFor(
-        await getReviewerById(reviewerId),
+        (await queryClient.fetchQuery(
+          trpc.users.get.queryOptions({ id: reviewerId }),
+        )) as ReviewCapableUser,
       );
       const newRolePreferences = [...prevRolePreferences, roleToAdd];
       return await setReviewCapableUserRolePreferences(
@@ -66,7 +69,9 @@ export default function ReviewersTable({
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: reviewerQueries.root }),
+        queryClient.invalidateQueries({
+          queryKey: trpc.users.listReviewers.pathKey(),
+        }),
         queryClient.invalidateQueries({ queryKey: reviewerRowsQueryRoot }),
       ]);
       throwSuccessToast("Successfully added role preference!");
@@ -87,7 +92,9 @@ export default function ReviewersTable({
       pageIndex: number;
     }) => {
       const prevRolePreferences = reviewingFor(
-        await getReviewerById(reviewerId),
+        (await queryClient.fetchQuery(
+          trpc.users.get.queryOptions({ id: reviewerId }),
+        )) as ReviewCapableUser,
       );
       const newRolePreferences = prevRolePreferences.filter(
         (role) => role !== roleToRemove,
@@ -99,7 +106,9 @@ export default function ReviewersTable({
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: reviewerQueries.root }),
+        queryClient.invalidateQueries({
+          queryKey: trpc.users.listReviewers.pathKey(),
+        }),
         queryClient.invalidateQueries({ queryKey: reviewerRowsQueryRoot }),
       ]);
       throwSuccessToast("Successfully removed role preference!");

@@ -50,7 +50,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { applicationStatusQueries } from "@/hooks/useApplicationStatus";
+import { trpc } from "@/config/trpc";
 import { reviewAssignmentQueries } from "@/hooks/useReviewAssignments";
 import {
   assignReview,
@@ -206,7 +206,7 @@ export default function SuperReviewerApplicationsTable({
         queryKey: qualifiedRowsQueryRoot,
       });
       queryClient.invalidateQueries({
-        queryKey: applicationStatusQueries.root,
+        queryKey: trpc.status.pathKey(),
       });
     },
   });

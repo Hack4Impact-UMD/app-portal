@@ -42,7 +42,7 @@ export interface ApplicationResponse extends ApplicationResponseBase {
 }
 
 export interface ApplicationForm extends ApplicationFormBase {
-  dueDate: Timestamp;
+  dueDate: TimestampLike;
 }
 
 export interface GradingJobPublic extends GradingJobPublicBase {

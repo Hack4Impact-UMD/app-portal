@@ -75,7 +75,8 @@ export const publicProcedure = t.procedure.use(async ({ ctx, next }) => {
   return next();
 });
 
-export const authedProcedure = publicProcedure.use(async ({ ctx, next }) => {
+// Skips email_verified; only for endpoints unverified users need.
+export const signedInProcedure = publicProcedure.use(async ({ ctx, next }) => {
   if (!ctx.idToken) {
     logger.error("No Firebase ID token was passed as a Bearer token.");
     throw new TRPCError({ code: "UNAUTHORIZED" });
@@ -89,15 +90,19 @@ export const authedProcedure = publicProcedure.use(async ({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  if (!token.email_verified) {
-    logger.warn(`Email ${token.email} not verified! Rejecting request!`);
-    throw new TRPCError({ code: "FORBIDDEN", message: "Email not verified!" });
-  }
-
   let userPromise: Promise<UserProfile | undefined> | undefined;
   const getUser = () => (userPromise ??= getUserById(token.uid));
 
   return next({ ctx: { token, getUser } });
+});
+
+export const authedProcedure = signedInProcedure.use(async ({ ctx, next }) => {
+  if (!ctx.token.email_verified) {
+    logger.warn(`Email ${ctx.token.email} not verified! Rejecting request!`);
+    throw new TRPCError({ code: "FORBIDDEN", message: "Email not verified!" });
+  }
+
+  return next();
 });
 
 export function roleProcedure(roles: PermissionRole[]) {

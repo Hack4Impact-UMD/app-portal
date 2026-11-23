@@ -19,10 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { trpc } from "@/config/trpc";
 import { useActiveForm } from "@/hooks/useApplicationForm";
-import { applicationResponseQueries } from "@/hooks/useApplicationResponses";
-import { applicationStatusQueries } from "@/hooks/useApplicationStatus";
-import { userQueries } from "@/hooks/useUsers";
 import { createInternalApplicant } from "@/services/userService";
 import { displayApplicantRoleName } from "@/utils/display";
 import { generateSectionResponses } from "@/utils/dummy-response";
@@ -86,14 +84,14 @@ export default function CreateInternalApplicantDialog() {
       );
 
       // backend route creates new user, response, and status objects
-      queryClient.invalidateQueries({ queryKey: userQueries.root });
+      queryClient.invalidateQueries({ queryKey: trpc.users.pathKey() });
       queryClient.invalidateQueries({
-        queryKey: applicationResponseQueries.byForm(
-          data.applicationResponse.applicationFormId,
-        ).queryKey,
+        queryKey: trpc.application.listForForm.queryKey({
+          formId: data.applicationResponse.applicationFormId,
+        }),
       });
       queryClient.invalidateQueries({
-        queryKey: applicationStatusQueries.root,
+        queryKey: trpc.status.pathKey(),
       });
       queryClient.invalidateQueries({ queryKey: qualifiedRowsQueryRoot });
       queryClient.invalidateQueries({ queryKey: underReviewRowsQueryRoot });

@@ -5,6 +5,7 @@ import {
   QuestionType,
   ReviewStatus,
 } from "../constants/index.js";
+import type { WithTimestamps } from "./timestamp.js";
 
 export const ApplicationQuestionBaseSchema = z.object({
   questionId: z.string().nonempty(),
@@ -105,3 +106,4 @@ export type AssessmentSubmitQuestion = z.infer<
   typeof AssessmentSubmitQuestionSchema
 >;
 export type ApplicationFormBase = z.infer<typeof ApplicationFormBaseSchema>;
+export type ApplicationFormDTO = WithTimestamps<ApplicationFormBase, "dueDate">;

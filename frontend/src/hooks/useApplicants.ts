@@ -1,34 +1,19 @@
-import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@tanstack/react-query";
 
-import {
-  getApplicantById,
-  getApplicantForResponse,
-} from "@/services/applicantService.ts";
+import { trpc } from "@/config/trpc";
+import type { ApplicantUserProfile } from "@/types/types";
 
-import { userQueries } from "./useUsers";
-
-const applicantRoot = [...userQueries.root, "applicant"] as const;
-
-const applicantQueries = {
-  root: applicantRoot,
-  detail: (id: string) =>
-    queryOptions({
-      queryKey: [...applicantRoot, id] as const,
-      queryFn: () => getApplicantById(id),
-    }),
-  byResponse: (responseId?: string) =>
-    queryOptions({
-      queryKey: [...applicantRoot, "response", responseId] as const,
-      queryFn: responseId
-        ? () => getApplicantForResponse(responseId)
-        : skipToken,
-    }),
-};
+const asApplicant = (user: unknown) => user as ApplicantUserProfile;
 
 export function useApplicant(id: string) {
-  return useQuery(applicantQueries.detail(id));
+  return useQuery(trpc.users.get.queryOptions({ id }, { select: asApplicant }));
 }
 
 export function useApplicantForResponse(responseId?: string) {
-  return useQuery(applicantQueries.byResponse(responseId));
+  return useQuery(
+    trpc.users.getApplicantForResponse.queryOptions(
+      responseId ? { responseId } : skipToken,
+      { select: asApplicant },
+    ),
+  );
 }

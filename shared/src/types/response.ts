@@ -5,6 +5,7 @@ import {
   ApplicationStatus,
   QuestionType,
 } from "../constants/index.js";
+import type { WithTimestamps } from "./timestamp.js";
 
 export const QuestionResponseSchema = z.object({
   questionType: z.enum(QuestionType),
@@ -64,6 +65,10 @@ export type QuestionResponse = z.infer<typeof QuestionResponseSchema>;
 export type SectionResponse = z.infer<typeof SectionResponseSchema>;
 export type ApplicationResponseBase = z.infer<
   typeof ApplicationResponseBaseSchema
+>;
+export type ApplicationResponseDTO = WithTimestamps<
+  ApplicationResponseBase,
+  "dateSubmitted"
 >;
 export type ApplicationResponseSubmitRequest = z.infer<
   typeof ApplicationResponseSubmitRequestSchema

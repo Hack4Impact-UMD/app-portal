@@ -186,35 +186,29 @@ export default function RubricBuilderPage() {
     if (duplicates) return;
 
     if (rubricType === "application") {
-      uploadRubricsMutation.mutate(
-        { rubrics: parsedRubrics },
-        {
-          onSuccess: () => {
-            throwSuccessToast(
-              `Successfully uploaded ${parsedRubrics.length} rubric(s)!`,
-            );
-          },
-          onError: (error) => {
-            console.error("Upload error:", error);
-            throwErrorToast("Failed to upload rubrics!");
-          },
+      uploadRubricsMutation.mutate(parsedRubrics, {
+        onSuccess: () => {
+          throwSuccessToast(
+            `Successfully uploaded ${parsedRubrics.length} rubric(s)!`,
+          );
         },
-      );
+        onError: (error) => {
+          console.error("Upload error:", error);
+          throwErrorToast("Failed to upload rubrics!");
+        },
+      });
     } else {
-      uploadInterviewRubricsMutation.mutate(
-        { interviewRubrics: parsedRubrics },
-        {
-          onSuccess: () => {
-            throwSuccessToast(
-              `Successfully uploaded ${parsedRubrics.length} rubric(s)!`,
-            );
-          },
-          onError: (error) => {
-            console.error("Upload error:", error);
-            throwErrorToast("Failed to upload rubrics!");
-          },
+      uploadInterviewRubricsMutation.mutate(parsedRubrics, {
+        onSuccess: () => {
+          throwSuccessToast(
+            `Successfully uploaded ${parsedRubrics.length} rubric(s)!`,
+          );
         },
-      );
+        onError: (error) => {
+          console.error("Upload error:", error);
+          throwErrorToast("Failed to upload rubrics!");
+        },
+      });
     }
   }, [
     jsonCode,

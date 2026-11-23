@@ -8,12 +8,10 @@ import { Navigate, Outlet, useParams } from "react-router-dom";
 
 import Loading from "@/components/Loading";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { trpc } from "@/config/trpc";
 import type { SaveStatus } from "@/contexts/formContext";
 import { FormContext } from "@/contexts/formContext";
-import {
-  applicationResponseQueries,
-  useMyApplicationResponseAndForm,
-} from "@/hooks/useApplicationResponses";
+import { useMyApplicationResponseAndForm } from "@/hooks/useApplicationResponses";
 import { saveApplicationResponse } from "@/services/applicationResponsesService";
 import type { ApplicationResponse } from "@/types/types";
 
@@ -80,7 +78,7 @@ export default function FormProvider() {
       throwErrorToast("Failed to save your application!");
     }
     await queryClient.invalidateQueries({
-      queryKey: applicationResponseQueries.root,
+      queryKey: trpc.application.pathKey(),
     });
   }, [response, saveMutation, queryClient]);
 

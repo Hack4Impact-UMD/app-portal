@@ -1,62 +1,40 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import type { RoleReviewRubric } from "@app-portal/shared/types";
 import {
-  queryOptions,
   skipToken,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 
-import {
-  getRoleInterviewRubricsForForm,
-  getRoleInterviewRubricsForFormRole,
-  uploadInterviewRubrics as uploadInterviewRubricsService,
-} from "@/services/interviewRubricService";
+import { trpc } from "@/config/trpc";
 
-const interviewRubricRoot = "interview-rubrics" as const;
-
-const interviewRubricQueries = {
-  root: [interviewRubricRoot] as const,
-  byForm: (formId?: string) =>
-    queryOptions({
-      queryKey: [interviewRubricRoot, "form", formId] as const,
-      queryFn: formId
-        ? () => getRoleInterviewRubricsForForm(formId)
-        : skipToken,
-    }),
-  byFormRole: (formId?: string, role?: ApplicantRole) =>
-    queryOptions({
-      queryKey: [interviewRubricRoot, "form", formId, "role", role] as const,
-      queryFn:
-        formId && role
-          ? () => getRoleInterviewRubricsForFormRole(formId, role)
-          : skipToken,
-    }),
-};
-
-export const useUploadInterviewRubrics = () => {
+export function useUploadInterviewRubrics() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      interviewRubrics,
-    }: {
-      interviewRubrics: RoleReviewRubric[];
-    }) => uploadInterviewRubricsService(interviewRubrics),
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: interviewRubricQueries.root });
-    },
-  });
-};
+  return useMutation(
+    trpc.application.uploadInterviewRubrics.mutationOptions({
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.rubrics.pathKey() });
+      },
+    }),
+  );
+}
 
 export function useInterviewRubricsForForm(formId?: string) {
-  return useQuery(interviewRubricQueries.byForm(formId));
+  return useQuery(
+    trpc.rubrics.list.queryOptions(
+      formId ? { formId, kind: "interview" } : skipToken,
+    ),
+  );
 }
 
 export function useInterviewRubricsForFormRole(
   formId?: string,
   role?: ApplicantRole,
 ) {
-  return useQuery(interviewRubricQueries.byFormRole(formId, role));
+  return useQuery(
+    trpc.rubrics.list.queryOptions(
+      formId && role ? { formId, role, kind: "interview" } : skipToken,
+    ),
+  );
 }

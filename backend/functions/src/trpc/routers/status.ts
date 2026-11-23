@@ -12,7 +12,35 @@ import { z } from "zod";
 import { appCollection } from "../../utils/firestore";
 import { authedProcedure, roleProcedure, router } from "../init";
 
+const boardProcedure = roleProcedure([
+  PermissionRole.Board,
+  PermissionRole.SuperReviewer,
+]);
+
 export const statusRouter = router({
+  listForForm: boardProcedure
+    .input(z.object({ formId: z.string().min(1) }))
+    .query(async ({ input }) => {
+      return (
+        await appCollection(FirestoreCollection.ApplicationStatus)
+          .where("formId", "==", input.formId)
+          .get()
+      ).docs.map((d) => d.data());
+    }),
+
+  getConfirmation: authedProcedure
+    .input(z.object({ responseId: z.string().min(1) }))
+    .query(async ({ input, ctx }) => {
+      const confirmation = (
+        await appCollection(FirestoreCollection.DecisionStatus)
+          .where("userId", "==", ctx.token.uid)
+          .where("responseId", "==", input.responseId)
+          .limit(1)
+          .get()
+      ).docs[0]?.data();
+      return confirmation ?? null;
+    }),
+
   get: authedProcedure
     .input(z.object({ responseId: z.string(), role: z.enum(ApplicantRole) }))
     .query(async ({ input: { responseId, role }, ctx }) => {

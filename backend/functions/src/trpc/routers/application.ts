@@ -27,6 +27,7 @@ import { validateResponses } from "../../utils/validateResponses";
 import { SubmitValidationError } from "../errors";
 import { assertCanRespondToForm } from "../guards";
 import { authedProcedure, roleProcedure, router } from "../init";
+import { applicationReadProcedures } from "./applicationReads";
 
 // gRPC status code Firestore returns when create() hits an existing document.
 const ALREADY_EXISTS = 6;
@@ -100,6 +101,8 @@ async function uploadRubrics(
 }
 
 export const applicationRouter = router({
+  ...applicationReadProcedures,
+
   submit: authedProcedure
     .input(ApplicationResponseSubmitRequestSchema)
     .mutation(async ({ input: applicationResponse, ctx }) => {

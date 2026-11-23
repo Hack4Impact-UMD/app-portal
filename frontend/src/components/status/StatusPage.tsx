@@ -1,11 +1,10 @@
 import { ApplicantRole, ReviewStatus } from "@app-portal/shared/constants";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Fragment, useMemo, useState } from "react";
 
+import { trpc } from "@/config/trpc";
 import { useApplicationResponsesAndSemesters } from "@/hooks/useApplicationResponseAndSemesters.ts";
 import { useAuth } from "@/hooks/useAuth.ts";
-import { getApplicationResponseAndSemester } from "@/services/applicationResponseAndSemesterService.ts";
-import { getApplicationStatus } from "@/services/statusService.ts";
 import type { ApplicationResponse } from "@/types/types.ts";
 
 import { ApplicationResponseRow } from "./ApplicationResponseRow.tsx";
@@ -26,13 +25,16 @@ const bootcampTimelineItems = [
 
 function useTimelineStep() {
   const { token, user } = useAuth();
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: ["timeline", token],
     enabled: !!user && !!token,
     queryFn: async () => {
       if (!user || !token) return 0;
 
-      const applications = await getApplicationResponseAndSemester(user.id);
+      const applications = await queryClient.fetchQuery(
+        trpc.application.mineWithSemester.queryOptions(),
+      );
       const activeApps = applications.filter((app) => app.active);
 
       const allRoles = activeApps.flatMap((app) => app.rolesApplied);
@@ -42,7 +44,9 @@ function useTimelineStep() {
       const appStatuses = await Promise.all(
         activeApps.flatMap((app) =>
           app.rolesApplied.map(async (role) =>
-            getApplicationStatus(app.id, role),
+            queryClient.fetchQuery(
+              trpc.status.get.queryOptions({ responseId: app.id, role: role }),
+            ),
           ),
         ),
       );

@@ -1,5 +1,4 @@
 import { ApplicationStatus } from "@app-portal/shared/constants";
-import { Timestamp } from "firebase/firestore";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,9 +6,12 @@ import PrivateFormAlert from "@/components/applicant/PrivateFormAlert";
 import FormMarkdown from "@/components/form/FormMarkdown";
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
-import { useActiveForm, useInvitedForms } from "@/hooks/useApplicationForm";
+import {
+  NoActiveFormError,
+  useActiveForm,
+  useInvitedForms,
+} from "@/hooks/useApplicationForm";
 import { useMyApplicationResponses } from "@/hooks/useApplicationResponses";
-import { NoActiveFormError } from "@/services/applicationFormsService";
 
 const AppOverview: React.FC = () => {
   const {
@@ -133,13 +135,15 @@ const AppOverview: React.FC = () => {
             {
               <Button
                 onClick={handleApply}
-                disabled={wait || (Timestamp.now() > form.dueDate && !applied)}
+                disabled={
+                  wait || (Date.now() > form.dueDate.toMillis() && !applied)
+                }
                 className="w-full sm:w-fit cursor-pointer inline-flex items-center justify-center px-10 py-2 rounded-full bg-black
                 text-white transition-colors hover:bg-darkgray"
               >
                 {applied
                   ? "Go to status page"
-                  : Timestamp.now() <= form.dueDate
+                  : Date.now() <= form.dueDate.toMillis()
                     ? inProgress
                       ? "Continue Application"
                       : "Apply"

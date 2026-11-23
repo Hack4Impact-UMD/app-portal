@@ -1,6 +1,5 @@
 import type { ValidationError } from "@app-portal/shared/types";
 import { useMutation } from "@tanstack/react-query";
-import { Timestamp } from "firebase/firestore";
 import { EditIcon } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -46,7 +45,7 @@ export default function AppSubmitPage() {
         if (errors) {
           throwErrorToast("Oops, looks like you've missed some things!");
           setValidationErrors(errors);
-        } else if (Timestamp.now() > form.dueDate) {
+        } else if (Date.now() > form.dueDate.toMillis()) {
           throwErrorToast("Due date has passed");
         } else if (err.data?.zodIssues?.length) {
           throwErrorToast(
