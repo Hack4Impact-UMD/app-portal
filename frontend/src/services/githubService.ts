@@ -60,7 +60,7 @@ export async function getLatestDeployedCommit(): Promise<string | null> {
       return null;
     }
   } catch (error) {
-    console.error("Error fetching latest commit from GitHub:", error);
+    console.warn("Error fetching latest commit from GitHub:", error);
     return null;
   }
 }
