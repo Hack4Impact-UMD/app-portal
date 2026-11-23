@@ -102,3 +102,26 @@ export const gradingJobEmoji: Record<GradingJobStatus, string> = {
 };
 
 export { getGradingJobMaxScore } from "@app-portal/shared/utils";
+
+const relativeTimeFormat = new Intl.RelativeTimeFormat("en-US", {
+  numeric: "auto",
+});
+
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ["year", 365 * 24 * 60 * 60 * 1000],
+  ["month", 30 * 24 * 60 * 60 * 1000],
+  ["week", 7 * 24 * 60 * 60 * 1000],
+  ["day", 24 * 60 * 60 * 1000],
+  ["hour", 60 * 60 * 1000],
+  ["minute", 60 * 1000],
+];
+
+export function displayRelativeTime(date: Date, now = Date.now()) {
+  const diff = date.getTime() - now;
+  for (const [unit, ms] of RELATIVE_UNITS) {
+    if (Math.abs(diff) >= ms) {
+      return relativeTimeFormat.format(Math.round(diff / ms), unit);
+    }
+  }
+  return relativeTimeFormat.format(0, "minute");
+}
