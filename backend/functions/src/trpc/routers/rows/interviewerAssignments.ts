@@ -5,7 +5,6 @@ import { z } from "zod";
 
 import { appCollection } from "../../../utils/firestore";
 import {
-  REVIEW_CAPABLE_ROLES,
   scoreWarning,
   requireUser,
   firstByApplicantRole,
@@ -36,10 +35,10 @@ export const interviewerAssignments = superReviewerProcedure
       ],
     );
 
-    if (!interviewer || !REVIEW_CAPABLE_ROLES.includes(interviewer.role)) {
+    if (!interviewer) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "User is not review capable",
+        message: "User not found",
       });
     }
 

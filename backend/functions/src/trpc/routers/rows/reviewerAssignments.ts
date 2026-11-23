@@ -11,7 +11,6 @@ import type { ApplicationForm } from "../../../models/appForm";
 import { queryWhereIn } from "../../../utils/batch";
 import { appCollection } from "../../../utils/firestore";
 import {
-  REVIEW_CAPABLE_ROLES,
   scoreWarning,
   requireUser,
   reviewingFor,
@@ -88,10 +87,10 @@ export const reviewerAssignments = superReviewerProcedure
         .then((s) => s.docs.map((d) => d.data())),
     ]);
 
-    if (!reviewer || !REVIEW_CAPABLE_ROLES.includes(reviewer.role)) {
+    if (!reviewer) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "User is not review capable",
+        message: "User not found",
       });
     }
 
