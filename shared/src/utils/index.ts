@@ -1,4 +1,4 @@
-import { ApplicationStatus } from "../constants/index.js";
+import { ApplicationStatus, ReviewStatus } from "../constants/index.js";
 import type {
   ApplicationFormBase,
   ApplicationInterviewData,
@@ -169,4 +169,17 @@ export function countPreviouslyApplied(
   }
 
   return inactiveFormIds.size;
+}
+
+export function isDecided(status: ReviewStatus) {
+  return (
+    status === ReviewStatus.Accepted ||
+    status === ReviewStatus.Denied ||
+    status === ReviewStatus.Waitlisted
+  );
+}
+
+// Checks the field, not the role, since role changes leave it behind.
+export function isInternalApplicant(user: object): boolean {
+  return "isInternal" in user && user.isInternal === true;
 }

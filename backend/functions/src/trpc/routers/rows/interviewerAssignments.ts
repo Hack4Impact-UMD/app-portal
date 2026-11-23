@@ -1,21 +1,18 @@
-import {
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
+import { FirestoreCollection } from "@app-portal/shared/constants";
 import { calculateInterviewScore } from "@app-portal/shared/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { appCollection } from "../../../utils/firestore";
 import {
-  REVIEW_CAPABLE_ROLES,
   scoreWarning,
   requireUser,
   firstByApplicantRole,
+  reviewingFor,
+  userSummary,
 } from "./helpers";
 import { loadForm, loadUsers } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
-import type { ApplicantProfile, ReviewCapableProfile } from "./types";
 
 export const interviewerAssignments = superReviewerProcedure
   .input(z.object({ formId: z.string(), interviewerId: z.string() }))
@@ -38,10 +35,10 @@ export const interviewerAssignments = superReviewerProcedure
       ],
     );
 
-    if (!interviewer || !REVIEW_CAPABLE_ROLES.includes(interviewer.role)) {
+    if (!interviewer) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "User is not review capable",
+        message: "User not found",
       });
     }
 
@@ -50,18 +47,12 @@ export const interviewerAssignments = superReviewerProcedure
 
     const rows = assignments.map((assignment, index) => {
       const applicant = requireUser(applicants, assignment.applicantId);
-      if (applicant.role !== PermissionRole.Applicant) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `User ${applicant.id} is not an applicant`,
-        });
-      }
       const interview = interviewByKey.get(
         `${assignment.applicantId}:${assignment.forRole}`,
       );
 
       return {
-        applicant: applicant as ApplicantProfile,
+        applicant: userSummary(applicant),
         applicantId: assignment.applicantId,
         applicantName: `${applicant.firstName} ${applicant.lastName}`,
         index: 1 + index,
@@ -80,7 +71,10 @@ export const interviewerAssignments = superReviewerProcedure
     });
 
     return {
-      interviewer: interviewer as ReviewCapableProfile,
+      interviewer: {
+        ...userSummary(interviewer),
+        roles: reviewingFor(interviewer),
+      },
       numInterviewed: interviewerData.filter((i) => i.submitted).length,
       rows,
     };

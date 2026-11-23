@@ -1,16 +1,16 @@
-import { PermissionRole } from "@app-portal/shared/constants";
-import { UserProfileBaseSchema } from "@app-portal/shared/types";
-import { Timestamp } from "firebase-admin/firestore";
-import { z } from "zod";
+import type {
+  ApplicantUserProfileBase,
+  BoardUserProfileBase,
+  ReviewerUserProfileBase,
+  SuperReviewerUserProfileBase,
+} from "@app-portal/shared/types";
+import type { Timestamp } from "firebase-admin/firestore";
 
-// TODO: backend type does not distinguish between user permission roles
-// and it definitely should, but don't want to bundle in current PR
-const UserProfileSchema = UserProfileBaseSchema.extend({
-  role: z.enum(PermissionRole),
-  dateCreated: z.custom<Timestamp>((d) => d instanceof Timestamp),
-  activeApplications: z.array(z.string()).optional(),
-  inactiveApplications: z.array(z.string()).optional(),
-  isInternal: z.boolean().optional(),
-});
+type WithDateCreated<T> = T & { dateCreated: Timestamp };
 
-export type UserProfile = z.infer<typeof UserProfileSchema>;
+type ApplicantProfile = WithDateCreated<ApplicantUserProfileBase>;
+export type ReviewCapableProfile =
+  | WithDateCreated<ReviewerUserProfileBase>
+  | WithDateCreated<BoardUserProfileBase>
+  | WithDateCreated<SuperReviewerUserProfileBase>;
+export type UserProfile = ApplicantProfile | ReviewCapableProfile;

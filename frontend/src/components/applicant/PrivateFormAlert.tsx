@@ -1,5 +1,4 @@
 import { ApplicationStatus } from "@app-portal/shared/constants";
-import { Timestamp } from "firebase/firestore";
 import { MailOpenIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +32,7 @@ export default function PrivateFormAlert({
     [responses, form.id],
   );
 
-  const isPastDue = Timestamp.now() > form.dueDate;
+  const isPastDue = Date.now() > form.dueDate.toMillis();
 
   async function handleApply() {
     setWait(true);

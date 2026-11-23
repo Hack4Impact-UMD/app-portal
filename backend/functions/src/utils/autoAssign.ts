@@ -1,24 +1,11 @@
-import {
-  ApplicantRole,
-  ApplicationStatus,
-  FirestoreCollection,
-} from "@app-portal/shared/constants";
+import { ApplicantRole, ApplicationStatus } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
 } from "@app-portal/shared/types";
-import { doc, writeBatch } from "firebase/firestore";
-import { v4 as uuidv4 } from "uuid";
 
-import { db } from "@/config/firebase";
-import type { ReviewCapableUser } from "@/types/types";
-
-import { getAllApplicationResponsesByFormId } from "./applicationResponsesService";
-import { appCollection } from "./firestore";
-import { getReviewAssignmentsForForm } from "./reviewAssignmentService";
-import { getReviewDataForForm } from "./reviewDataService";
-import { getAllReviewers } from "./reviewersService";
-import { getUserById } from "./userService";
+import type { ApplicationResponse } from "../models/appResponse";
+import type { UserProfile } from "../models/user";
 
 export type AutoAssignmentPlanItem = {
   applicantName: string;
@@ -47,7 +34,7 @@ type ReviewerWorkload = {
 };
 
 function buildReviewerWorkloadMap(
-  reviewers: ReviewCapableUser[],
+  reviewers: UserProfile[],
   assignments: AppReviewAssignment[],
   allReviewData: ApplicationReviewData[],
 ): Map<string, ReviewerWorkload> {
@@ -214,19 +201,24 @@ function assignUpToTwoReviewers(
 
 // auto-assignment algo for bootcamp
 // not performance oriented right now! should use a heap instead of O(n) sorts
-export async function calculateBootcampAssignmentPlan(
+export function calculateBootcampAssignmentPlan(
   formId: string,
-  exemptReviewers: ReviewCapableUser[],
-): Promise<AutoAssignmentPlanItem[]> {
-  const [allApplications, allReviewers, assignments, reviewData] =
-    await Promise.all([
-      getAllApplicationResponsesByFormId(formId),
-      getAllReviewers(),
-      getReviewAssignmentsForForm(formId),
-      getReviewDataForForm(formId),
-    ]);
-
-  const exemptSet = new Set(exemptReviewers.map((r) => r.id));
+  {
+    allApplications,
+    allReviewers,
+    usersById,
+    assignments,
+    reviewData,
+  }: {
+    allApplications: ApplicationResponse[];
+    allReviewers: UserProfile[];
+    usersById: Map<string, UserProfile>;
+    assignments: AppReviewAssignment[];
+    reviewData: ApplicationReviewData[];
+  },
+  exemptReviewerIds: string[],
+): AutoAssignmentPlanItem[] {
+  const exemptSet = new Set(exemptReviewerIds);
   const reviewers = allReviewers.filter((r) => !exemptSet.has(r.id));
 
   const consideredApplications = allApplications.filter(
@@ -247,23 +239,18 @@ export async function calculateBootcampAssignmentPlan(
     ApplicantRole.Bootcamp,
   );
 
-  // build list of application with its user's name and its assignments
-  const applicationsWithAssignments = await Promise.all(
-    consideredApplications.map(async (app) => {
-      const appAssignments = responseToAssignments.get(app.id) ?? [];
+  const applicationsWithAssignments = consideredApplications.map((app) => {
+    const applicantUser = usersById.get(app.userId);
+    if (!applicantUser) {
+      throw new Error(`User with id ${app.userId} not found`);
+    }
 
-      const applicantUser = await getUserById(app.userId);
-      if (!applicantUser) {
-        throw new Error(`User with id ${app.userId} not found`);
-      }
-
-      return {
-        app,
-        assignments: appAssignments,
-        applicantName: `${applicantUser.firstName} ${applicantUser.lastName}`,
-      };
-    }),
-  );
+    return {
+      app,
+      assignments: responseToAssignments.get(app.id) ?? [],
+      applicantName: `${applicantUser.firstName} ${applicantUser.lastName}`,
+    };
+  });
 
   const needsReviewers = applicationsWithAssignments.filter(
     (item) => item.assignments.length < 2,
@@ -285,103 +272,3 @@ export async function calculateBootcampAssignmentPlan(
 
   return plan;
 }
-
-function planItemToAssignments(
-  item: AutoAssignmentPlanItem,
-): AppReviewAssignment[] {
-  const assignments: AppReviewAssignment[] = [];
-
-  if (item.reviewer1 && !item.reviewer1.isExisting) {
-    assignments.push({
-      id: uuidv4(),
-      assignmentType: "review",
-      applicantId: item.applicantId,
-      applicationResponseId: item.applicationResponseId,
-      forRole: ApplicantRole.Bootcamp,
-      formId: item.formId,
-      reviewerId: item.reviewer1.id,
-    });
-  }
-
-  if (item.reviewer2 && !item.reviewer2.isExisting) {
-    assignments.push({
-      id: uuidv4(),
-      assignmentType: "review",
-      applicantId: item.applicantId,
-      applicationResponseId: item.applicationResponseId,
-      forRole: ApplicantRole.Bootcamp,
-      formId: item.formId,
-      reviewerId: item.reviewer2.id,
-    });
-  }
-
-  return assignments;
-}
-
-export async function makeAssignmentsFromPlan(plan: AutoAssignmentPlanItem[]) {
-  const assignments = [];
-  for (const item of plan) {
-    assignments.push(...planItemToAssignments(item));
-  }
-
-  const CHUNK_SIZE = 250;
-  for (let i = 0; i < assignments.length; i += CHUNK_SIZE) {
-    const chunk = assignments.slice(i, i + CHUNK_SIZE);
-
-    const batch = writeBatch(db);
-    chunk.forEach((assignment) =>
-      batch.set(
-        doc(
-          appCollection(FirestoreCollection.ReviewAssignments),
-          assignment.id,
-        ),
-        assignment,
-      ),
-    );
-    await batch.commit();
-  }
-}
-
-// export async function deleteReviewAssignmentsAndDataForForm(formId: string) {
-//   const reviewAssignmentsCollection = collection(
-//     db,
-//     REVIEW_ASSIGNMENT_COLLECTION,
-//   );
-//   const reviewDataCollection = collection(db, REVIEW_DATA_COLLECTION);
-
-//   const assignmentsQuery = query(
-//     reviewAssignmentsCollection,
-//     where("formId", "==", formId),
-//   );
-//   const dataQuery = query(
-//     reviewDataCollection,
-//     where("applicationFormId", "==", formId),
-//   );
-
-//   const assignments = await getDocs(assignmentsQuery);
-//   const reviewData = await getDocs(dataQuery);
-
-//   const forms = new Set<string>();
-
-//   assignments.forEach((doc) => {
-//     const assignment = doc.data() as AppReviewAssignment;
-//     forms.add(assignment.formId);
-//   });
-//   reviewData.forEach((doc) => {
-//     const review = doc.data() as ApplicationReviewData;
-//     forms.add(review.applicationFormId);
-//   });
-
-//   if (
-//     confirm(
-//       `This will delete ${reviewData.docs.length} review data docs and ${assignments.docs.length} assignment docs. Forms impacted: ${[...forms]}`,
-//     )
-//   ) {
-//     await runTransaction(db, async (transaction) => {
-//       assignments.forEach((doc) => transaction.delete(doc.ref));
-//       reviewData.forEach((doc) => transaction.delete(doc.ref));
-//     });
-//   } else {
-//     throw new Error("Cancelled");
-//   }
-// }

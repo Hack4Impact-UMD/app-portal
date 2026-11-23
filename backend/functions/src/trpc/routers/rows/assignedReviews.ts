@@ -9,10 +9,10 @@ import {
   isReviewCapable,
   assignedUserName,
   requireUser,
+  userSummary,
 } from "./helpers";
 import { loadForm, loadUsers, loadResponse } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
-import type { ApplicantProfile } from "./types";
 
 export const assignedReviews = superReviewerProcedure
   .input(z.object({ responseId: z.string() }))
@@ -66,7 +66,7 @@ export const assignedReviews = superReviewerProcedure
     });
 
     return {
-      applicant: requireUser(users, response.userId) as ApplicantProfile,
+      applicant: userSummary(requireUser(users, response.userId)),
       response,
       numReviewed: reviewData.filter((r) => r.submitted).length,
       rows,

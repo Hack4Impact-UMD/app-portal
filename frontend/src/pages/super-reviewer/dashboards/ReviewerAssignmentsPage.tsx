@@ -6,7 +6,6 @@ import { useReviewerAssignments } from "@/components/dor/ReviewerAssignmentsDash
 import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
 import { Button } from "@/components/ui/button";
-import { reviewingFor } from "@/services/reviewersService";
 
 export function ReviewerAssignmentsPage() {
   const [statusFilter, setStatusFilter] = useState<
@@ -45,7 +44,7 @@ export function ReviewerAssignmentsPage() {
           <div>
             <p className="text-muted-foreground mb-3">ROLES ASSIGNED</p>
             <div className="flex flex-wrap gap-1">
-              {reviewingFor(reviewer).map((role, i) => (
+              {reviewer.roles.map((role, i) => (
                 <ApplicantRolePill key={i} role={role} />
               ))}
             </div>
@@ -80,8 +79,8 @@ export function ReviewerAssignmentsPage() {
           </Button>
         </div>
         <ReviewerAssignmentsTable
-          reviewerId={reviewerId!}
-          formId={formId!}
+          reviewerId={reviewerId}
+          formId={formId}
           search=""
           statusFilter={statusFilter}
         />

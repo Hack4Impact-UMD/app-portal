@@ -19,8 +19,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAuth } from "@/hooks/useAuth";
-import { createInterviewData } from "@/services/interviewDataService";
+import { trpcClient } from "@/config/trpc";
 
 import type { InterviewAssignmentRow } from "./useRows";
 import { useRows } from "./useRows";
@@ -38,7 +37,6 @@ export default function ReviewerInterviewsTable({
   rowCount = 20,
   statusFilter = "all",
 }: ReviewerApplicationsTableProps) {
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [pagination, setPagination] = useState({
@@ -49,7 +47,6 @@ export default function ReviewerInterviewsTable({
   const handleInterview = useCallback(
     async (
       appInterviewData: ApplicationInterviewData | undefined,
-      applicantId: string,
       responseId: string,
       role: ApplicantRole,
     ) => {
@@ -59,24 +56,16 @@ export default function ReviewerInterviewsTable({
           `/admin/interview/f/${appInterviewData.applicationFormId}/${responseId}/${appInterviewData.id}`,
         );
       } else {
-        const interview: Omit<ApplicationInterviewData, "id"> = {
-          interviewScores: {},
-          applicantId: applicantId,
-          applicationFormId: formId,
+        const newinterview = await trpcClient.interviewData.create.mutate({
           applicationResponseId: responseId,
           forRole: role,
-          interviewerId: user!.id,
-          interviewerNotes: {},
-          submitted: false,
-        };
-
-        const newinterview = await createInterviewData(interview);
+        });
         navigate(
           `/admin/interview/f/${newinterview.applicationFormId}/${responseId}/${newinterview.id}`,
         );
       }
     },
-    [formId, navigate, user],
+    [navigate],
   );
 
   const columnHelper = createColumnHelper<InterviewAssignmentRow>();
@@ -154,12 +143,7 @@ export default function ReviewerInterviewsTable({
               return (
                 <Button
                   onClick={() =>
-                    handleInterview(
-                      review,
-                      rowData.applicant.id,
-                      rowData.responseId,
-                      rowData.role,
-                    )
+                    handleInterview(review, rowData.responseId, rowData.role)
                   }
                   variant="outline"
                   className="border-2 rounded-full"
@@ -171,12 +155,7 @@ export default function ReviewerInterviewsTable({
               return (
                 <Button
                   onClick={() =>
-                    handleInterview(
-                      review,
-                      rowData.applicant.id,
-                      rowData.responseId,
-                      rowData.role,
-                    )
+                    handleInterview(review, rowData.responseId, rowData.role)
                   }
                   variant="outline"
                   className="border-2 rounded-full"

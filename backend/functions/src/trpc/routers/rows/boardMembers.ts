@@ -5,14 +5,13 @@ import {
 
 import { appCollection } from "../../../utils/firestore";
 import { superReviewerProcedure } from "./procedures";
-import type { AnyUserProfile } from "./types";
 
 export const boardMembers = superReviewerProcedure.query(async () => {
   const boardMembers = (
     await appCollection(FirestoreCollection.Users)
       .where("role", "==", PermissionRole.Board)
       .get()
-  ).docs.map((d) => d.data() as AnyUserProfile);
+  ).docs.map((d) => d.data());
 
   return boardMembers.map((boardMember, index) => ({
     index: 1 + index,
@@ -21,6 +20,9 @@ export const boardMembers = superReviewerProcedure.query(async () => {
       name: `${boardMember.firstName} ${boardMember.lastName}`,
       email: boardMember.email,
     },
-    applicantRoles: boardMember.applicantRoles ?? [],
+    applicantRoles:
+      boardMember.role === PermissionRole.Board
+        ? (boardMember.applicantRoles ?? [])
+        : [],
   }));
 });

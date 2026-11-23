@@ -1,6 +1,5 @@
 import type { ApplicationInterviewData } from "@app-portal/shared/types";
 import {
-  queryOptions,
   skipToken,
   useMutation,
   useQuery,
@@ -8,116 +7,44 @@ import {
 } from "@tanstack/react-query";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import {
-  getInterviewDataById,
-  getInterviewDataForResponse,
-  getInterviewDataForForm,
-  updateInterviewData,
-  getInterviewDataForInterviewer,
-} from "@/services/interviewDataService";
+import { trpc, trpcClient } from "@/config/trpc";
 
-const interviewDataRoot = "interview-data" as const;
-
-const interviewDataQueries = {
-  root: [interviewDataRoot] as const,
-  detail: (id?: string) =>
-    queryOptions({
-      queryKey: [interviewDataRoot, "id", id] as const,
-      queryFn: id ? () => getInterviewDataById(id) : skipToken,
-    }),
-  byApplicationResponse: (applicationResponseId?: string) =>
-    queryOptions({
-      queryKey: [
-        interviewDataRoot,
-        "application-response",
-        applicationResponseId,
-      ] as const,
-      queryFn: applicationResponseId
-        ? () => getInterviewDataForResponse(applicationResponseId)
-        : skipToken,
-    }),
-  byForm: (formId?: string) =>
-    queryOptions({
-      queryKey: [interviewDataRoot, "form", formId] as const,
-      queryFn: formId ? () => getInterviewDataForForm(formId) : skipToken,
-    }),
-  byInterviewer: (formId?: string, interviewerId?: string) =>
-    queryOptions({
-      queryKey: [
-        interviewDataRoot,
-        "interviewer",
-        "interviewer-id",
-        interviewerId,
-        "form",
-        formId,
-      ] as const,
-      queryFn:
-        formId && interviewerId
-          ? () => getInterviewDataForInterviewer(formId, interviewerId)
-          : skipToken,
-    }),
-  mine: (formId?: string, interviewerId?: string) =>
-    queryOptions({
-      queryKey: [
-        interviewDataRoot,
-        "me",
-        "interviewer",
-        interviewerId,
-        "form",
-        formId,
-      ] as const,
-      queryFn:
-        formId && interviewerId
-          ? () => getInterviewDataForInterviewer(formId, interviewerId)
-          : skipToken,
-    }),
-};
+type InterviewDataPatch = Partial<
+  Pick<
+    ApplicationInterviewData,
+    "interviewScores" | "interviewerNotes" | "submitted"
+  >
+>;
 
 export function useInterviewData(interviewDataId?: string) {
-  return useQuery(interviewDataQueries.detail(interviewDataId));
+  return useQuery(
+    trpc.interviewData.get.queryOptions(
+      interviewDataId ? { id: interviewDataId } : skipToken,
+    ),
+  );
 }
 
 export function useUpdateInterviewData(interviewDataId: string) {
   const queryClient = useQueryClient();
+  const queryKey = trpc.interviewData.get.queryKey({ id: interviewDataId });
 
   return useMutation({
-    mutationFn: async (
-      update: Partial<Omit<ApplicationInterviewData, "id">>,
-    ) => {
-      await updateInterviewData(interviewDataId, update);
-    },
+    mutationFn: (patch: InterviewDataPatch) =>
+      trpcClient.interviewData.update.mutate({ id: interviewDataId, patch }),
     onMutate: async (newData) => {
-      const interviewDataKey =
-        interviewDataQueries.detail(interviewDataId).queryKey;
-
-      await queryClient.cancelQueries({
-        queryKey: interviewDataKey,
-      });
-      const previousData =
-        queryClient.getQueryData<ApplicationInterviewData>(interviewDataKey);
-      queryClient.setQueryData<ApplicationInterviewData>(
-        interviewDataKey,
-        (old) => {
-          if (!old) return undefined;
-          return {
-            ...old,
-            ...newData,
-          };
-        },
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData(queryKey);
+      queryClient.setQueryData(queryKey, (old) =>
+        old ? { ...old, ...newData } : undefined,
       );
       return { previousData };
     },
     onError: (_err, _newData, context) => {
-      queryClient.setQueryData(
-        interviewDataQueries.detail(interviewDataId).queryKey,
-        context?.previousData,
-      );
+      queryClient.setQueryData(queryKey, context?.previousData);
       throwErrorToast("Failed to update interview!");
     },
     onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: interviewDataQueries.detail(interviewDataId).queryKey,
-      });
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 }

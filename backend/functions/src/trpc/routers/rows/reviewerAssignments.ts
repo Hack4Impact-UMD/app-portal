@@ -1,7 +1,4 @@
-import {
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
+import { FirestoreCollection } from "@app-portal/shared/constants";
 import type {
   AppReviewAssignment,
   ApplicationReviewData,
@@ -13,10 +10,14 @@ import { z } from "zod";
 import type { ApplicationForm } from "../../../models/appForm";
 import { queryWhereIn } from "../../../utils/batch";
 import { appCollection } from "../../../utils/firestore";
-import { REVIEW_CAPABLE_ROLES, scoreWarning, requireUser } from "./helpers";
+import {
+  scoreWarning,
+  requireUser,
+  reviewingFor,
+  userSummary,
+} from "./helpers";
 import { loadForm, loadUsers } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
-import type { ApplicantProfile, ReviewCapableProfile } from "./types";
 
 async function reviewAssignmentRows(
   assignments: AppReviewAssignment[],
@@ -43,18 +44,12 @@ async function reviewAssignmentRows(
 
   return assignments.map((assignment, index) => {
     const applicant = requireUser(applicants, assignment.applicantId);
-    if (applicant.role !== PermissionRole.Applicant) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `User ${applicant.id} is not an applicant`,
-      });
-    }
     const review = reviewsByAssignment.get(
       `${assignment.applicantId}:${assignment.forRole}:${assignment.reviewerId}`,
     );
 
     return {
-      applicant: applicant as ApplicantProfile,
+      applicant: userSummary(applicant),
       applicantId: assignment.applicantId,
       applicantName: `${applicant.firstName} ${applicant.lastName}`,
       index: 1 + index,
@@ -92,15 +87,15 @@ export const reviewerAssignments = superReviewerProcedure
         .then((s) => s.docs.map((d) => d.data())),
     ]);
 
-    if (!reviewer || !REVIEW_CAPABLE_ROLES.includes(reviewer.role)) {
+    if (!reviewer) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "User is not review capable",
+        message: "User not found",
       });
     }
 
     return {
-      reviewer: reviewer as ReviewCapableProfile,
+      reviewer: { ...userSummary(reviewer), roles: reviewingFor(reviewer) },
       numReviewed: reviewerData.filter((r) => r.submitted).length,
       rows: await reviewAssignmentRows(assignments, form),
     };

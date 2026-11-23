@@ -18,8 +18,7 @@ type ProfileWithClientTimestamp<T> = T & { dateCreated: TimestampLike };
 export type ApplicantUserProfile =
   ProfileWithClientTimestamp<ApplicantUserProfileBase>;
 
-export type ReviewerUserProfile =
-  ProfileWithClientTimestamp<ReviewerUserProfileBase>;
+type ReviewerUserProfile = ProfileWithClientTimestamp<ReviewerUserProfileBase>;
 
 export type BoardUserProfile = ProfileWithClientTimestamp<BoardUserProfileBase>;
 
@@ -42,7 +41,7 @@ export interface ApplicationResponse extends ApplicationResponseBase {
 }
 
 export interface ApplicationForm extends ApplicationFormBase {
-  dueDate: Timestamp;
+  dueDate: TimestampLike;
 }
 
 export interface GradingJobPublic extends GradingJobPublicBase {

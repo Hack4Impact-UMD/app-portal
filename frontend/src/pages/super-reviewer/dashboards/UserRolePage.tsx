@@ -4,12 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import UserTable from "@/components/admin/UserTable";
 import Loading from "@/components/Loading";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { userQueries, useUsers } from "@/hooks/useUsers";
-import {
-  deleteUsers,
-  updateUserActiveStatus,
-  updateUserRoles,
-} from "@/services/userService";
+import { trpc, trpcClient } from "@/config/trpc";
+import { useUsers } from "@/hooks/useUsers";
 import type { UserProfile } from "@/types/types";
 
 function withRole(user: UserProfile, role: PermissionRole): UserProfile {
@@ -46,9 +42,9 @@ export default function UserRolePage() {
     }: {
       user: UserProfile;
       inactive: boolean;
-    }) => updateUserActiveStatus(user.id, inactive),
+    }) => trpcClient.users.setInactive.mutate({ id: user.id, inactive }),
     onMutate: async ({ user, inactive }) => {
-      const usersKey = userQueries.all.queryKey;
+      const usersKey = trpc.users.list.queryKey();
       await queryClient.cancelQueries({ queryKey: usersKey });
       const prevUsers = queryClient.getQueryData<UserProfile[]>(usersKey);
 
@@ -72,10 +68,10 @@ export default function UserRolePage() {
       console.error("Active status update failed");
       console.error(err);
       console.error("Update:", update);
-      queryClient.setQueryData(userQueries.all.queryKey, ctx?.prevUsers);
+      queryClient.setQueryData(trpc.users.list.queryKey(), ctx?.prevUsers);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: userQueries.root });
+      queryClient.invalidateQueries({ queryKey: trpc.users.pathKey() });
     },
   });
 
@@ -87,11 +83,14 @@ export default function UserRolePage() {
       users: UserProfile[];
       role: PermissionRole;
     }) => {
-      return updateUserRoles(users, role);
+      return trpcClient.users.setRole.mutate({
+        ids: users.map((u) => u.id),
+        role,
+      });
     },
     onMutate: async ({ users, role }) => {
-      const usersKey = userQueries.all.queryKey;
-      await queryClient.cancelQueries({ queryKey: userQueries.root });
+      const usersKey = trpc.users.list.queryKey();
+      await queryClient.cancelQueries({ queryKey: trpc.users.pathKey() });
       const prevUsers = queryClient.getQueryData<UserProfile[]>(usersKey);
       const uids = new Set(users.map((u) => u.id));
 
@@ -112,20 +111,20 @@ export default function UserRolePage() {
       console.error("Role update failed");
       console.error(err);
       console.error("Update:", update);
-      queryClient.setQueryData(userQueries.all.queryKey, ctx?.prevUsers);
+      queryClient.setQueryData(trpc.users.list.queryKey(), ctx?.prevUsers);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: userQueries.root });
+      queryClient.invalidateQueries({ queryKey: trpc.users.pathKey() });
     },
   });
 
   const { mutate: bulkDeleteUsers } = useMutation({
     mutationFn: (users: UserProfile[]) => {
-      return deleteUsers(users.map((u) => u.id));
+      return trpcClient.users.delete.mutate({ ids: users.map((u) => u.id) });
     },
     onMutate: async (users) => {
-      const usersKey = userQueries.all.queryKey;
-      await queryClient.cancelQueries({ queryKey: userQueries.root });
+      const usersKey = trpc.users.list.queryKey();
+      await queryClient.cancelQueries({ queryKey: trpc.users.pathKey() });
       const prevUsers = queryClient.getQueryData<UserProfile[]>(usersKey);
       const uids = users.map((u) => u.id);
 
@@ -146,10 +145,10 @@ export default function UserRolePage() {
       console.error("Delete failed");
       console.error(err);
       console.error("Update:", update);
-      queryClient.setQueryData(userQueries.all.queryKey, ctx?.prevUsers);
+      queryClient.setQueryData(trpc.users.list.queryKey(), ctx?.prevUsers);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: userQueries.root });
+      queryClient.invalidateQueries({ queryKey: trpc.users.pathKey() });
     },
   });
 

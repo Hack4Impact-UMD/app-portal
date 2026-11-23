@@ -7,3 +7,7 @@ export const superReviewerProcedure = roleProcedure([
   PermissionRole.SuperReviewer,
 ]);
 export const reviewCapableProcedure = roleProcedure(REVIEW_CAPABLE_ROLES);
+export const boardProcedure = roleProcedure([
+  PermissionRole.Board,
+  PermissionRole.SuperReviewer,
+]);

@@ -91,7 +91,7 @@ export default function InviteUsersDialog({
 
   function handleSave() {
     updateInvitedUsers(
-      { formId: form.id, invitedUsers: Array.from(selected) },
+      { id: form.id, invitedUsers: Array.from(selected) },
       {
         onSuccess: () => {
           throwSuccessToast("Invited users updated successfully!");

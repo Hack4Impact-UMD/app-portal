@@ -1,54 +1,37 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import type { RoleReviewRubric } from "@app-portal/shared/types";
 import {
-  queryOptions,
   skipToken,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 
-import {
-  getRoleRubricsForForm,
-  getRoleRubricsForFormRole,
-  uploadRubrics,
-} from "@/services/rubricService";
+import { trpc } from "@/config/trpc";
 
-const rubricRoot = "rubrics" as const;
-
-const rubricQueries = {
-  root: [rubricRoot] as const,
-  byForm: (formId?: string) =>
-    queryOptions({
-      queryKey: [rubricRoot, "form", formId] as const,
-      queryFn: formId ? () => getRoleRubricsForForm(formId) : skipToken,
-    }),
-  byFormRole: (formId?: string, role?: ApplicantRole) =>
-    queryOptions({
-      queryKey: [rubricRoot, "form", formId, "role", role] as const,
-      queryFn:
-        formId && role
-          ? () => getRoleRubricsForFormRole(formId, role)
-          : skipToken,
-    }),
-};
-
-export const useUploadRubrics = () => {
+export function useUploadRubrics() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ rubrics }: { rubrics: RoleReviewRubric[] }) =>
-      uploadRubrics(rubrics),
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: rubricQueries.root });
-    },
-  });
-};
+  return useMutation(
+    trpc.application.uploadRubrics.mutationOptions({
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.rubrics.pathKey() });
+      },
+    }),
+  );
+}
 
 export function useRubricsForForm(formId?: string) {
-  return useQuery(rubricQueries.byForm(formId));
+  return useQuery(
+    trpc.rubrics.list.queryOptions(
+      formId ? { formId, kind: "review" } : skipToken,
+    ),
+  );
 }
 
 export function useRubricsForFormRole(formId?: string, role?: ApplicantRole) {
-  return useQuery(rubricQueries.byFormRole(formId, role));
+  return useQuery(
+    trpc.rubrics.list.queryOptions(
+      formId && role ? { formId, role, kind: "review" } : skipToken,
+    ),
+  );
 }

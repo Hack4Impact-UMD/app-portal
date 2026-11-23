@@ -1,6 +1,6 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
-import { ReviewStatus } from "@app-portal/shared/constants";
 import type { ApplicationReviewData } from "@app-portal/shared/types";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   createColumnHelper,
@@ -19,9 +19,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAuth } from "@/hooks/useAuth";
-import { getApplicationForm } from "@/services/applicationFormsService";
-import { createReviewData } from "@/services/reviewDataService";
+import { trpc, trpcClient } from "@/config/trpc";
 import { displayTimestamp } from "@/utils/dates";
 
 import type { AssignmentRow } from "./useRows";
@@ -41,7 +39,7 @@ export default function ReviewerApplicationsTable({
   statusFilter = "all",
 }: ReviewerApplicationsTableProps) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -51,38 +49,28 @@ export default function ReviewerApplicationsTable({
   const handleReview = useCallback(
     async (
       appReviewData: ApplicationReviewData | undefined,
-      applicantId: string,
       responseId: string,
       role: ApplicantRole,
     ) => {
-      const form = await getApplicationForm(formId);
+      const form = await queryClient.fetchQuery(
+        trpc.forms.get.queryOptions({ id: formId }),
+      );
       if (appReviewData) {
         // there's an existing review, edit it
         navigate(
           `/admin/review/f/${appReviewData.applicationFormId}/${responseId}/${form.sections[0].sectionId}/${appReviewData.id}`,
         );
       } else {
-        const review = {
-          applicantScores: {},
-          applicantId: applicantId,
-          applicationFormId: formId,
+        const newReview = await trpcClient.reviewData.create.mutate({
           applicationResponseId: responseId,
           forRole: role,
-          reviewStatus: ReviewStatus.NotReviewed,
-          reviewerId: user!.id,
-          reviewerNotes: {},
-          submitted: false,
-        };
-
-        console.log(review);
-
-        const newReview = await createReviewData(review);
+        });
         navigate(
           `/admin/review/f/${newReview.applicationFormId}/${responseId}/${form.sections[0].sectionId}/${newReview.id}`,
         );
       }
     },
-    [formId, navigate, user],
+    [formId, navigate, queryClient],
   );
 
   const columnHelper = createColumnHelper<AssignmentRow>();
@@ -175,12 +163,7 @@ export default function ReviewerApplicationsTable({
               return (
                 <Button
                   onClick={() =>
-                    handleReview(
-                      review,
-                      rowData.applicant.id,
-                      rowData.responseId,
-                      rowData.role,
-                    )
+                    handleReview(review, rowData.responseId, rowData.role)
                   }
                   variant="outline"
                   className="border-2 rounded-full"
@@ -192,12 +175,7 @@ export default function ReviewerApplicationsTable({
               return (
                 <Button
                   onClick={() =>
-                    handleReview(
-                      review,
-                      rowData.applicant.id,
-                      rowData.responseId,
-                      rowData.role,
-                    )
+                    handleReview(review, rowData.responseId, rowData.role)
                   }
                   variant="outline"
                   className="border-2 rounded-full"

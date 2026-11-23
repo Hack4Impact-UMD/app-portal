@@ -102,7 +102,7 @@ const AssessmentSubmit: React.FC<AssessmentSubmitProps> = ({
         repoURL: repoPath,
       },
       {
-        onSuccess: (jobId) => {
+        onSuccess: ({ jobId }) => {
           onChange(jobId);
         },
       },

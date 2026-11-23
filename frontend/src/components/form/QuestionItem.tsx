@@ -144,7 +144,7 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
         isRequired={!question.optional}
         label={question.secondaryText}
         value={typeof response === "string" ? response : ""}
-        options={(question as OptionQuestion).questionOptions ?? []}
+        options={question.questionOptions ?? []}
         onOptionSelect={handleChoiceSelect}
       />
     );
@@ -162,7 +162,7 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
         isRequired={!question.optional}
         label={question.secondaryText}
         value={Array.isArray(response) ? response : []}
-        options={(question as OptionQuestion).questionOptions ?? []}
+        options={question.questionOptions ?? []}
         onOptionSelect={handleMultiSelect}
       />
     );

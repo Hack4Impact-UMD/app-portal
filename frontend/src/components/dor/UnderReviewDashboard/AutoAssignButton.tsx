@@ -1,3 +1,4 @@
+import { ApplicantRole } from "@app-portal/shared/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckIcon, TriangleAlertIcon } from "lucide-react";
 import { useState } from "react";
@@ -13,16 +14,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { reviewAssignmentQueries } from "@/hooks/useReviewAssignments";
-import type { AutoAssignmentPlanItem } from "@/services/autoAssignmentService";
-import {
-  calculateBootcampAssignmentPlan,
-  makeAssignmentsFromPlan,
-} from "@/services/autoAssignmentService";
+import { trpc } from "@/config/trpc";
+import type { RouterOutputs } from "@/types/trpc";
 import type { ReviewCapableUser } from "@/types/types";
 
 import ExemptReviewersDialog from "./ExemptReviewersDialog";
 import { underReviewRowsQueryRoot } from "./useRows";
+
+type AutoAssignmentPlanItem =
+  RouterOutputs["reviewAssignments"]["autoAssignPlan"][number];
+
+function planToAssignments(plan: AutoAssignmentPlanItem[]) {
+  return plan.flatMap((item) =>
+    [item.reviewer1, item.reviewer2]
+      .filter((r): r is NonNullable<typeof r> => !!r && !r.isExisting)
+      .map((r) => ({
+        applicationResponseId: item.applicationResponseId,
+        reviewerId: r.id,
+        forRole: ApplicantRole.Bootcamp,
+      })),
+  );
+}
 
 interface AutoAssignButtonProps {
   formId: string;
@@ -37,32 +49,36 @@ export function AutoAssignButton({ formId, disabled }: AutoAssignButtonProps) {
   >(null);
   const queryClient = useQueryClient();
 
-  const makeAssignmentsMutation = useMutation({
-    mutationFn: async ({ plan }: { plan: AutoAssignmentPlanItem[] }) => {
-      await makeAssignmentsFromPlan(plan);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: underReviewRowsQueryRoot,
-      });
-      queryClient.invalidateQueries({
-        queryKey: reviewerRowsQueryRoot,
-      });
-      queryClient.invalidateQueries({
-        queryKey: reviewAssignmentQueries.root,
-      });
-      throwSuccessToast("Assignments successfully created from plan!");
-      setShowPreviewDialog(false);
-    },
-    onError: (err) => {
-      throwErrorToast("Failed to make assignments!");
-      console.error(err);
-    },
-  });
+  const createManyMutation = useMutation(
+    trpc.reviewAssignments.createMany.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: underReviewRowsQueryRoot,
+        });
+        queryClient.invalidateQueries({
+          queryKey: reviewerRowsQueryRoot,
+        });
+        queryClient.invalidateQueries({
+          queryKey: trpc.reviewAssignments.pathKey(),
+        });
+        throwSuccessToast("Assignments successfully created from plan!");
+        setShowPreviewDialog(false);
+      },
+      onError: (err) => {
+        throwErrorToast("Failed to make assignments!");
+        console.error(err);
+      },
+    }),
+  );
 
   const calculatePlanMutation = useMutation({
     mutationFn: async ({ exempt }: { exempt: ReviewCapableUser[] }) => {
-      return await calculateBootcampAssignmentPlan(formId, exempt);
+      return await queryClient.fetchQuery(
+        trpc.reviewAssignments.autoAssignPlan.queryOptions({
+          formId,
+          exemptReviewerIds: exempt.map((r) => r.id),
+        }),
+      );
     },
     onSuccess: (plan) => {
       setAssignmentPlan(plan);
@@ -158,16 +174,18 @@ export function AutoAssignButton({ formId, disabled }: AutoAssignButtonProps) {
                   <Button
                     variant="outline"
                     onClick={() => setShowPreviewDialog(false)}
-                    disabled={makeAssignmentsMutation.isPending}
+                    disabled={createManyMutation.isPending}
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={() =>
-                      makeAssignmentsMutation.mutate({ plan: assignmentPlan })
+                      createManyMutation.mutate(
+                        planToAssignments(assignmentPlan),
+                      )
                     }
                     disabled={
-                      makeAssignmentsMutation.isPending ||
+                      createManyMutation.isPending ||
                       assignmentPlan.every((p) => p.skipped)
                     }
                   >

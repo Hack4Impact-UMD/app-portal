@@ -5,13 +5,14 @@ import {
 import {
   calculateInterviewScore,
   calculateReviewScore,
+  isInternalApplicant,
 } from "@app-portal/shared/utils";
 import { z } from "zod";
 
 import { groupBy, queryWhereIn } from "../../../utils/batch";
 import { appCollection } from "../../../utils/firestore";
 import { roleProcedure } from "../../init";
-import { REVIEW_CAPABLE_ROLES, scoreWarning, requireUser } from "./helpers";
+import { isReviewCapable, scoreWarning, requireUser } from "./helpers";
 import {
   loadForm,
   loadExpandedSubmittedResponses,
@@ -20,7 +21,6 @@ import {
   loadBestGradingScores,
   loadUsers,
 } from "./loaders";
-import type { AnyUserProfile, ReviewCapableProfile } from "./types";
 
 export const qualified = roleProcedure([
   PermissionRole.SuperReviewer,
@@ -30,7 +30,7 @@ export const qualified = roleProcedure([
   .query(async ({ input: { formId }, ctx }) => {
     const boardRoles =
       ctx.user.role === PermissionRole.Board
-        ? ((ctx.user as AnyUserProfile).applicantRoles ?? [])
+        ? (ctx.user.applicantRoles ?? [])
         : undefined;
 
     const [form, expanded, qualifiedStatuses] = await Promise.all([
@@ -102,10 +102,7 @@ export const qualified = roleProcedure([
       );
       const assignedInterviewers = assignments
         .map((a) => interviewers.get(a.interviewerId))
-        .filter(
-          (u): u is AnyUserProfile =>
-            u !== undefined && REVIEW_CAPABLE_ROLES.includes(u.role),
-        ) as ReviewCapableProfile[];
+        .filter((u) => u !== undefined && isReviewCapable(u));
 
       const interviews = interviewsByKey.get(key) ?? [];
       const individualScores = interviews
@@ -143,7 +140,7 @@ export const qualified = roleProcedure([
         responseId: app.id,
         interviews,
         status: statuses.get(key),
-        internal: user.isInternal ?? false,
+        internal: isInternalApplicant(user),
       };
     });
   });

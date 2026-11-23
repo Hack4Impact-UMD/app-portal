@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 import "../src/index";
 import type { ApplicationForm } from "../src/models/appForm";
 import type { ApplicationResponse } from "../src/models/appResponse";
+import type { UserProfile } from "../src/models/user";
 import type { Context } from "../src/trpc/context";
 import { appRouter } from "../src/trpc/routers";
 import { appCollection } from "../src/utils/firestore";
@@ -60,6 +61,27 @@ type CreateUserOptions = {
   email?: string;
 };
 
+function profileFor(
+  role: PermissionRole,
+  base: Omit<UserProfile, "role">,
+): UserProfile {
+  switch (role) {
+    case PermissionRole.Applicant:
+      return {
+        ...base,
+        role,
+        activeApplications: [],
+        inactiveApplications: [],
+      };
+    case PermissionRole.Reviewer:
+      return { ...base, role, applicantRolePreferences: [] };
+    case PermissionRole.Board:
+      return { ...base, role, applicantRoles: [] };
+    case PermissionRole.SuperReviewer:
+      return { ...base, role };
+  }
+}
+
 export async function createUser({
   role = PermissionRole.Applicant,
   emailVerified = true,
@@ -68,17 +90,18 @@ export async function createUser({
   const { uid } = await admin
     .auth()
     .createUser({ email, password: PASSWORD, emailVerified });
-  await appCollection(FirestoreCollection.Users).doc(uid).set({
-    id: uid,
-    email,
-    firstName: "Test",
-    lastName: role,
-    role,
-    dateCreated: Timestamp.now(),
-    activeApplications: [],
-    inactiveApplications: [],
-    inactive: false,
-  });
+  await appCollection(FirestoreCollection.Users)
+    .doc(uid)
+    .set(
+      profileFor(role, {
+        id: uid,
+        email,
+        firstName: "Test",
+        lastName: role,
+        dateCreated: Timestamp.now(),
+        inactive: false,
+      }),
+    );
   return { uid, email, idToken: await signIn(email) };
 }
 

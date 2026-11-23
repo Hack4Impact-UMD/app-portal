@@ -13,9 +13,7 @@ import SortableHeader from "@/components/tables/SortableHeader";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { Button } from "@/components/ui/button";
-import { boardMemberQueries } from "@/hooks/useBoardMembers";
-import { getBoardMemberById } from "@/services/boardService";
-import { setBoardApplicantRoles } from "@/services/userService";
+import { trpc, trpcClient } from "@/config/trpc";
 
 import { BoardRoleSelect } from "./BoardRoleSelect";
 import type { BoardRow } from "./useRows";
@@ -42,14 +40,15 @@ export function BoardMembersTable({
       boardId: string;
       pageIndex: number;
     }) => {
-      const prevRoles =
-        (await getBoardMemberById(boardId)).applicantRoles ?? [];
-      const newRoles = [...prevRoles, roleToAdd];
-      return await setBoardApplicantRoles(boardId, newRoles);
+      return await trpcClient.users.toggleRolePreference.mutate({
+        id: boardId,
+        role: roleToAdd,
+        enabled: true,
+      });
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: boardMemberQueries.root }),
+        queryClient.invalidateQueries({ queryKey: trpc.users.get.pathKey() }),
         queryClient.invalidateQueries({ queryKey: boardRowsQueryRoot }),
       ]);
       throwSuccessToast("Successfully added role!");
@@ -69,14 +68,15 @@ export function BoardMembersTable({
       boardId: string;
       pageIndex: number;
     }) => {
-      const prevRoles =
-        (await getBoardMemberById(boardId)).applicantRoles ?? [];
-      const newRoles = prevRoles.filter((role) => role !== roleToRemove);
-      return await setBoardApplicantRoles(boardId, newRoles);
+      return await trpcClient.users.toggleRolePreference.mutate({
+        id: boardId,
+        role: roleToRemove,
+        enabled: false,
+      });
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: boardMemberQueries.root }),
+        queryClient.invalidateQueries({ queryKey: trpc.users.get.pathKey() }),
         queryClient.invalidateQueries({ queryKey: boardRowsQueryRoot }),
       ]);
       throwSuccessToast("Successfully removed role!");

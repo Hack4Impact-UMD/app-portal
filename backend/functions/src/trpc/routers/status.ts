@@ -5,14 +5,80 @@ import {
   PermissionRole,
 } from "@app-portal/shared/constants";
 import { DecisionConfirmationSchema } from "@app-portal/shared/types";
+import { isDecided } from "@app-portal/shared/utils";
 import { TRPCError } from "@trpc/server";
 import { logger } from "firebase-functions";
 import { z } from "zod";
 
+import { db } from "../../index";
 import { appCollection } from "../../utils/firestore";
 import { authedProcedure, roleProcedure, router } from "../init";
+import { boardProcedure, superReviewerProcedure } from "./rows/procedures";
 
 export const statusRouter = router({
+  update: superReviewerProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        patch: z
+          .object({
+            status: z.enum(ReviewStatus),
+            isQualified: z.boolean(),
+          })
+          .partial(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const ref = appCollection(FirestoreCollection.ApplicationStatus).doc(
+        input.id,
+      );
+      if (!(await ref.get()).exists) throw new TRPCError({ code: "NOT_FOUND" });
+      await ref.update(input.patch);
+    }),
+
+  rejectUndecided: superReviewerProcedure
+    .input(z.object({ formId: z.string().min(1) }))
+    .mutation(async ({ input }) => {
+      const undecided = (
+        await appCollection(FirestoreCollection.ApplicationStatus)
+          .where("formId", "==", input.formId)
+          .get()
+      ).docs.filter((d) => !isDecided(d.data().status));
+
+      const BATCH_SIZE = 250;
+      for (let i = 0; i < undecided.length; i += BATCH_SIZE) {
+        const batch = db.batch();
+        for (const d of undecided.slice(i, i + BATCH_SIZE)) {
+          batch.update(d.ref, { status: ReviewStatus.Denied });
+        }
+        await batch.commit();
+      }
+      return { count: undecided.length };
+    }),
+
+  listForForm: boardProcedure
+    .input(z.object({ formId: z.string().min(1) }))
+    .query(async ({ input }) => {
+      return (
+        await appCollection(FirestoreCollection.ApplicationStatus)
+          .where("formId", "==", input.formId)
+          .get()
+      ).docs.map((d) => d.data());
+    }),
+
+  getConfirmation: authedProcedure
+    .input(z.object({ responseId: z.string().min(1) }))
+    .query(async ({ input, ctx }) => {
+      const confirmation = (
+        await appCollection(FirestoreCollection.DecisionStatus)
+          .where("userId", "==", ctx.token.uid)
+          .where("responseId", "==", input.responseId)
+          .limit(1)
+          .get()
+      ).docs[0]?.data();
+      return confirmation ?? null;
+    }),
+
   get: authedProcedure
     .input(z.object({ responseId: z.string(), role: z.enum(ApplicantRole) }))
     .query(async ({ input: { responseId, role }, ctx }) => {

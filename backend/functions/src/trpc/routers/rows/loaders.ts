@@ -14,8 +14,7 @@ import type { ApplicationForm } from "../../../models/appForm";
 import type { ApplicationResponse } from "../../../models/appResponse";
 import { getDocsById, groupBy, queryWhereIn } from "../../../utils/batch";
 import { appCollection } from "../../../utils/firestore";
-import { REVIEW_CAPABLE_ROLES } from "./helpers";
-import type { AnyUserProfile } from "./types";
+import { isReviewCapable, REVIEW_CAPABLE_ROLES } from "./helpers";
 
 export async function loadForm(formId: string): Promise<ApplicationForm> {
   const form = (
@@ -104,9 +103,7 @@ export async function loadPreviouslyAppliedCounts(userIds: string[]) {
 }
 
 export async function loadUsers(ids: Iterable<string>) {
-  return getDocsById(appCollection(FirestoreCollection.Users), ids) as Promise<
-    Map<string, AnyUserProfile>
-  >;
+  return getDocsById(appCollection(FirestoreCollection.Users), ids);
 }
 
 export async function loadReviewCapableUsers() {
@@ -117,7 +114,8 @@ export async function loadReviewCapableUsers() {
       .where("role", "in", REVIEW_CAPABLE_ROLES)
       .get()
   ).docs
-    .map((d) => d.data() as AnyUserProfile)
+    .map((d) => d.data())
+    .filter(isReviewCapable)
     .filter((u) => !u.inactive);
 }
 

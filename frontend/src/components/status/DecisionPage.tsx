@@ -9,16 +9,13 @@ import Loading from "@/components/Loading";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { Button } from "@/components/ui/button";
+import { trpc, trpcClient } from "@/config/trpc";
 import { useApplicationFormForResponseId } from "@/hooks/useApplicationForm";
 import { useMyApplicationStatus } from "@/hooks/useApplicationStatus";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  decisionConfirmationQueries,
-  useDecisionConfirmationForResponse,
-} from "@/hooks/useDecisionConfirmation";
+import { useDecisionConfirmationForResponse } from "@/hooks/useDecisionConfirmation";
 import ErrorPage from "@/pages/ErrorPage";
 import NotFoundPage from "@/pages/NotFoundPage";
-import { createDecisionConfirmation } from "@/services/decisionConfirmationService";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
 
 const allowedStatuses: Set<string> = new Set([
@@ -68,7 +65,7 @@ function DecisionPage() {
         internalStatusId: appStatus.id,
       };
 
-      return createDecisionConfirmation(decisionConfirmation);
+      return trpcClient.status.confirmDecision.mutate(decisionConfirmation);
     },
     onSuccess: (_, status) => {
       throwSuccessToast(
@@ -76,12 +73,9 @@ function DecisionPage() {
           ? "Decision to join confirmed!"
           : "Decision to not join confirmed.",
       );
-      if (user && responseId) {
+      if (responseId) {
         queryClient.invalidateQueries({
-          queryKey: decisionConfirmationQueries.byUserResponse(
-            user.id,
-            responseId,
-          ).queryKey,
+          queryKey: trpc.status.getConfirmation.queryKey({ responseId }),
         });
       }
     },
@@ -122,8 +116,7 @@ function DecisionPage() {
             <h2 className="text-blue text-2xl">
               Your Hack4Impact-UMD {form.semester}
               <br></br>
-              {displayApplicantRoleNameNoEmoji(role as ApplicantRole)}{" "}
-              Application
+              {displayApplicantRoleNameNoEmoji(role)} Application
             </h2>
           </div>
         </div>

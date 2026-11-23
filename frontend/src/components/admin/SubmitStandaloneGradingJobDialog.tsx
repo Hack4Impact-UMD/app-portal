@@ -69,7 +69,7 @@ export default function SubmitStandaloneGradingJobDialog({
           testRepo: testPath,
         },
         {
-          onSuccess: (jobId) => {
+          onSuccess: ({ jobId }) => {
             throwSuccessToast(
               `Grading job queued successfully! Job ID: ${jobId}`,
             );

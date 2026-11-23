@@ -1,6 +1,5 @@
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { ApplicationStatus, QuestionType } from "@app-portal/shared/constants";
-import type { QuestionResponse } from "@app-portal/shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Timestamp } from "firebase/firestore";
 import { useEffect, useMemo, useState, useCallback } from "react";
@@ -8,22 +7,17 @@ import { Navigate, Outlet, useParams } from "react-router-dom";
 
 import Loading from "@/components/Loading";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { trpc } from "@/config/trpc";
 import type { SaveStatus } from "@/contexts/formContext";
 import { FormContext } from "@/contexts/formContext";
-import {
-  applicationResponseQueries,
-  useMyApplicationResponseAndForm,
-} from "@/hooks/useApplicationResponses";
-import { saveApplicationResponse } from "@/services/applicationResponsesService";
+import { useMyApplicationResponseAndForm } from "@/hooks/useApplicationResponses";
 import type { ApplicationResponse } from "@/types/types";
 
 export default function FormProvider() {
   const queryClient = useQueryClient();
   const { formId, sectionId } = useParams();
   const { data, isPending, error } = useMyApplicationResponseAndForm(formId);
-  const saveMutation = useMutation({
-    mutationFn: (r: ApplicationResponse) => saveApplicationResponse(r),
-  });
+  const saveMutation = useMutation(trpc.application.save.mutationOptions());
   const [response, setResponse] = useState<ApplicationResponse | undefined>();
   const [selectedRoles, setSelectedRoles] = useState<ApplicantRole[]>([]);
 
@@ -53,7 +47,7 @@ export default function FormProvider() {
       for (const section of data.response.sectionResponses) {
         const roleResponse = section.questions.find(
           (q) => q.questionId === rsid,
-        ) as QuestionResponse | undefined;
+        );
         if (roleResponse) {
           setSelectedRoles(roleResponse.response as ApplicantRole[]);
         }
@@ -80,7 +74,7 @@ export default function FormProvider() {
       throwErrorToast("Failed to save your application!");
     }
     await queryClient.invalidateQueries({
-      queryKey: applicationResponseQueries.root,
+      queryKey: trpc.application.pathKey(),
     });
   }, [response, saveMutation, queryClient]);
 

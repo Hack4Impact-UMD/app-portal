@@ -1,6 +1,9 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "import"],
+  "plugins": [
+    "typescript",
+    "import"
+  ],
   "categories": {
     "correctness": "off",
   },
@@ -95,6 +98,7 @@
     "typescript/no-require-imports": "error",
     "typescript/no-this-alias": "error",
     "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-unnecessary-type-assertion": "error",
     "typescript/no-unsafe-declaration-merging": "error",
     "typescript/no-unsafe-function-type": "error",
     "typescript/no-wrapper-object-types": "error",
@@ -130,13 +134,20 @@
         "fixStyle": "separate-type-imports",
       },
     ],
-    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+    "import/consistent-type-specifier-style": [
+      "error",
+      "prefer-top-level"
+    ],
     "typescript/no-inferrable-types": "error",
   },
   "overrides": [
     {
-      "files": ["frontend/**/*.{ts,tsx}"],
-      "plugins": ["react"],
+      "files": [
+        "frontend/**/*.{ts,tsx}"
+      ],
+      "plugins": [
+        "react"
+      ],
       "env": {
         "browser": true,
         "es2020": true,
@@ -157,23 +168,45 @@
             "paths": [
               {
                 "name": "firebase/firestore",
-                "importNames": ["collection", "collectionGroup"],
-                "message": "Use the typed app Firestore helper instead.",
+                "importNames": [
+                  "collection",
+                  "collectionGroup",
+                  "doc",
+                  "query",
+                  "getDoc",
+                  "getDocs",
+                  "setDoc",
+                  "addDoc",
+                  "updateDoc",
+                  "deleteDoc",
+                  "writeBatch",
+                  "runTransaction",
+                  "onSnapshot",
+                  "getFirestore",
+                ],
+                "message": "Firestore access goes through tRPC; only grading subscriptions may use it directly.",
               },
             ],
           },
         ],
       },
     },
-    // location of typed firestore helper on frontend
+    // live grading-job subscriptions are the only direct Firestore access
     {
-      "files": ["frontend/src/services/firestore.ts"],
+      "files": [
+        "frontend/src/config/firebase.ts",
+        "frontend/src/services/firestore.ts",
+        "frontend/src/services/gradingService.ts",
+        "frontend/src/hooks/useGrading.ts",
+      ],
       "rules": {
         "no-restricted-imports": "off",
       },
     },
     {
-      "files": ["backend/functions/**/*.{js,ts}"],
+      "files": [
+        "backend/functions/**/*.{js,ts}"
+      ],
       "env": {
         "node": true,
       },
@@ -195,7 +228,9 @@
     },
     // location of typed firestore helper on backend
     {
-      "files": ["backend/functions/src/utils/firestore.ts"],
+      "files": [
+        "backend/functions/src/utils/firestore.ts"
+      ],
       "rules": {
         "no-restricted-properties": "off",
       },

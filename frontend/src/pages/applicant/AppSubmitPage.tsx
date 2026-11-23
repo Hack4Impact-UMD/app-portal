@@ -1,6 +1,5 @@
 import type { ValidationError } from "@app-portal/shared/types";
 import { useMutation } from "@tanstack/react-query";
-import { Timestamp } from "firebase/firestore";
 import { EditIcon } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -9,10 +8,8 @@ import Section from "@/components/form/Section";
 import Loading from "@/components/Loading";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { Button } from "@/components/ui/button";
-import { isTRPCClientError } from "@/config/trpc";
+import { isTRPCClientError, trpc } from "@/config/trpc";
 import { useMyApplicationResponseAndForm } from "@/hooks/useApplicationResponses";
-import { submitApplicationResponse } from "@/services/applicationResponsesService";
-import type { ApplicationResponse } from "@/types/types";
 
 export default function AppSubmitPage() {
   const { formId } = useParams();
@@ -22,10 +19,7 @@ export default function AppSubmitPage() {
     [],
   );
 
-  const submitMutation = useMutation({
-    mutationFn: (response: ApplicationResponse) =>
-      submitApplicationResponse(response),
-  });
+  const submitMutation = useMutation(trpc.application.submit.mutationOptions());
 
   if (isPending) return <Loading />;
   if (error) return <p>Something went wrong: {error.message}</p>;
@@ -46,7 +40,7 @@ export default function AppSubmitPage() {
         if (errors) {
           throwErrorToast("Oops, looks like you've missed some things!");
           setValidationErrors(errors);
-        } else if (Timestamp.now() > form.dueDate) {
+        } else if (Date.now() > form.dueDate.toMillis()) {
           throwErrorToast("Due date has passed");
         } else if (err.data?.zodIssues?.length) {
           throwErrorToast(
