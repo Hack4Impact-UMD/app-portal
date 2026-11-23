@@ -1,13 +1,17 @@
 import { PermissionRole } from "@app-portal/shared/constants";
 import {
+  CalendarClockIcon,
   EllipsisVertical,
   LockIcon,
   MailIcon,
   MailOpenIcon,
+  PlusIcon,
   UnlockIcon,
   UserPlusIcon,
+  UsersIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import UploadInterviewRubricDialog from "@/components/admin/UploadInterviewRubricDialog";
@@ -23,6 +27,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
@@ -37,15 +42,19 @@ import {
 } from "@/hooks/useApplicationForm";
 import { useAuth } from "@/hooks/useAuth";
 import { useUsers } from "@/hooks/useUsers";
+import { cn } from "@/lib/utils";
 import type { ApplicationForm } from "@/types/types";
-import { displayUserRoleName } from "@/utils/display";
+import { displayRelativeTime, displayUserRoleName } from "@/utils/display";
 import { isPrivateForm } from "@/utils/form";
+
+type FormAction = "duplicate" | "dueDate" | "invite";
 
 export default function AdminHome() {
   const navigate = useNavigate();
   const { data: forms, isPending, error } = useAllApplicationForms();
   const { user } = useAuth();
-  const { data: users } = useUsers(user?.role === PermissionRole.SuperReviewer);
+  const isSuperReviewer = user?.role === PermissionRole.SuperReviewer;
+  const { data: users } = useUsers(isSuperReviewer);
   const [selectedForm, setSelectedForm] = useState<ApplicationForm>();
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
   const [showDueDateDialog, setShowDueDateDialog] = useState(false);
@@ -63,13 +72,18 @@ export default function AdminHome() {
     return map;
   }, [users]);
 
-  const sortedForms = useMemo(
-    () =>
-      forms
-        ?.sort((a, b) => -a.semester.localeCompare(b.semester))
-        ?.sort((a, b) => b.dueDate.toMillis() - a.dueDate.toMillis()) ?? [],
-    [forms],
-  );
+  const { publicForms, privateForms } = useMemo(() => {
+    // Copy before sorting: sorting in place would mutate the query cache.
+    const sorted = [...(forms ?? [])].sort(
+      (a, b) =>
+        b.dueDate.toMillis() - a.dueDate.toMillis() ||
+        b.semester.localeCompare(a.semester),
+    );
+    return {
+      publicForms: sorted.filter((f) => !isPrivateForm(f)),
+      privateForms: sorted.filter(isPrivateForm),
+    };
+  }, [forms]);
 
   if (!user) return <Loading />;
 
@@ -79,228 +93,159 @@ export default function AdminHome() {
       : user.role === PermissionRole.Board
         ? "board"
         : "dor";
-
-  const table =
-    user.role === PermissionRole.Reviewer
-      ? "apps"
-      : user.role === PermissionRole.Board
-        ? "all"
-        : "all";
+  const table = user.role === PermissionRole.Reviewer ? "apps" : "all";
 
   if (isPending) return <Loading />;
   if (error) return <p>Failed to fetch forms: {error.message}</p>;
 
-  return (
-    <div className="w-full grow px-2 py-4 flex gap-2 flex-col bg-lightgray items-center">
-      <div className="max-w-5xl w-full p-4 rounded-md">
-        <h1 className="text-2xl font-bold">Welcome, {user.firstName}!</h1>
-        <p className="text-muted-foreground">
-          You are a {displayUserRoleName(user.role)}.
-        </p>
-      </div>
+  const onAction = (form: ApplicationForm, action: FormAction) => {
+    setSelectedForm(form);
+    if (action === "duplicate") setShowDuplicateDialog(true);
+    else if (action === "dueDate") setShowDueDateDialog(true);
+    else setShowInviteUsersDialog(true);
+  };
 
-      <div className="max-w-5xl w-full p-4 bg-white rounded-md">
-        <div className="flex flex-row items-center">
+  const renderRow = (form: ApplicationForm) => (
+    <FormRow
+      key={form.id}
+      form={form}
+      href={`/admin/${route}/dashboard/${form.id}/${table}`}
+      isSuperReviewer={isSuperReviewer}
+      userNameById={userNameById}
+      controlsDisabled={formsLocked}
+      activePending={activePending}
+      onActiveChange={(active) => setFormActiveStatus({ id: form.id, active })}
+      onAction={(action) => onAction(form, action)}
+    />
+  );
+
+  const showPrivateSection = isSuperReviewer || privateForms.length > 0;
+
+  return (
+    <div className="w-full grow px-4 py-8 flex flex-col gap-6 bg-lightgray items-center">
+      <header className="max-w-5xl w-full">
+        <h1 className="text-3xl font-bold text-black">
+          Welcome, {user.firstName}!
+        </h1>
+        <p className="text-muted-foreground">
+          You're signed in as a {displayUserRoleName(user.role)}.
+        </p>
+      </header>
+
+      <section className="max-w-5xl w-full p-5 sm:p-6 bg-white rounded-lg">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-4">
           <div className="grow">
-            <h1 className="text-xl">Go to Review Dashboards</h1>
+            <h2 className="text-xl font-semibold text-black">
+              Review dashboards
+            </h2>
             <p className="text-muted-foreground">
-              To access dashboards, you need to select which form you want to
-              view application and review data for.
+              Choose a form to see its applications and reviews.
             </p>
           </div>
-          {user.role === PermissionRole.SuperReviewer && (
-            <div className="flex flex-row items-center gap-2">
-              <UnlockIcon className="size-4" />
-              <Switch checked={formsLocked} onCheckedChange={setFormsLocked} />
-              <LockIcon className="size-4" />
-            </div>
+          {isSuperReviewer && (
+            <Button
+              variant="outline"
+              size="sm"
+              aria-pressed={!formsLocked}
+              onClick={() => setFormsLocked((l) => !l)}
+              className={cn(
+                "self-start",
+                !formsLocked && "border-blue text-blue hover:text-blue",
+              )}
+            >
+              {formsLocked ? (
+                <LockIcon className="size-4" />
+              ) : (
+                <UnlockIcon className="size-4" />
+              )}
+              {formsLocked ? "Unlock form settings" : "Lock form settings"}
+            </Button>
           )}
         </div>
 
-        <ul className="flex flex-col gap-2 mt-4">
-          {sortedForms.map((form) => {
-            return (
-              <span
-                className="border border-gray-300 p-2 rounded-md flex flex-row gap-2 items-center"
-                key={form.id}
-              >
-                <Link
-                  to={`/admin/${route}/dashboard/${form.id}/${table}`}
-                  className="grow flex gap-2 items-center"
+        <FormSection
+          title="Public forms"
+          count={publicForms.length}
+          description="Open to every applicant while accepting applications."
+        >
+          {publicForms.length > 0 ? (
+            <ul className="flex flex-col gap-2">
+              {publicForms.map(renderRow)}
+            </ul>
+          ) : (
+            <EmptyState>No public forms yet.</EmptyState>
+          )}
+        </FormSection>
+
+        {showPrivateSection && (
+          <FormSection
+            title="Private forms"
+            count={privateForms.length}
+            description="Hidden from applicants except the people invited."
+            action={
+              isSuperReviewer && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowCreatePrivateFormDialog(true)}
                 >
-                  <Tooltip>
-                    <TooltipTrigger>
-                      {form.decisionsReleased ? (
-                        <MailOpenIcon className="size-4 text-blue" />
-                      ) : (
-                        <MailIcon className="size-4" />
-                      )}
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {form.decisionsReleased
-                        ? "Decisions Released"
-                        : "Decisions Not Released"}
-                    </TooltipContent>
-                  </Tooltip>
-                  <span
-                    className={`${!form.isActive ? "bg-muted" : "bg-lightblue"} px-2 py-1 text-sm rounded-full`}
-                  >
-                    Due{" "}
-                    {Intl.DateTimeFormat("en-us", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    }).format(form.dueDate.toDate())}
-                  </span>
-                  {isPrivateForm(form) && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="bg-lightblue text-blue px-2 py-1 text-sm rounded-full cursor-default">
-                          Private &middot; {form.invitedUsers?.length ?? 0}{" "}
-                          invited
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-64">
-                        {user.role !== PermissionRole.SuperReviewer ? (
-                          `${form.invitedUsers?.length ?? 0} user(s) invited`
-                        ) : form.invitedUsers &&
-                          form.invitedUsers.length > 0 ? (
-                          <ul>
-                            {form.invitedUsers.map((id) => (
-                              <li key={id}>{userNameById.get(id) ?? id}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          "No users invited yet"
-                        )}
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                  <span>
-                    Semester: {form.semester} (ID:{" "}
-                    <span className="font-mono text-sm">{form.id}</span>)
-                  </span>
-                </Link>
+                  <PlusIcon className="size-4" />
+                  Create private form
+                </Button>
+              )
+            }
+          >
+            {privateForms.length > 0 ? (
+              <ul className="flex flex-col gap-2">
+                {privateForms.map(renderRow)}
+              </ul>
+            ) : (
+              <EmptyState>
+                No private forms yet. Create one to invite specific applicants,
+                like a late round or internal transfer.
+              </EmptyState>
+            )}
+          </FormSection>
+        )}
+      </section>
 
-                {user.role === PermissionRole.SuperReviewer && (
-                  <>
-                    <Switch
-                      checked={form.isActive}
-                      disabled={activePending || formsLocked}
-                      onCheckedChange={(active) =>
-                        setFormActiveStatus({ id: form.id, active })
-                      }
-                    />
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger disabled={formsLocked} asChild>
-                        <Button variant="outline">
-                          <EllipsisVertical className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem>
-                          <Link to={`/admin/dor/form-builder/${form.id}`}>
-                            Edit form
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Link to={`/admin/dor/rubric-builder/${form.id}`}>
-                            Edit rubrics
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="cursor-pointer"
-                          onClick={() => {
-                            setSelectedForm(form);
-                            setShowDuplicateDialog(true);
-                          }}
-                        >
-                          Duplicate form
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="cursor-pointer"
-                          onClick={() => {
-                            setSelectedForm(form);
-                            setShowDueDateDialog(true);
-                          }}
-                        >
-                          Change due date
-                        </DropdownMenuItem>
-                        {isPrivateForm(form) && (
-                          <DropdownMenuItem
-                            className="cursor-pointer"
-                            onClick={() => {
-                              setSelectedForm(form);
-                              setShowInviteUsersDialog(true);
-                            }}
-                          >
-                            <UserPlusIcon className="size-4" />
-                            Invite users
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
-                )}
-              </span>
-            );
-          })}
-        </ul>
-      </div>
-
-      {(user.role === PermissionRole.Board ||
-        user.role === PermissionRole.SuperReviewer) && (
-        <div className="max-w-5xl w-full p-4 bg-white rounded-md">
-          <h1 className="text-xl">Autograder Runs</h1>
-          <p className="text-muted-foreground">
-            View recent grading jobs live and submit new ones.
-          </p>
-          <div className="mt-4 flex gap-2">
+      {(user.role === PermissionRole.Board || isSuperReviewer) && (
+        <div className="max-w-5xl w-full grid gap-6 md:grid-cols-2">
+          <ToolPanel
+            title="Autograder runs"
+            description="Watch grading jobs live and submit new ones."
+          >
             <Button onClick={() => navigate("/admin/autograder")}>
-              View Autograder Runs
+              View autograder runs
             </Button>
-          </div>
+          </ToolPanel>
+
+          {isSuperReviewer && (
+            <>
+              <ToolPanel
+                title="Users"
+                description="See registered users, grant reviewer access, edit roles, and delete accounts."
+              >
+                <Button onClick={() => navigate("/admin/dor/users")}>
+                  Manage users
+                </Button>
+                <CreateInternalApplicantDialog />
+              </ToolPanel>
+              <ToolPanel
+                title="Rubrics"
+                description="Upload application and interview rubrics."
+                className="md:col-span-2"
+              >
+                <UploadReviewRubricDialog />
+                <UploadInterviewRubricDialog />
+              </ToolPanel>
+            </>
+          )}
         </div>
       )}
 
-      {user.role === PermissionRole.SuperReviewer && (
+      {isSuperReviewer && (
         <>
-          <div className="max-w-5xl w-full p-4 bg-white rounded-md">
-            <h1 className="text-xl">Or Manage Users </h1>
-            <p className="text-muted-foreground">
-              View all registered users, grant reviewer access, edit roles, and
-              delete user accounts.
-            </p>
-            <div className="mt-4 flex gap-2">
-              <Button onClick={() => navigate("/admin/dor/users")}>
-                Manage Users
-              </Button>
-              <CreateInternalApplicantDialog />
-            </div>
-          </div>
-          <div className="max-w-5xl w-full p-4 bg-white rounded-md">
-            <h1 className="text-xl">Upload Application Rubrics</h1>
-            <p className="text-muted-foreground">
-              Upload the application rubrics to Firestore.
-            </p>
-            <div className="flex gap-2 mt-4">
-              <UploadReviewRubricDialog />
-              <UploadInterviewRubricDialog />
-            </div>
-          </div>
-          <div className="max-w-5xl w-full p-4 bg-white rounded-md">
-            <h1 className="text-xl">Private Forms</h1>
-            <p className="text-muted-foreground">
-              Create a form that stays hidden from all applicants except the
-              users you invite. Invite users to an existing private form from
-              its "..." menu above.
-            </p>
-            <div className="mt-4 flex gap-2">
-              <Button onClick={() => setShowCreatePrivateFormDialog(true)}>
-                Create Private Form
-              </Button>
-            </div>
-          </div>
           <CreatePrivateFormDialog
             open={showCreatePrivateFormDialog}
             onOpenChange={setShowCreatePrivateFormDialog}
@@ -327,5 +272,252 @@ export default function AdminHome() {
         </>
       )}
     </div>
+  );
+}
+
+function FormSection({
+  title,
+  count,
+  description,
+  action,
+  children,
+}: {
+  title: string;
+  count: number;
+  description: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="mt-6">
+      <div className="flex flex-wrap items-end gap-x-4 gap-y-2 mb-3">
+        <div className="grow">
+          <h3 className="text-base font-semibold text-black flex items-center gap-2">
+            {title}
+            <span className="text-xs font-medium text-darkgray bg-lightgray rounded-full px-2 py-0.5 tabular-nums">
+              {count}
+            </span>
+          </h3>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+        {action}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function EmptyState({ children }: { children: ReactNode }) {
+  return (
+    <p className="text-sm text-muted-foreground border border-dashed border-gray-300 rounded-md px-4 py-6 text-center">
+      {children}
+    </p>
+  );
+}
+
+function ToolPanel({
+  title,
+  description,
+  className,
+  children,
+}: {
+  title: string;
+  description: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      className={cn(
+        "p-5 sm:p-6 bg-white rounded-lg flex flex-col gap-4",
+        className,
+      )}
+    >
+      <div className="grow">
+        <h2 className="text-lg font-semibold text-black">{title}</h2>
+        <p className="text-muted-foreground text-sm">{description}</p>
+      </div>
+      <div className="flex flex-wrap gap-2">{children}</div>
+    </section>
+  );
+}
+
+const dueDateFormat = new Intl.DateTimeFormat("en-US", {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+function FormRow({
+  form,
+  href,
+  isSuperReviewer,
+  userNameById,
+  controlsDisabled,
+  activePending,
+  onActiveChange,
+  onAction,
+}: {
+  form: ApplicationForm;
+  href: string;
+  isSuperReviewer: boolean;
+  userNameById: Map<string, string>;
+  controlsDisabled: boolean;
+  activePending: boolean;
+  onActiveChange: (active: boolean) => void;
+  onAction: (action: FormAction) => void;
+}) {
+  const dueDate = form.dueDate.toDate();
+  const isPastDue = dueDate.getTime() < Date.now();
+  const isPrivate = isPrivateForm(form);
+  const invited = form.invitedUsers ?? [];
+
+  return (
+    <li
+      className={cn(
+        "flex flex-col sm:flex-row rounded-md border bg-white transition-colors hover:bg-gray",
+        form.isActive ? "border-blue/40" : "border-gray-200",
+      )}
+    >
+      <Link
+        to={href}
+        className="grow min-w-0 flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-md focus-visible:outline-2 focus-visible:outline-blue"
+      >
+        <div className="grow min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-base font-semibold text-black">
+              {form.semester}
+            </span>
+            {form.isActive ? (
+              <span className="text-xs font-medium text-darkblue bg-lightblue rounded-full px-2 py-0.5">
+                Accepting applications
+              </span>
+            ) : (
+              <span className="text-xs font-medium text-darkgray bg-lightgray rounded-full px-2 py-0.5">
+                Closed
+              </span>
+            )}
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            <span
+              className={cn(
+                "flex items-center gap-1.5",
+                form.decisionsReleased && "text-blue",
+              )}
+            >
+              {form.decisionsReleased ? (
+                <MailOpenIcon className="size-4" />
+              ) : (
+                <MailIcon className="size-4" />
+              )}
+              {form.decisionsReleased
+                ? "Decisions released"
+                : "Decisions not released"}
+            </span>
+            {isPrivate && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex items-center gap-1.5 cursor-default">
+                    <UsersIcon className="size-4" />
+                    {invited.length} invited
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-64">
+                  {!isSuperReviewer ? (
+                    `${invited.length} user(s) invited`
+                  ) : invited.length > 0 ? (
+                    <ul>
+                      {invited.map((id) => (
+                        <li key={id}>{userNameById.get(id) ?? id}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    "No one invited yet"
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            )}
+            <span className="font-mono text-xs truncate">{form.id}</span>
+          </div>
+        </div>
+
+        <div className="shrink-0 flex flex-wrap items-baseline sm:flex-col sm:items-end gap-x-2 text-sm">
+          <span className="flex items-center gap-1.5 text-black whitespace-nowrap">
+            <CalendarClockIcon className="size-4 text-muted-foreground" />
+            {dueDateFormat.format(dueDate)}
+          </span>
+          <span
+            className={cn(
+              "text-xs",
+              isPastDue ? "text-muted-foreground" : "text-blue font-medium",
+            )}
+          >
+            {isPastDue ? "Was due" : "Due"} {displayRelativeTime(dueDate)}
+          </span>
+        </div>
+      </Link>
+
+      {isSuperReviewer && (
+        <div className="flex items-center gap-3 px-4 py-2 sm:py-0 border-t sm:border-t-0 sm:border-l border-gray-200">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="flex">
+                <Switch
+                  aria-label={`Accepting applications for ${form.semester}`}
+                  checked={form.isActive}
+                  disabled={activePending || controlsDisabled}
+                  onCheckedChange={onActiveChange}
+                />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {controlsDisabled
+                ? "Unlock form settings to change"
+                : form.isActive
+                  ? "Stop accepting applications"
+                  : "Start accepting applications"}
+            </TooltipContent>
+          </Tooltip>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger disabled={controlsDisabled} asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Settings for ${form.semester}`}
+              >
+                <EllipsisVertical className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to={`/admin/dor/form-builder/${form.id}`}>Edit form</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to={`/admin/dor/rubric-builder/${form.id}`}>
+                  Edit rubrics
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onAction("duplicate")}>
+                Duplicate form
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onAction("dueDate")}>
+                Change due date
+              </DropdownMenuItem>
+              {isPrivate && (
+                <DropdownMenuItem onClick={() => onAction("invite")}>
+                  <UserPlusIcon className="size-4" />
+                  Invite users
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+    </li>
   );
 }
