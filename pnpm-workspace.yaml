@@ -4,7 +4,7 @@ packages:
   - 'shared'
   - 'e2e'
 catalog:
-  zod: 4.4.3
+  zod: 4.6.7
 allowBuilds:
   '@firebase/util': true
   esbuild: true
@@ -13,5 +13,9 @@ allowBuilds:
 overrides:
   'vite>esbuild': 0.28.1
   'vite>tsx': 4.22.4
-  'monaco-editor>dompurify': 3.4.0
+  'monaco-editor>dompurify': ^3.4.17
   uuid: 11.1.1
+  'oxfmt>tinypool': ^2.1.2
+  '@tailwindcss/typography>postcss-selector-parser': ^6.1.5
+  'ansi-to-react>linkify-it': ^5.0.2
+  '@firebase/firestore>@grpc/grpc-js': ^1.14.5

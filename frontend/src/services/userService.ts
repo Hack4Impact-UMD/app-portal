@@ -67,11 +67,11 @@ export async function updateUser(
       throw new Error("User must be authenticated to update profile");
     }
 
-    return (await trpcClient.auth.update.mutate({
+    return await trpcClient.auth.update.mutate({
       email,
       firstName,
       lastName,
-    })) as UserProfile;
+    });
   } catch (error) {
     if (isTRPCClientError(error)) {
       const errorMessage = `Failed to update user: ${error.message}`;

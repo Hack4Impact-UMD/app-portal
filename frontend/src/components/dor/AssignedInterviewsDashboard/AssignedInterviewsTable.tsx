@@ -102,9 +102,9 @@ export default function AssignedInterviewsTable({
             }
           },
           filterFn: (row, columnId, filterValue) => {
-            const value = row.getValue(columnId) as
-              | ApplicationInterviewData
-              | undefined;
+            const value = row.getValue<ApplicationInterviewData | undefined>(
+              columnId,
+            );
 
             if (filterValue === "all") return true;
             else if (filterValue === "pending")

@@ -199,9 +199,9 @@ export default function ReviewerApplicationsTable({
             return getStatus(reviewA) - getStatus(reviewB);
           },
           filterFn: (row, columnId, filterValue) => {
-            const value = row.getValue(columnId) as
-              | ApplicationReviewData
-              | undefined;
+            const value = row.getValue<ApplicationReviewData | undefined>(
+              columnId,
+            );
 
             const isReviewData = (v: unknown): v is ApplicationReviewData =>
               typeof v === "object" && v !== null && "submitted" in v;

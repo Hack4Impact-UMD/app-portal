@@ -202,9 +202,9 @@ export default function ReviewerAssignmentsTable({
             }
           },
           filterFn: (row, columnId, filterValue) => {
-            const value = row.getValue(columnId) as
-              | ApplicationReviewData
-              | undefined;
+            const value = row.getValue<ApplicationReviewData | undefined>(
+              columnId,
+            );
 
             if (filterValue === "all") return true;
             else if (filterValue === "pending")
