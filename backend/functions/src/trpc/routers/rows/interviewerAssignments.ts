@@ -6,6 +6,10 @@ import { calculateInterviewScore } from "@app-portal/shared/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import type {
+  ApplicantProfile,
+  ReviewCapableProfile,
+} from "../../../models/user";
 import { appCollection } from "../../../utils/firestore";
 import {
   REVIEW_CAPABLE_ROLES,
@@ -15,7 +19,6 @@ import {
 } from "./helpers";
 import { loadForm, loadUsers } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
-import type { ApplicantProfile, ReviewCapableProfile } from "./types";
 
 export const interviewerAssignments = superReviewerProcedure
   .input(z.object({ formId: z.string(), interviewerId: z.string() }))

@@ -178,3 +178,8 @@ export function isDecided(status: ReviewStatus) {
     status === ReviewStatus.Waitlisted
   );
 }
+
+// Checks the field, not the role, since role changes leave it behind.
+export function isInternalApplicant(user: object): boolean {
+  return "isInternal" in user && user.isInternal === true;
+}

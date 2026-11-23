@@ -1,6 +1,7 @@
 import { PermissionRole } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { ApplicationReviewData } from "@app-portal/shared/types";
+import { isInternalApplicant } from "@app-portal/shared/utils";
 import { CheckIcon, CircleAlertIcon, UserCheckIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -98,7 +99,7 @@ function UserHeader({
         {displayApplicantRoleNameNoEmoji(role)} Application
       </h1>
       <div className="items-center flex flex-row gap-2">
-        {applicant.isInternal && (
+        {isInternalApplicant(applicant) && (
           <div className="flex bg-blue text-blue-100 font-bold text-sm flex-row gap-1 rounded-full py-0 px-2 border border-blue items-center">
             <UserCheckIcon className="size-4" />
             <span>INTERNAL</span>

@@ -3,7 +3,10 @@ import {
   FirestoreCollection,
   PermissionRole,
 } from "@app-portal/shared/constants";
-import type { UserProfileDTO } from "@app-portal/shared/types";
+import type {
+  ReviewCapableUserDTO,
+  UserProfileDTO,
+} from "@app-portal/shared/types";
 import { TRPCError } from "@trpc/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { z } from "zod";
@@ -17,12 +20,12 @@ import {
   requireUser,
 } from "../access";
 import { authedProcedure, router, signedInProcedure } from "../init";
-import { loadActiveReviewers } from "./rows/loaders";
+import { reviewingFor } from "./rows/helpers";
+import { loadReviewCapableUsers } from "./rows/loaders";
 import {
   reviewCapableProcedure,
   superReviewerProcedure,
 } from "./rows/procedures";
-import type { AnyUserProfile } from "./rows/types";
 
 // Reviewers and board members may edit their own roles; super-reviewers may
 // edit anyone's.
@@ -56,7 +59,7 @@ export const usersRouter = router({
   me: signedInProcedure.query(async ({ ctx }): Promise<UserProfileDTO> => {
     const user = await ctx.getUser();
     if (!user) throw new TRPCError({ code: "NOT_FOUND" });
-    return user as UserProfileDTO;
+    return user;
   }),
 
   get: authedProcedure
@@ -71,7 +74,7 @@ export const usersRouter = router({
         await appCollection(FirestoreCollection.Users).doc(input.id).get()
       ).data();
       if (!user) throw new TRPCError({ code: "NOT_FOUND" });
-      return user as UserProfileDTO;
+      return user;
     }),
 
   getApplicantForResponse: authedProcedure
@@ -92,29 +95,24 @@ export const usersRouter = router({
           .get()
       ).data();
       if (!user) throw new TRPCError({ code: "NOT_FOUND" });
-      return user as UserProfileDTO;
+      return user;
     }),
 
   list: reviewCapableProcedure.query(async (): Promise<UserProfileDTO[]> => {
     return (await appCollection(FirestoreCollection.Users).get()).docs.map(
-      (d) => d.data() as UserProfileDTO,
+      (d) => d.data(),
     );
   }),
 
   listReviewers: reviewCapableProcedure
     .input(z.object({ role: z.enum(ApplicantRole).optional() }).optional())
-    .query(async ({ input }): Promise<UserProfileDTO[]> => {
-      const reviewers = await loadActiveReviewers();
+    .query(async ({ input }): Promise<ReviewCapableUserDTO[]> => {
+      const reviewers = await loadReviewCapableUsers();
 
       const role = input?.role;
-      if (!role) return reviewers as UserProfileDTO[];
+      if (!role) return reviewers;
 
-      return reviewers.filter(
-        (r) =>
-          r.role === PermissionRole.SuperReviewer ||
-          r.applicantRolePreferences?.includes(role) ||
-          r.applicantRoles?.includes(role),
-      ) as UserProfileDTO[];
+      return reviewers.filter((r) => reviewingFor(r).includes(role));
     }),
 
   setRole: superReviewerProcedure
@@ -128,15 +126,15 @@ export const usersRouter = router({
       const collection = appCollection(FirestoreCollection.Users);
       const users = await getDocsById(collection, ids);
       const batch = db.batch();
-      for (const user of users.values() as Iterable<AnyUserProfile>) {
+      for (const user of users.values()) {
         const update: Record<string, unknown> = { role };
         if (
           role === PermissionRole.Reviewer &&
-          !user.applicantRolePreferences
+          !("applicantRolePreferences" in user)
         ) {
           update.applicantRolePreferences = Object.values(ApplicantRole);
         }
-        if (role === PermissionRole.Board && !user.applicantRoles) {
+        if (role === PermissionRole.Board && !("applicantRoles" in user)) {
           update.applicantRoles = [];
         }
         batch.update(collection.doc(user.id), update);

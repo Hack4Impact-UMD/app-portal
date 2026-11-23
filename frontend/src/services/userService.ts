@@ -94,7 +94,7 @@ export async function loginUser(
     await sendVerificationEmail(res.user);
   }
 
-  return (await trpcClient.users.me.query()) as UserProfile;
+  return await trpcClient.users.me.query();
 }
 
 export async function logoutUser() {

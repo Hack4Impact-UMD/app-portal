@@ -172,9 +172,9 @@ describe("application reads", () => {
       .where("userId", "==", me.uid)
       .get();
     expect(all.size).toBe(1);
-    expect(
-      (await getDoc(FirestoreCollection.Users, me.uid))?.activeApplications,
-    ).toEqual([form.id]);
+    expect(await getDoc(FirestoreCollection.Users, me.uid)).toMatchObject({
+      activeApplications: [form.id],
+    });
   });
 
   it("getOrCreate rejects closed and uninvited private forms", async () => {

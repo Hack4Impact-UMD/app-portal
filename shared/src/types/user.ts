@@ -80,13 +80,13 @@ export type BoardUserProfileBase = z.infer<typeof BoardUserProfileBaseSchema>;
 export type SuperReviewerUserProfileBase = z.infer<
   typeof SuperReviewerUserProfileBaseSchema
 >;
-export type UserProfileDTO = WithTimestamps<
-  | ApplicantUserProfileBase
-  | ReviewerUserProfileBase
-  | BoardUserProfileBase
-  | SuperReviewerUserProfileBase,
+export type ReviewCapableUserDTO = WithTimestamps<
+  ReviewerUserProfileBase | BoardUserProfileBase | SuperReviewerUserProfileBase,
   "dateCreated"
 >;
+export type UserProfileDTO =
+  | WithTimestamps<ApplicantUserProfileBase, "dateCreated">
+  | ReviewCapableUserDTO;
 export type UserRegisterForm = z.infer<typeof userRegisterFormSchema>;
 export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type CreateInternalApplicant = z.infer<

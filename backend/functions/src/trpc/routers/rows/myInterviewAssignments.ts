@@ -2,11 +2,11 @@ import { FirestoreCollection } from "@app-portal/shared/constants";
 import { calculateInterviewScore } from "@app-portal/shared/utils";
 import { z } from "zod";
 
+import type { ApplicantProfile } from "../../../models/user";
 import { appCollection } from "../../../utils/firestore";
 import { scoreWarning, requireUser, firstByApplicantRole } from "./helpers";
 import { loadForm, responseRoleKey, loadUsers } from "./loaders";
 import { reviewCapableProcedure } from "./procedures";
-import type { ApplicantProfile } from "./types";
 
 export const myInterviewAssignments = reviewCapableProcedure
   .input(z.object({ formId: z.string() }))

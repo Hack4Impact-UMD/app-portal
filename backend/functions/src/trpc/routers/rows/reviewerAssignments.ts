@@ -11,12 +11,15 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import type { ApplicationForm } from "../../../models/appForm";
+import type {
+  ApplicantProfile,
+  ReviewCapableProfile,
+} from "../../../models/user";
 import { queryWhereIn } from "../../../utils/batch";
 import { appCollection } from "../../../utils/firestore";
 import { REVIEW_CAPABLE_ROLES, scoreWarning, requireUser } from "./helpers";
 import { loadForm, loadUsers } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
-import type { ApplicantProfile, ReviewCapableProfile } from "./types";
 
 async function reviewAssignmentRows(
   assignments: AppReviewAssignment[],

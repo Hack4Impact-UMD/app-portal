@@ -14,7 +14,7 @@ import { getDocsById } from "../../utils/batch";
 import { appCollection } from "../../utils/firestore";
 import { isBoardOrAbove, loadResponse, requireUser } from "../access";
 import { router } from "../init";
-import { loadActiveReviewers } from "./rows/loaders";
+import { loadReviewCapableUsers } from "./rows/loaders";
 import {
   reviewCapableProcedure,
   superReviewerProcedure,
@@ -59,7 +59,7 @@ export const reviewAssignmentsRouter = router({
             .where("applicationFormId", "==", formId)
             .get()
             .then((s) => s.docs.map((d) => d.data())),
-          loadActiveReviewers(),
+          loadReviewCapableUsers(),
           appCollection(FirestoreCollection.ReviewAssignments)
             .where("formId", "==", formId)
             .get()

@@ -2,9 +2,13 @@ import {
   FirestoreCollection,
   PermissionRole,
 } from "@app-portal/shared/constants";
-import { calculateReviewScore } from "@app-portal/shared/utils";
+import {
+  calculateReviewScore,
+  isInternalApplicant,
+} from "@app-portal/shared/utils";
 import { z } from "zod";
 
+import type { ReviewCapableProfile } from "../../../models/user";
 import { groupBy, queryWhereIn } from "../../../utils/batch";
 import { appCollection } from "../../../utils/firestore";
 import { roleProcedure } from "../../init";
@@ -18,7 +22,6 @@ import {
   loadPreviouslyAppliedCounts,
   loadUsers,
 } from "./loaders";
-import type { ReviewCapableProfile } from "./types";
 
 export const underReview = roleProcedure([
   PermissionRole.SuperReviewer,
@@ -90,7 +93,7 @@ export const underReview = roleProcedure([
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
           previouslyAppliedCount: previouslyApplied.get(app.userId) ?? 0,
-          internal: user.isInternal ?? false,
+          internal: isInternalApplicant(user),
         },
         responseId: app.id,
         role,

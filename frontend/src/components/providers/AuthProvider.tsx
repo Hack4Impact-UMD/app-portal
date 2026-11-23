@@ -65,7 +65,7 @@ export default function AuthProvider(props: AuthProviderProps) {
     return onAuthStateChange(async (userInfo) => {
       console.log(`Auth state changed: ${userInfo?.email}`);
       if (userInfo != null) {
-        const user = (await trpcClient.users.me.query()) as UserProfile;
+        const user = await trpcClient.users.me.query();
 
         setAuthState({
           isAuthed: true,

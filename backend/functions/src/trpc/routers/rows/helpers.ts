@@ -2,7 +2,7 @@ import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
 import { TRPCError } from "@trpc/server";
 import { logger } from "firebase-functions";
 
-import type { AnyUserProfile, ReviewCapableProfile } from "./types";
+import type { UserProfile, ReviewCapableProfile } from "../../../models/user";
 
 export const REVIEW_CAPABLE_ROLES = [
   PermissionRole.Reviewer,
@@ -14,7 +14,7 @@ export function scoreWarning(message: string) {
   logger.warn(`Score calculation: ${message}`);
 }
 
-export function reviewingFor(user: AnyUserProfile): ApplicantRole[] {
+export function reviewingFor(user: UserProfile): ApplicantRole[] {
   if (user.role === PermissionRole.Reviewer) {
     return user.applicantRolePreferences ?? [];
   } else if (user.role === PermissionRole.Board) {
@@ -26,13 +26,13 @@ export function reviewingFor(user: AnyUserProfile): ApplicantRole[] {
 }
 
 export function isReviewCapable(
-  user: AnyUserProfile,
-): user is AnyUserProfile & ReviewCapableProfile {
+  user: UserProfile,
+): user is ReviewCapableProfile {
   return REVIEW_CAPABLE_ROLES.includes(user.role);
 }
 
 export function assignedUserName(
-  user: AnyUserProfile | undefined,
+  user: UserProfile | undefined,
   label: "reviewer" | "interviewer",
 ) {
   if (!user) return "Unknown user";
@@ -42,7 +42,7 @@ export function assignedUserName(
     : `${name} (no longer ${label === "interviewer" ? "an" : "a"} ${label})`;
 }
 
-export function requireUser(users: Map<string, AnyUserProfile>, id: string) {
+export function requireUser(users: Map<string, UserProfile>, id: string) {
   const user = users.get(id);
   if (!user) {
     throw new TRPCError({

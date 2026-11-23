@@ -3,6 +3,7 @@ import type { ApplicationInterviewData } from "@app-portal/shared/types";
 import { calculateInterviewScore } from "@app-portal/shared/utils";
 import { z } from "zod";
 
+import type { ApplicantProfile } from "../../../models/user";
 import { appCollection } from "../../../utils/firestore";
 import {
   scoreWarning,
@@ -12,7 +13,6 @@ import {
 } from "./helpers";
 import { loadForm, loadUsers, loadResponse } from "./loaders";
 import { superReviewerProcedure } from "./procedures";
-import type { ApplicantProfile } from "./types";
 
 export const assignedInterviews = superReviewerProcedure
   .input(z.object({ responseId: z.string() }))

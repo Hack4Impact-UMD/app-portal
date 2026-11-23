@@ -13,13 +13,15 @@ import { appCollection } from "../../utils/firestore";
 import { isBoardOrAbove, loadResponse, requireUser } from "../access";
 import { roleProcedure, router } from "../init";
 import { reviewCapableProcedure } from "./rows/procedures";
-import type { AnyUserProfile } from "./rows/types";
 
 // The old rules barred super-reviewers from managing interview assignments.
 const boardOnlyProcedure = roleProcedure([PermissionRole.Board]);
 
 function assertManagesRole(user: UserProfile, role: ApplicantRole) {
-  if (!(user as AnyUserProfile).applicantRoles?.includes(role)) {
+  if (
+    user.role !== PermissionRole.Board ||
+    !user.applicantRoles?.includes(role)
+  ) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "You don't manage interviews for this role.",
