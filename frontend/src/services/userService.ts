@@ -1,8 +1,4 @@
-import {
-  ApplicantRole,
-  FirestoreCollection,
-  PermissionRole,
-} from "@app-portal/shared/constants";
+import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { SectionResponse } from "@app-portal/shared/types";
 import type { User, UserInfo } from "firebase/auth";
 import {
@@ -10,21 +6,13 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { doc, getDoc, updateDoc, writeBatch } from "firebase/firestore";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
-import { auth, db } from "@/config/firebase";
+import { auth } from "@/config/firebase";
 import { clearQueryCache } from "@/config/query";
 import { isTRPCClientError, trpcClient } from "@/config/trpc";
-import type {
-  ApplicationResponse,
-  BoardUserProfile,
-  ReviewerUserProfile,
-  UserProfile,
-} from "@/types/types";
-
-import { appCollection } from "./firestore";
+import type { ApplicationResponse, UserProfile } from "@/types/types";
 
 export async function sendVerificationEmail(user: User) {
   try {
@@ -112,123 +100,6 @@ export async function loginUser(
 export async function logoutUser() {
   await signOut(auth);
   await clearQueryCache();
-}
-
-async function getUserById(id: string): Promise<UserProfile> {
-  const users = appCollection(FirestoreCollection.Users);
-  const userDoc = doc(users, id);
-
-  return (await getDoc(userDoc)).data() as UserProfile;
-}
-
-export async function updateUserRoles(
-  users: UserProfile[],
-  role: PermissionRole,
-) {
-  const batch = writeBatch(db);
-  const usersCollection = appCollection(FirestoreCollection.Users);
-
-  users.forEach((user) => {
-    // if the user is being set to a reviewer, update their role preferences
-    // to be all roles if they are not already set
-    if (role === PermissionRole.Reviewer) {
-      if (!(user as ReviewerUserProfile).applicantRolePreferences) {
-        batch.update(doc(usersCollection, user.id), {
-          applicantRolePreferences: Object.values(ApplicantRole),
-        });
-      }
-    }
-
-    // if the user is being set to a board, update their role preferences
-    // to be [] if they are not already set
-    if (role === PermissionRole.Board) {
-      if (!(user as BoardUserProfile).applicantRoles) {
-        batch.update(doc(usersCollection, user.id), {
-          applicantRoles: [],
-        });
-      }
-    }
-
-    batch.update(doc(usersCollection, user.id), {
-      role: role,
-    });
-  });
-
-  await batch.commit();
-}
-
-export async function updateUserActiveStatus(
-  userId: string,
-  inactive: boolean,
-) {
-  const users = appCollection(FirestoreCollection.Users);
-  const userDoc = doc(users, userId);
-  await updateDoc(userDoc, {
-    inactive: inactive,
-  });
-}
-
-export async function deleteUsers(userIds: string[]) {
-  const batch = writeBatch(db);
-  const users = appCollection(FirestoreCollection.Users);
-
-  userIds.forEach((id) => batch.delete(doc(users, id)));
-
-  await batch.commit();
-}
-
-export async function setReviewCapableUserRolePreferences(
-  reviewerId: string,
-  prefs: ApplicantRole[],
-) {
-  const user = await getUserById(reviewerId);
-  if (user.role === PermissionRole.Reviewer) {
-    return await setReviewerRolePreferences(reviewerId, prefs);
-  } else if (user.role === PermissionRole.Board) {
-    return await setBoardApplicantRoles(reviewerId, prefs);
-  } else if (user.role === PermissionRole.Applicant) {
-    throw new Error("Role preferences cannot be changed for applicants.");
-  } else if (user.role === PermissionRole.SuperReviewer) {
-    throw new Error("Role preferences cannot be changed for super-reviewers.");
-  } else {
-    throw new Error("Role preferences cannot be changed for this user.");
-  }
-}
-
-async function setReviewerRolePreferences(
-  reviewerId: string,
-  prefs: ApplicantRole[],
-) {
-  const user = await getUserById(reviewerId);
-  if (user.role !== PermissionRole.Reviewer)
-    throw new Error("User is not a reviewer!");
-
-  const users = appCollection(FirestoreCollection.Users);
-  const userDoc = doc(users, reviewerId);
-
-  const update: Partial<ReviewerUserProfile> = {
-    applicantRolePreferences: prefs,
-  };
-
-  await updateDoc(userDoc, update);
-}
-
-export async function setBoardApplicantRoles(
-  boardId: string,
-  roles: ApplicantRole[],
-) {
-  const user = await getUserById(boardId);
-  if (user.role !== PermissionRole.Board)
-    throw new Error("User is not a board member!");
-
-  const users = appCollection(FirestoreCollection.Users);
-  const userDoc = doc(users, boardId);
-
-  const update: Partial<BoardUserProfile> = {
-    applicantRoles: roles,
-  };
-
-  await updateDoc(userDoc, update);
 }
 
 export function onAuthStateChange(

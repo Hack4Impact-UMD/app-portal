@@ -23,9 +23,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { h4iApplicationForm } from "@/data/h4i-application-form";
-import { useUploadApplicationForm } from "@/hooks/useApplicationForm";
+import {
+  isFormIdTakenError,
+  useUploadApplicationForm,
+} from "@/hooks/useApplicationForm";
 import { useAuth } from "@/hooks/useAuth";
-import { FormIdTakenError } from "@/services/applicationFormsService";
 import type { ApplicationForm } from "@/types/types";
 
 // Two weeks out, at the same time of day — just a sensible starting point
@@ -103,7 +105,7 @@ export default function CreatePrivateFormDialog({
         },
         onError: (error) => {
           throwErrorToast(
-            error instanceof FormIdTakenError
+            isFormIdTakenError(error)
               ? "Form ID already exists"
               : "An error occurred while creating the form.",
           );

@@ -67,7 +67,7 @@ export default function SubmitGradingJobDialog({
         repoURL: repoPath,
       },
       {
-        onSuccess: (jobId) => {
+        onSuccess: ({ jobId }) => {
           throwSuccessToast(
             `Grading job queued successfully! Job ID: ${jobId}`,
           );

@@ -6,7 +6,7 @@ import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { throwWarningToast } from "@/components/toasts/WarningToast";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { getJobsForApplicationResponse } from "@/services/gradingService";
+import { trpcClient } from "@/config/trpc";
 import { buildRepoCloneCommand, pickBestGradingJob } from "@/utils/grading";
 
 export function CopyCloneCommandMenuItem({
@@ -22,7 +22,9 @@ export function CopyCloneCommandMenuItem({
 
     let command: string | undefined;
     try {
-      const jobs = await getJobsForApplicationResponse(responseId);
+      const jobs = await trpcClient.grading.listForResponse.query({
+        responseId,
+      });
       const bestJob = pickBestGradingJob(jobs);
 
       if (!bestJob) {

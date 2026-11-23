@@ -51,7 +51,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { trpc, trpcClient } from "@/config/trpc";
-import { updateApplicationStatus } from "@/services/statusService";
 import type { ReviewCapableUser } from "@/types/types";
 import { displayTimestamp } from "@/utils/dates";
 import { displayReviewStatus } from "@/utils/display";
@@ -157,8 +156,9 @@ export default function SuperReviewerApplicationsTable({
 
   const toggleQualifiedMutation = useMutation({
     mutationFn: async ({ status }: { status: InternalApplicationStatus }) => {
-      return await updateApplicationStatus(status.id, {
-        isQualified: !status.isQualified,
+      return await trpcClient.status.update.mutate({
+        id: status.id,
+        patch: { isQualified: !status.isQualified },
       });
     },
     onMutate: async ({ status }) => {

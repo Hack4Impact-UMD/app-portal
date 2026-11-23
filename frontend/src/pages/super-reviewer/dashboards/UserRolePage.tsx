@@ -4,13 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import UserTable from "@/components/admin/UserTable";
 import Loading from "@/components/Loading";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
-import { trpc } from "@/config/trpc";
+import { trpc, trpcClient } from "@/config/trpc";
 import { useUsers } from "@/hooks/useUsers";
-import {
-  deleteUsers,
-  updateUserActiveStatus,
-  updateUserRoles,
-} from "@/services/userService";
 import type { UserProfile } from "@/types/types";
 
 function withRole(user: UserProfile, role: PermissionRole): UserProfile {
@@ -47,7 +42,7 @@ export default function UserRolePage() {
     }: {
       user: UserProfile;
       inactive: boolean;
-    }) => updateUserActiveStatus(user.id, inactive),
+    }) => trpcClient.users.setInactive.mutate({ id: user.id, inactive }),
     onMutate: async ({ user, inactive }) => {
       const usersKey = trpc.users.list.queryKey();
       await queryClient.cancelQueries({ queryKey: usersKey });
@@ -88,7 +83,10 @@ export default function UserRolePage() {
       users: UserProfile[];
       role: PermissionRole;
     }) => {
-      return updateUserRoles(users, role);
+      return trpcClient.users.setRole.mutate({
+        ids: users.map((u) => u.id),
+        role,
+      });
     },
     onMutate: async ({ users, role }) => {
       const usersKey = trpc.users.list.queryKey();
@@ -122,7 +120,7 @@ export default function UserRolePage() {
 
   const { mutate: bulkDeleteUsers } = useMutation({
     mutationFn: (users: UserProfile[]) => {
-      return deleteUsers(users.map((u) => u.id));
+      return trpcClient.users.delete.mutate({ ids: users.map((u) => u.id) });
     },
     onMutate: async (users) => {
       const usersKey = trpc.users.list.queryKey();

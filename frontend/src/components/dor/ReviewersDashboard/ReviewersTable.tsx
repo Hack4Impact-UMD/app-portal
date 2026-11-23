@@ -22,10 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { trpc } from "@/config/trpc";
-import { reviewingFor } from "@/services/reviewersService";
-import { setReviewCapableUserRolePreferences } from "@/services/userService";
-import type { ReviewCapableUser } from "@/types/types";
+import { trpc, trpcClient } from "@/config/trpc";
 
 import { RoleSelect } from "./RoleSelect";
 import type { ReviewerRow } from "./useRows";
@@ -56,16 +53,11 @@ export default function ReviewersTable({
       reviewerId: string;
       pageIndex: number;
     }) => {
-      const prevRolePreferences = reviewingFor(
-        (await queryClient.fetchQuery(
-          trpc.users.get.queryOptions({ id: reviewerId }),
-        )) as ReviewCapableUser,
-      );
-      const newRolePreferences = [...prevRolePreferences, roleToAdd];
-      return await setReviewCapableUserRolePreferences(
-        reviewerId,
-        newRolePreferences,
-      );
+      return await trpcClient.users.toggleRolePreference.mutate({
+        id: reviewerId,
+        role: roleToAdd,
+        enabled: true,
+      });
     },
     onSuccess: async () => {
       await Promise.all([
@@ -91,18 +83,11 @@ export default function ReviewersTable({
       reviewerId: string;
       pageIndex: number;
     }) => {
-      const prevRolePreferences = reviewingFor(
-        (await queryClient.fetchQuery(
-          trpc.users.get.queryOptions({ id: reviewerId }),
-        )) as ReviewCapableUser,
-      );
-      const newRolePreferences = prevRolePreferences.filter(
-        (role) => role !== roleToRemove,
-      );
-      return await setReviewCapableUserRolePreferences(
-        reviewerId,
-        newRolePreferences,
-      );
+      return await trpcClient.users.toggleRolePreference.mutate({
+        id: reviewerId,
+        role: roleToRemove,
+        enabled: false,
+      });
     },
     onSuccess: async () => {
       await Promise.all([

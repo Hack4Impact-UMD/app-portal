@@ -45,7 +45,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { updateApplicationStatus } from "@/services/statusService";
+import { trpcClient } from "@/config/trpc";
 import type { ReviewCapableUser } from "@/types/types";
 import { displayTimestamp } from "@/utils/dates";
 import { displayReviewStatus } from "@/utils/display";
@@ -134,7 +134,11 @@ export default function QualifiedApplicationsTable({
     }: {
       statusId: string;
       newStatus: ReviewStatus;
-    }) => updateApplicationStatus(statusId, { status: newStatus }),
+    }) =>
+      trpcClient.status.update.mutate({
+        id: statusId,
+        patch: { status: newStatus },
+      }),
     onMutate: async ({ statusId, newStatus }) => {
       const queryKey = qualifiedRowsQueryOptions(formId).queryKey;
       await queryClient.cancelQueries({ queryKey });

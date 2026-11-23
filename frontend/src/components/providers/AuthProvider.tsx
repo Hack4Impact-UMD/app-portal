@@ -14,7 +14,6 @@ import {
   loginUser,
   logoutUser,
   onAuthStateChange,
-  setReviewCapableUserRolePreferences,
 } from "@/services/userService";
 import type { UserProfile } from "@/types/types";
 
@@ -41,7 +40,10 @@ export default function AuthProvider(props: AuthProviderProps) {
 
   const submitMutation = useMutation({
     mutationFn: (roles: ApplicantRole[]) =>
-      setReviewCapableUserRolePreferences(authState.user?.id ?? "", roles),
+      trpcClient.users.setRolePreferences.mutate({
+        id: authState.user?.id ?? "",
+        roles,
+      }),
     onSuccess: (_data, vars) => {
       if (authState.user?.role === PermissionRole.Reviewer) {
         setAuthState({

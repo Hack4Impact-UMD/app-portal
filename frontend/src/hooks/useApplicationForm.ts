@@ -5,12 +5,9 @@ import {
   skipToken,
 } from "@tanstack/react-query";
 
-import { trpc } from "@/config/trpc";
-import {
-  createApplicationForm,
-  setApplicationFormDueDate,
-  setApplicationFormInvitedUsers,
-} from "@/services/applicationFormsService";
+import { throwErrorToast } from "@/components/toasts/ErrorToast";
+import { throwSuccessToast } from "@/components/toasts/SuccessToast";
+import { isTRPCClientError, trpc, trpcClient } from "@/config/trpc";
 import type { ApplicationForm } from "@/types/types";
 
 import { useAuth } from "./useAuth";
@@ -44,26 +41,25 @@ export function useActiveForm() {
   );
 }
 
-export const useUploadApplicationForm = () => {
+export function isFormIdTakenError(error: unknown) {
+  return isTRPCClientError(error) && error.data?.code === "CONFLICT";
+}
+
+export function useUploadApplicationForm() {
+  const queryClient = useQueryClient();
+  return useMutation(
+    trpc.application.createForm.mutationOptions({
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.forms.pathKey() });
+      },
+    }),
+  );
+}
+
+export function useDuplicateForm() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
-      form,
-      createOnly,
-    }: {
-      form: ApplicationForm;
-      createOnly?: boolean;
-    }) => createApplicationForm(form, { createOnly }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.forms.list.queryKey() });
-    },
-  });
-};
-
-export const useDuplicateForm = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
       originalForm,
       newFormId,
       newFormSemester,
@@ -71,42 +67,32 @@ export const useDuplicateForm = () => {
       originalForm: ApplicationForm;
       newFormId: string;
       newFormSemester: string;
-    }) => {
-      const newForm: ApplicationForm = {
-        ...originalForm,
-        id: newFormId,
-        semester: newFormSemester,
-        isActive: false,
-        decisionsReleased: false,
-      };
-
-      // createOnly makes the backend reject a taken ID, so there's no need to
-      // scan every form first (and no window for another admin to claim the
-      // ID between that check and this write).
-      return await createApplicationForm(newForm, { createOnly: true });
-    },
+    }) =>
+      trpcClient.application.createForm.mutate({
+        form: {
+          ...originalForm,
+          id: newFormId,
+          semester: newFormSemester,
+          isActive: false,
+          decisionsReleased: false,
+        },
+        createOnly: true,
+      }),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: trpc.forms.pathKey() });
     },
   });
-};
+}
 
 export function useUpdateApplicationFormDueDate() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      formId,
-      dueDate,
-    }: {
-      formId: string;
-      dueDate: Date;
-    }) => {
-      await setApplicationFormDueDate(formId, dueDate);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.forms.pathKey() });
-    },
-  });
+  return useMutation(
+    trpc.forms.setDueDate.mutationOptions({
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.forms.pathKey() });
+      },
+    }),
+  );
 }
 
 export function useApplicationFormForResponseId(responseId?: string) {
@@ -129,18 +115,31 @@ export function useInvitedForms() {
 
 export function useUpdateFormInvitedUsers() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      formId,
-      invitedUsers,
-    }: {
-      formId: string;
-      invitedUsers: string[];
-    }) => {
-      await setApplicationFormInvitedUsers(formId, invitedUsers);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.forms.pathKey() });
-    },
-  });
+  return useMutation(
+    trpc.forms.setInvitedUsers.mutationOptions({
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.forms.pathKey() });
+      },
+    }),
+  );
+}
+
+export function useUpdateApplicationFormActive() {
+  const queryClient = useQueryClient();
+  return useMutation(
+    trpc.forms.setActive.mutationOptions({
+      onError: (err) => {
+        throwErrorToast("Failed to update form active status");
+        console.error(err);
+      },
+      onSuccess: () => {
+        throwSuccessToast("Form active status updated successfully!");
+      },
+      onSettled: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: trpc.forms.pathKey(),
+        });
+      },
+    }),
+  );
 }

@@ -1,6 +1,5 @@
 import type { GradingJobDataInternal } from "@app-portal/shared/types";
 import {
-  queryOptions,
   skipToken,
   useMutation,
   useQuery,
@@ -12,32 +11,20 @@ import { useMemo, useSyncExternalStore } from "react";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwWarningToast } from "@/components/toasts/WarningToast";
-import { isTRPCClientError } from "@/config/trpc";
+import { trpc } from "@/config/trpc";
 import {
-  getJobsForApplicationResponse,
   gradingJobDoc,
   gradingJobDocInternal,
   recentGradingJobsQuery,
-  submitGradingJob,
-  submitStandaloneGradingJob,
 } from "@/services/gradingService";
 import type { GradingJobPublic } from "@/types/types";
 
-const gradingJobRoot = "grading-jobs" as const;
-
-const gradingJobQueries = {
-  root: [gradingJobRoot] as const,
-  byResponse: (responseId?: string) =>
-    queryOptions({
-      queryKey: [gradingJobRoot, "response", responseId] as const,
-      queryFn: responseId
-        ? () => getJobsForApplicationResponse(responseId)
-        : skipToken,
-    }),
-};
-
 export function useJobsForApplicationResponse(responseId?: string) {
-  return useQuery(gradingJobQueries.byResponse(responseId));
+  return useQuery(
+    trpc.grading.listForResponse.queryOptions(
+      responseId ? { responseId } : skipToken,
+    ),
+  );
 }
 
 type GradingJobSnapshotData = GradingJobPublic | GradingJobDataInternal;
@@ -51,53 +38,44 @@ type GradingJobSnapshotState<T extends GradingJobSnapshotData> = {
 export function useSubmitGradingJob() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      responseId,
-      repoURL,
-    }: {
-      responseId: string;
-      repoURL: string;
-    }) => submitGradingJob(responseId, repoURL),
-    onError: (error) => {
-      if (
-        isTRPCClientError(error) &&
-        error.data?.code === "TOO_MANY_REQUESTS"
-      ) {
-        throwWarningToast(
-          error.message ||
-            "Too many grading jobs submitted for this application. Please try again later.",
-        );
-        return;
-      }
-      throwErrorToast("Failed to submit grading job: " + error.message);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: [gradingJobRoot] });
-    },
-  });
+  return useMutation(
+    trpc.grading.submit.mutationOptions({
+      onError: (error) => {
+        if (error.data?.code === "TOO_MANY_REQUESTS") {
+          throwWarningToast(
+            error.message ||
+              "Too many grading jobs submitted for this application. Please try again later.",
+          );
+          return;
+        }
+        throwErrorToast("Failed to submit grading job: " + error.message);
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.grading.listForResponse.pathKey(),
+        });
+      },
+    }),
+  );
 }
 
 export function useSubmitStandaloneGradingJob() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      repoURL,
-      testRepo,
-    }: {
-      repoURL: string;
-      testRepo: string;
-    }) => submitStandaloneGradingJob(repoURL, testRepo),
-    onError: (error) => {
-      throwErrorToast(
-        "Failed to submit standalone grading job: " + error.message,
-      );
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: [gradingJobRoot] });
-    },
-  });
+  return useMutation(
+    trpc.grading.submitStandalone.mutationOptions({
+      onError: (error) => {
+        throwErrorToast(
+          "Failed to submit standalone grading job: " + error.message,
+        );
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.grading.listForResponse.pathKey(),
+        });
+      },
+    }),
+  );
 }
 
 function createGradingJobStore<T extends GradingJobSnapshotData>(
@@ -164,7 +142,9 @@ export function useGradingJobSnapshot(jobId?: string) {
         // frontend when grading finishes, so re-fetch the jobs-for-response
         // list on every update to this job to keep "best score" in sync.
         queryClient.invalidateQueries({
-          queryKey: [gradingJobRoot, "response", job.responseId],
+          queryKey: trpc.grading.listForResponse.queryKey({
+            responseId: job.responseId,
+          }),
         });
       }),
     [jobId, queryClient],

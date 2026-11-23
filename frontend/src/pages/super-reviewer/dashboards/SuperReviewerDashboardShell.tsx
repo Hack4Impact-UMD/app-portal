@@ -38,14 +38,9 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { trpc } from "@/config/trpc";
+import { trpc, trpcClient } from "@/config/trpc";
 import { useApplicationForm } from "@/hooks/useApplicationForm";
 import useSearch from "@/hooks/useSearch";
-import { setFormDecisionRelease } from "@/services/applicationFormsService";
-import {
-  isDecided,
-  rejectUndecidedApplicantsForForm,
-} from "@/services/statusService";
 
 export default function SuperReviewerDashboardShell() {
   const { search, setSearch } = useSearch();
@@ -64,17 +59,10 @@ export default function SuperReviewerDashboardShell() {
       setReleaseConfirm("");
       if (!formId) throw new Error("Invalid form ID");
 
-      const statuses = await queryClient.fetchQuery(
-        trpc.status.listForForm.queryOptions({ formId }),
-      );
-
-      if (statuses.some((s) => !isDecided(s.status))) {
-        throw new Error(
-          "Some applicants have not been decided yet. Can't release decisions.",
-        );
-      }
-
-      await setFormDecisionRelease(formId, released);
+      await trpcClient.forms.setDecisionsReleased.mutate({
+        id: formId,
+        released,
+      });
     },
     onSettled: () => {
       queryClient.invalidateQueries({
@@ -95,7 +83,7 @@ export default function SuperReviewerDashboardShell() {
   const rejectUndecidedMutation = useMutation({
     mutationFn: async () => {
       if (!formId) throw new Error("Invalid form ID");
-      await rejectUndecidedApplicantsForForm(formId);
+      await trpcClient.status.rejectUndecided.mutate({ formId });
     },
     onError: (err) => {
       console.log(err);

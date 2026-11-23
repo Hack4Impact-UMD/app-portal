@@ -1,4 +1,3 @@
-import { PermissionRole } from "@app-portal/shared/constants";
 import type { ApplicantRole } from "@app-portal/shared/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -14,8 +13,7 @@ import SortableHeader from "@/components/tables/SortableHeader";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
 import { Button } from "@/components/ui/button";
-import { trpc } from "@/config/trpc";
-import { setBoardApplicantRoles } from "@/services/userService";
+import { trpc, trpcClient } from "@/config/trpc";
 
 import { BoardRoleSelect } from "./BoardRoleSelect";
 import type { BoardRow } from "./useRows";
@@ -42,13 +40,11 @@ export function BoardMembersTable({
       boardId: string;
       pageIndex: number;
     }) => {
-      const board = await queryClient.fetchQuery(
-        trpc.users.get.queryOptions({ id: boardId }),
-      );
-      const prevRoles =
-        board.role === PermissionRole.Board ? (board.applicantRoles ?? []) : [];
-      const newRoles = [...prevRoles, roleToAdd];
-      return await setBoardApplicantRoles(boardId, newRoles);
+      return await trpcClient.users.toggleRolePreference.mutate({
+        id: boardId,
+        role: roleToAdd,
+        enabled: true,
+      });
     },
     onSuccess: async () => {
       await Promise.all([
@@ -72,13 +68,11 @@ export function BoardMembersTable({
       boardId: string;
       pageIndex: number;
     }) => {
-      const board = await queryClient.fetchQuery(
-        trpc.users.get.queryOptions({ id: boardId }),
-      );
-      const prevRoles =
-        board.role === PermissionRole.Board ? (board.applicantRoles ?? []) : [];
-      const newRoles = prevRoles.filter((role) => role !== roleToRemove);
-      return await setBoardApplicantRoles(boardId, newRoles);
+      return await trpcClient.users.toggleRolePreference.mutate({
+        id: boardId,
+        role: roleToRemove,
+        enabled: false,
+      });
     },
     onSuccess: async () => {
       await Promise.all([

@@ -47,7 +47,7 @@ export default function ChangeDueDateDialog({
   const handleSubmit = () => {
     updateDueDate(
       {
-        formId: form.id,
+        id: form.id,
         dueDate: date,
       },
       {

@@ -31,9 +31,11 @@ import {
   Tooltip,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAllApplicationForms } from "@/hooks/useApplicationForm";
+import {
+  useAllApplicationForms,
+  useUpdateApplicationFormActive,
+} from "@/hooks/useApplicationForm";
 import { useAuth } from "@/hooks/useAuth";
-import { useUpdateApplicationFormActive } from "@/hooks/useUpdateApplicationFormActive";
 import { useUsers } from "@/hooks/useUsers";
 import type { ApplicationForm } from "@/types/types";
 import { displayUserRoleName } from "@/utils/display";
@@ -185,7 +187,7 @@ export default function AdminHome() {
                       checked={form.isActive}
                       disabled={activePending || formsLocked}
                       onCheckedChange={(active) =>
-                        setFormActiveStatus({ formId: form.id, active })
+                        setFormActiveStatus({ id: form.id, active })
                       }
                     />
 

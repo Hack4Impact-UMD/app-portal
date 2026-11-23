@@ -157,17 +157,37 @@
             "paths": [
               {
                 "name": "firebase/firestore",
-                "importNames": ["collection", "collectionGroup"],
-                "message": "Use the typed app Firestore helper instead.",
+                "importNames": [
+                  "collection",
+                  "collectionGroup",
+                  "doc",
+                  "query",
+                  "getDoc",
+                  "getDocs",
+                  "setDoc",
+                  "addDoc",
+                  "updateDoc",
+                  "deleteDoc",
+                  "writeBatch",
+                  "runTransaction",
+                  "onSnapshot",
+                  "getFirestore",
+                ],
+                "message": "Firestore access goes through tRPC; only grading subscriptions may use it directly.",
               },
             ],
           },
         ],
       },
     },
-    // location of typed firestore helper on frontend
+    // live grading-job subscriptions are the only direct Firestore access
     {
-      "files": ["frontend/src/services/firestore.ts"],
+      "files": [
+        "frontend/src/config/firebase.ts",
+        "frontend/src/services/firestore.ts",
+        "frontend/src/services/gradingService.ts",
+        "frontend/src/hooks/useGrading.ts",
+      ],
       "rules": {
         "no-restricted-imports": "off",
       },

@@ -65,8 +65,8 @@ export default function AutograderSubmissionSummary({
     }
 
     try {
-      const onSuccess = (newJobId: string) => {
-        navigate(`/autograder/${newJobId}`);
+      const onSuccess = ({ jobId }: { jobId: string }) => {
+        navigate(`/autograder/${jobId}`);
       };
 
       if (isStandalone) {

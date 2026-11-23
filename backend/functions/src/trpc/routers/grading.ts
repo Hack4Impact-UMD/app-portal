@@ -15,6 +15,7 @@ import type { CollectionReference } from "firebase-admin/firestore";
 import { Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
 
 import { db } from "../../index";
 import type { ApplicationForm } from "../../models/appForm";
@@ -22,13 +23,14 @@ import type { GradingJobPublic } from "../../models/autograder";
 import type { GradingTaskPayload } from "../../utils/cloudTasks";
 import { publishGradingTask } from "../../utils/cloudTasks";
 import { appCollection } from "../../utils/firestore";
+import { assertCanReadResponse, loadResponse, requireUser } from "../access";
 import {
   assertGradingRateLimit,
   gradingRateLimitError,
   RATE_LIMITER_MAX_JOBS,
   RATE_LIMITER_WINDOW_MS,
 } from "../guards";
-import { roleProcedure, router } from "../init";
+import { authedProcedure, roleProcedure, router } from "../init";
 
 // Publishes a grading task to the Professor grader. In the emulator this POSTs
 // directly to the local grader and returns immediately (fire-and-forget); in
@@ -81,6 +83,19 @@ async function publishGradingJob(
 }
 
 export const gradingRouter = router({
+  listForResponse: authedProcedure
+    .input(z.object({ responseId: z.string().min(1) }))
+    .query(async ({ input, ctx }) => {
+      const user = await requireUser(ctx);
+      assertCanReadResponse(user, await loadResponse(input.responseId));
+      return (
+        await appCollection(FirestoreCollection.GradingJobsPublic)
+          .where("responseId", "==", input.responseId)
+          .orderBy("started", "desc")
+          .get()
+      ).docs.map((d) => d.data());
+    }),
+
   submit: roleProcedure([
     PermissionRole.Applicant,
     PermissionRole.Board,
