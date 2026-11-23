@@ -12,9 +12,9 @@ import {
   userSummary,
 } from "./helpers";
 import { loadForm, loadUsers, loadResponse } from "./loaders";
-import { superReviewerProcedure } from "./procedures";
+import { boardProcedure } from "./procedures";
 
-export const assignedInterviews = superReviewerProcedure
+export const assignedInterviews = boardProcedure
   .input(z.object({ responseId: z.string() }))
   .query(async ({ input: { responseId } }) => {
     const [response, assignments, interviewData] = await Promise.all([
