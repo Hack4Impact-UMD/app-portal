@@ -33,6 +33,7 @@ import { validateResponses } from "../../utils/validateResponses";
 import {
   assertCanReadForm,
   assertCanReadResponse,
+  getAssignedResponses,
   requireUser,
 } from "../access";
 import { SubmitValidationError } from "../errors";
@@ -190,7 +191,8 @@ export const applicationRouter = router({
           .get()
       ).data();
       if (!response) return null;
-      assertCanReadResponse(user, response);
+      const assigned = await getAssignedResponses(ctx.token.sub);
+      assertCanReadResponse(user, response, assigned);
       return response;
     }),
 

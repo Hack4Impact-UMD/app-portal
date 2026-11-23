@@ -242,6 +242,64 @@ export async function seedStatus(
   return doc;
 }
 
+export async function seedAssignment(
+  kind: "review" | "interview",
+  assigneeId: string,
+  response: ApplicationResponse,
+  role = ApplicantRole.Engineer,
+) {
+  const base = {
+    id: uuidv4(),
+    formId: response.applicationFormId,
+    applicantId: response.userId,
+    applicationResponseId: response.id,
+    forRole: role,
+  };
+  if (kind === "review") {
+    await appCollection(FirestoreCollection.ReviewAssignments)
+      .doc(base.id)
+      .set({ ...base, assignmentType: "review", reviewerId: assigneeId });
+  } else {
+    await appCollection(FirestoreCollection.InterviewAssignments)
+      .doc(base.id)
+      .set({ ...base, assignmentType: "interview", interviewerId: assigneeId });
+  }
+  return base;
+}
+
+export async function expectResponseReadAccess(
+  read: (
+    idToken: string,
+    responseId: string,
+    ownerId: string,
+  ) => Promise<unknown>,
+) {
+  const form = await seedForm();
+  const owner = await createUser();
+  const response = await seedResponse(owner.uid, form.id);
+
+  const otherApplicant = await createUser();
+  const unassigned = await createUser({ role: PermissionRole.Reviewer });
+  const reviewer = await createUser({ role: PermissionRole.Reviewer });
+  const interviewer = await createUser({ role: PermissionRole.Reviewer });
+  const board = await createUser({ role: PermissionRole.Board });
+  const sr = await createUser({ role: PermissionRole.SuperReviewer });
+
+  await seedAssignment("review", reviewer.uid, response);
+  await seedAssignment("interview", interviewer.uid, response);
+  // An assignment to a different response must not grant access to this one.
+  const elsewhere = await seedResponse(otherApplicant.uid, form.id);
+  await seedAssignment("review", unassigned.uid, elsewhere);
+
+  for (const u of [owner, reviewer, interviewer, board, sr]) {
+    await read(u.idToken, response.id, owner.uid);
+  }
+  for (const u of [otherApplicant, unassigned]) {
+    await expectTRPCError(read(u.idToken, response.id, owner.uid), "FORBIDDEN");
+  }
+  return { form, owner, response };
+}
+
 export async function getDoc<C extends FirestoreCollection>(
   collection: C,
   id: string,

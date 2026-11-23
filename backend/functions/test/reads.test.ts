@@ -11,6 +11,7 @@ import { appCollection } from "../src/utils/firestore";
 import {
   caller,
   createUser,
+  expectResponseReadAccess,
   expectTRPCError,
   getDoc,
   resetEmulators,
@@ -75,25 +76,13 @@ describe("users", () => {
     expect(engIds.sort()).toEqual([viewer.uid, eng.uid].sort());
   });
 
-  it("getApplicantForResponse is owner or reviewer only", async () => {
-    const form = await seedForm();
-    const owner = await createUser();
-    const other = await createUser();
-    const response = await seedResponse(owner.uid, form.id);
-
-    expect(
-      (
-        await caller(owner.idToken).users.getApplicantForResponse({
-          responseId: response.id,
-        })
-      ).id,
-    ).toBe(owner.uid);
-    await expectTRPCError(
-      caller(other.idToken).users.getApplicantForResponse({
-        responseId: response.id,
-      }),
-      "FORBIDDEN",
-    );
+  it("getApplicantForResponse is owner, assigned reviewer, or board only", async () => {
+    await expectResponseReadAccess(async (idToken, responseId, ownerId) => {
+      const user = await caller(idToken).users.getApplicantForResponse({
+        responseId,
+      });
+      expect(user.id).toBe(ownerId);
+    });
   });
 });
 
@@ -124,6 +113,13 @@ describe("forms", () => {
     expect((await caller(applicant.idToken).forms.active())?.id).toBe(open.id);
   });
 
+  it("getForResponse is owner, assigned reviewer, or board only", async () => {
+    await expectResponseReadAccess(async (idToken, responseId) => {
+      const form = await caller(idToken).forms.getForResponse({ responseId });
+      expect(form.id).toBeTruthy();
+    });
+  });
+
   it("invited lists only the caller's invitations", async () => {
     const me = await createUser();
     const mine = await seedForm({ isPrivate: true, invitedUsers: [me.uid] });
@@ -135,19 +131,11 @@ describe("forms", () => {
 });
 
 describe("application reads", () => {
-  it("get is owner or reviewer only", async () => {
-    const form = await seedForm();
-    const owner = await createUser();
-    const other = await createUser();
-    const response = await seedResponse(owner.uid, form.id);
-
-    expect(
-      (await caller(owner.idToken).application.get({ id: response.id }))?.id,
-    ).toBe(response.id);
-    await expectTRPCError(
-      caller(other.idToken).application.get({ id: response.id }),
-      "FORBIDDEN",
-    );
+  it("get is owner, assigned reviewer, or board only", async () => {
+    await expectResponseReadAccess(async (idToken, responseId) => {
+      const res = await caller(idToken).application.get({ id: responseId });
+      expect(res?.id).toBe(responseId);
+    });
   });
 
   it("mineWithSemester joins the form", async () => {

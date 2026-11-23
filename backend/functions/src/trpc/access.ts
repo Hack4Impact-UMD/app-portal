@@ -47,22 +47,35 @@ export function assertCanReadForm(user: UserProfile, form: ApplicationForm) {
 export function assertCanReadResponse(
   user: UserProfile,
   response: ApplicationResponse,
+  assigned?: Set<string>,
 ) {
-  if (isReviewCapableUser(user) || response.userId === user.id) return;
+  if (
+    isBoardOrAbove(user) ||
+    (isReviewCapableUser(user) && assigned?.has(response.id)) ||
+    response.userId === user.id
+  )
+    return;
   logger.warn(`User ${user.id} may not read response ${response.id}`);
   throw new TRPCError({ code: "FORBIDDEN" });
 }
 
 export async function getAssignedResponses(reviewerId: string) {
-  const reviewAssignments = appCollection(FirestoreCollection.ReviewAssignments);
-  const interviewAssignments = appCollection(FirestoreCollection.InterviewAssignments);
+  const reviewAssignments = appCollection(
+    FirestoreCollection.ReviewAssignments,
+  );
+  const interviewAssignments = appCollection(
+    FirestoreCollection.InterviewAssignments,
+  );
 
-  const reviewResponseIds = (await reviewAssignments.where("reviewerId", "==", reviewerId).get()).docs.map(d => d.data().applicationResponseId);
-  const interviewResponseIds = (await interviewAssignments.where("interviewerId", "==", reviewerId).get()).docs.map(d => d.data().applicationResponseId);
+  const reviewResponseIds = (
+    await reviewAssignments.where("reviewerId", "==", reviewerId).get()
+  ).docs.map((d) => d.data().applicationResponseId);
+  const interviewResponseIds = (
+    await interviewAssignments.where("interviewerId", "==", reviewerId).get()
+  ).docs.map((d) => d.data().applicationResponseId);
 
-  return [...new Set([...reviewResponseIds, ...interviewResponseIds])];
+  return new Set([...reviewResponseIds, ...interviewResponseIds]);
 }
-
 
 export function isBoardOrAbove(user: UserProfile) {
   return (

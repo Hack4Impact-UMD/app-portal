@@ -11,6 +11,7 @@ import {
   assertCanReadForm,
   assertCanReadResponse,
   canReadForm,
+  getAssignedResponses,
   requireUser,
 } from "../access";
 import { authedProcedure, router } from "../init";
@@ -42,7 +43,8 @@ export const formsRouter = router({
       if (!response) {
         throw new TRPCError({ code: "NOT_FOUND", message: "No response" });
       }
-      assertCanReadResponse(user, response);
+      const assigned = await getAssignedResponses(ctx.token.sub);
+      assertCanReadResponse(user, response, assigned);
 
       const form = await loadForm(response.applicationFormId);
       assertCanReadForm(user, form);

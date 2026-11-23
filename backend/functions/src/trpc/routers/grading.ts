@@ -23,7 +23,12 @@ import type { GradingJobPublic } from "../../models/autograder";
 import type { GradingTaskPayload } from "../../utils/cloudTasks";
 import { publishGradingTask } from "../../utils/cloudTasks";
 import { appCollection } from "../../utils/firestore";
-import { assertCanReadResponse, loadResponse, requireUser } from "../access";
+import {
+  assertCanReadResponse,
+  getAssignedResponses,
+  loadResponse,
+  requireUser,
+} from "../access";
 import {
   assertGradingRateLimit,
   gradingRateLimitError,
@@ -87,7 +92,12 @@ export const gradingRouter = router({
     .input(z.object({ responseId: z.string().min(1) }))
     .query(async ({ input, ctx }) => {
       const user = await requireUser(ctx);
-      assertCanReadResponse(user, await loadResponse(input.responseId));
+      const assigned = await getAssignedResponses(user.id);
+      assertCanReadResponse(
+        user,
+        await loadResponse(input.responseId),
+        assigned,
+      );
       return (
         await appCollection(FirestoreCollection.GradingJobsPublic)
           .where("responseId", "==", input.responseId)

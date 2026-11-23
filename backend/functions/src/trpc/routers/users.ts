@@ -16,6 +16,7 @@ import { getDocsById } from "../../utils/batch";
 import { appCollection } from "../../utils/firestore";
 import {
   assertCanReadResponse,
+  getAssignedResponses,
   isReviewCapableUser,
   requireUser,
 } from "../access";
@@ -87,7 +88,8 @@ export const usersRouter = router({
           .get()
       ).data();
       if (!response) throw new TRPCError({ code: "NOT_FOUND" });
-      assertCanReadResponse(me, response);
+      const assigned = await getAssignedResponses(me.id);
+      assertCanReadResponse(me, response, assigned);
 
       const user = (
         await appCollection(FirestoreCollection.Users)
