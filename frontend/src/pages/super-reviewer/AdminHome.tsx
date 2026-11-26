@@ -1,9 +1,9 @@
 import { PermissionRole } from "@app-portal/shared/constants";
 import {
+  BanIcon,
   CalendarClockIcon,
   EllipsisVertical,
   LockIcon,
-  LucidePlus,
   MailIcon,
   MailOpenIcon,
   PlusIcon,
@@ -19,7 +19,6 @@ import UploadInterviewRubricDialog from "@/components/admin/UploadInterviewRubri
 import UploadReviewRubricDialog from "@/components/admin/UploadReviewRubricDialog";
 import ChangeDueDateDialog from "@/components/dor/ChangeDueDateDialog/ChangeDueDateDialog";
 import { CreateFormWizard } from "@/components/dor/CreateFormWizard/CreateFormWizard";
-import CreatePrivateFormDialog from "@/components/dor/CreatePrivateFormDialog/CreatePrivateFormDialog";
 import DuplicateFormDialog from "@/components/dor/DuplicateFormDialog/DuplicateFormDialog";
 import InviteUsersDialog from "@/components/dor/InviteUsersDialog/InviteUsersDialog";
 import CreateInternalApplicantDialog from "@/components/reviewer/CreateInternalApplicantDialog";
@@ -46,7 +45,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUsers } from "@/hooks/useUsers";
 import { cn } from "@/lib/utils";
 import type { ApplicationForm } from "@/types/types";
-import { displayRelativeTime, displayUserRoleName } from "@/utils/display";
+import {
+  displayApplicantRoleNameNoEmoji,
+  displayRelativeTime,
+  displayUserRoleName,
+} from "@/utils/display";
 import { isPrivateForm } from "@/utils/form";
 
 type FormAction = "duplicate" | "dueDate" | "invite";
@@ -60,8 +63,6 @@ export default function AdminHome() {
   const [selectedForm, setSelectedForm] = useState<ApplicationForm>();
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
   const [showDueDateDialog, setShowDueDateDialog] = useState(false);
-  const [showCreatePrivateFormDialog, setShowCreatePrivateFormDialog] =
-    useState(false);
   const [showInviteUsersDialog, setShowInviteUsersDialog] = useState(false);
   const [formsLocked, setFormsLocked] = useState(true);
   const [formWizardOpen, setFormWizardOpen] = useState(false);
@@ -179,7 +180,7 @@ export default function AdminHome() {
                 size="sm"
                 onClick={() => setFormWizardOpen(true)}
               >
-                <LucidePlus /> Create New Form
+                <PlusIcon className="size-4" /> Create New Form
               </Button>
               <CreateFormWizard
                 open={formWizardOpen}
@@ -208,18 +209,6 @@ export default function AdminHome() {
             title="Private forms"
             count={privateForms.length}
             description="Hidden from applicants except the people invited."
-            action={
-              isSuperReviewer && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowCreatePrivateFormDialog(true)}
-                >
-                  <PlusIcon className="size-4" />
-                  Create private form
-                </Button>
-              )
-            }
           >
             {privateForms.length > 0 ? (
               <ul className="flex flex-col gap-2">
@@ -227,8 +216,9 @@ export default function AdminHome() {
               </ul>
             ) : (
               <EmptyState>
-                No private forms yet. Create one to invite specific applicants,
-                like a late round or internal transfer.
+                No private forms yet. Use "Create New Form" and mark it private
+                to invite specific applicants, like a late round or internal
+                transfer.
               </EmptyState>
             )}
           </FormSection>
@@ -272,10 +262,6 @@ export default function AdminHome() {
 
       {isSuperReviewer && (
         <>
-          <CreatePrivateFormDialog
-            open={showCreatePrivateFormDialog}
-            onOpenChange={setShowCreatePrivateFormDialog}
-          />
           {selectedForm && (
             <>
               <DuplicateFormDialog
@@ -400,6 +386,7 @@ function FormRow({
   const isPastDue = dueDate.getTime() < Date.now();
   const isPrivate = isPrivateForm(form);
   const invited = form.invitedUsers ?? [];
+  const disabledRoles = form.disabledRoles ?? [];
 
   return (
     <li
@@ -465,6 +452,13 @@ function FormRow({
                   )}
                 </TooltipContent>
               </Tooltip>
+            )}
+            {disabledRoles.length > 0 && (
+              <span className="flex items-center gap-1.5">
+                <BanIcon className="size-4" />
+                Closed to{" "}
+                {disabledRoles.map(displayApplicantRoleNameNoEmoji).join(", ")}
+              </span>
             )}
             <span className="font-mono text-xs truncate">{form.id}</span>
           </div>

@@ -4,6 +4,7 @@ import {
   useQueryClient,
   skipToken,
 } from "@tanstack/react-query";
+import { Timestamp } from "firebase/firestore";
 
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { throwSuccessToast } from "@/components/toasts/SuccessToast";
@@ -63,10 +64,14 @@ export function useDuplicateForm() {
       originalForm,
       newFormId,
       newFormSemester,
+      isPrivate,
+      dueDate,
     }: {
       originalForm: ApplicationForm;
       newFormId: string;
       newFormSemester: string;
+      isPrivate?: boolean;
+      dueDate?: Date;
     }) =>
       trpcClient.application.createForm.mutate({
         form: {
@@ -75,6 +80,8 @@ export function useDuplicateForm() {
           semester: newFormSemester,
           isActive: false,
           decisionsReleased: false,
+          ...(isPrivate !== undefined && { isPrivate, invitedUsers: [] }),
+          ...(dueDate && { dueDate: Timestamp.fromDate(dueDate) }),
         },
         createOnly: true,
       }),

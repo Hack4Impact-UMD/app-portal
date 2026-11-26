@@ -35,3 +35,27 @@ export function useRubricsForFormRole(formId?: string, role?: ApplicantRole) {
     ),
   );
 }
+
+export function useCreateRubricsForForm() {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    trpc.rubrics.createForForm.mutationOptions({
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.rubrics.pathKey() });
+      },
+    }),
+  );
+}
+
+export function useDuplicateRubricsFromForm() {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    trpc.rubrics.duplicateFromForm.mutationOptions({
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.rubrics.pathKey() });
+      },
+    }),
+  );
+}

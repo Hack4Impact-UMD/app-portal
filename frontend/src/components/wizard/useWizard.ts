@@ -1,4 +1,4 @@
-import { useReducer } from "react";
+import { useCallback, useReducer } from "react";
 
 type ReducerState = {
   step: number;
@@ -14,7 +14,7 @@ export function useWizard(steps: number) {
   ): ReducerState {
     switch (action) {
       case "complete":
-        return { ...state, complete: true };
+        return state.complete ? state : { ...state, complete: true };
       case "next":
         return state.complete && state.step < steps - 1
           ? { complete: false, step: state.step + 1 }
@@ -26,9 +26,9 @@ export function useWizard(steps: number) {
 
   const [state, dispatch] = useReducer(reducer, { step: 0, complete: false });
 
-  const next = () => dispatch("next");
-  const complete = () => dispatch("complete");
-  const reset = () => dispatch("reset");
+  const next = useCallback(() => dispatch("next"), []);
+  const complete = useCallback(() => dispatch("complete"), []);
+  const reset = useCallback(() => dispatch("reset"), []);
   const isLast = () => steps - 1 === state.step;
 
   return {

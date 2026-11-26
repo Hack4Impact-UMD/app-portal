@@ -1,34 +1,47 @@
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+
 import { Dialog } from "@/components/ui/dialog";
 import { useWizard } from "@/components/wizard/useWizard";
-import { useWizardStep, Wizard } from "@/components/wizard/Wizard";
+import { Wizard } from "@/components/wizard/Wizard";
 import { WizardStep } from "@/components/wizard/WizardStep";
+
+import { FormStep } from "./FormStep";
+import { RemindersStep } from "./RemindersStep";
+import { RubricStep } from "./RubricStep";
 
 type CreateFormWizardProps = {
   open: boolean;
   setOpen: (_: boolean) => void;
 };
 
-const Slide = () => {
-  const wizard = useWizardStep();
-
-  return <Button onClick={wizard?.complete}>Complete</Button>;
-};
-
 export function CreateFormWizard({ open, setOpen }: CreateFormWizardProps) {
   const wizard = useWizard(3);
+  const [formId, setFormId] = useState<string>();
+
+  const handleOpenChange = (next: boolean) => {
+    if (
+      (wizard.state.step === 0 && !wizard.state.complete) ||
+      (wizard.isLast() && wizard.state.complete)
+    ) {
+      if (!next) {
+        wizard.reset();
+        setFormId(undefined);
+      }
+      setOpen(next);
+    }
+  };
 
   return (
-    <Dialog open={open}>
-      <Wizard onComplete={() => setOpen(false)} wizard={wizard}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <Wizard onComplete={() => handleOpenChange(false)} wizard={wizard}>
         <WizardStep title="Create Form">
-          <Slide />
+          <FormStep onCreated={setFormId} />
         </WizardStep>
         <WizardStep title="Create Rubrics">
-          <Slide />
+          {formId && <RubricStep formId={formId} />}
         </WizardStep>
         <WizardStep title="Checklist">
-          <Slide />
+          <RemindersStep />
         </WizardStep>
       </Wizard>
     </Dialog>

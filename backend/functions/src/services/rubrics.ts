@@ -21,6 +21,18 @@ export async function listRubricsForForm(kind: RubricKind, formId: string) {
   );
 }
 
+export async function createRubric(
+  kind: RubricKind,
+  rubric: RoleReviewRubric,
+  tx?: Transaction,
+) {
+  if (tx) {
+    tx.set(rubrics(kind).doc(rubric.id), rubric);
+  } else {
+    await rubrics(kind).doc(rubric.id).set(rubric);
+  }
+}
+
 export async function replaceRubricsForForm(
   kind: RubricKind,
   formId: string,

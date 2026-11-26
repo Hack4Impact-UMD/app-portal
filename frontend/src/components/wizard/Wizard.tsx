@@ -27,7 +27,7 @@ export function Wizard({ children, wizard, onComplete }: WizardProps) {
 
   return (
     <WizardContext.Provider value={{ ...wizard, onComplete }}>
-      <DialogContent>
+      <DialogContent showCloseButton={false}>
         {active}
         <DialogFooter>
           <Button
