@@ -53,23 +53,23 @@ export function RubricStep({ formId }: { formId: string }) {
 
   const source =
     sourceId &&
-      !reviewFetching &&
-      !interviewFetching &&
-      reviewRubrics &&
-      interviewRubrics
+    !reviewFetching &&
+    !interviewFetching &&
+    reviewRubrics &&
+    interviewRubrics
       ? {
-        review: {
-          rubrics: reviewRubrics,
-          warnings: validateRubricScoreKeys(reviewRubrics, form.scoreWeights),
-        },
-        interview: {
-          rubrics: interviewRubrics,
-          warnings: validateRubricScoreKeys(
-            interviewRubrics,
-            form.interviewScoreWeights,
-          ),
-        },
-      }
+          review: {
+            rubrics: reviewRubrics,
+            warnings: validateRubricScoreKeys(reviewRubrics, form.scoreWeights),
+          },
+          interview: {
+            rubrics: interviewRubrics,
+            warnings: validateRubricScoreKeys(
+              interviewRubrics,
+              form.interviewScoreWeights,
+            ),
+          },
+        }
       : undefined;
   const sourceMatches =
     !!source &&
