@@ -3,8 +3,8 @@ import { useParams } from "react-router-dom";
 
 import { ReviewerAssignmentsTable } from "@/components/dor/ReviewerAssignmentsDashboard";
 import { useReviewerAssignments } from "@/components/dor/ReviewerAssignmentsDashboard/useRows";
-import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 
 export function ReviewerAssignmentsPage() {
@@ -19,14 +19,19 @@ export function ReviewerAssignmentsPage() {
   const { data, isPending, error } = useReviewerAssignments(formId, reviewerId);
 
   if (!formId || !reviewerId) return <p>Form or reviewer ID not provided!</p>;
-  if (isPending) return <Loading />;
+  if (isPending)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
   if (error) return <p>Failed to fetch assignments: {error.message}</p>;
 
   const { reviewer, numReviewed, rows: assignedApps } = data;
 
   return (
     <div className="w-full h-full bg-lightgray flex flex-col items-center p-2 py-4">
-      <div className="max-w-5xl w-full rounded bg-white p-4 flex flex-col gap-2">
+      <div className="max-w-7xl w-full rounded bg-white p-4 flex flex-col gap-2">
         <div className="flex flex-row items-start pb-4 border-b">
           <span className="text-center w-full font-bold text-muted-foreground">
             You are viewing all assigned applications for reviewer{" "}

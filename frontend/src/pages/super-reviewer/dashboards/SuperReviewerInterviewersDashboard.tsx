@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 
 import { InterviewersTable } from "@/components/dor/InterviewersDashboard";
 import { useRows } from "@/components/dor/InterviewersDashboard/useRows";
-import Loading from "@/components/Loading";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import useSearch from "@/hooks/useSearch";
 
@@ -36,7 +36,12 @@ export default function SuperReviewerInterviewersDashboard() {
 
   if (!formId) return <p>No formId found! The url is probably malformed.</p>;
   if (error) return <p>Failed to fetch interviewers: {error.message}</p>;
-  if (isPending || !rows) return <Loading />;
+  if (isPending || !rows)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
 
   return (
     <div>

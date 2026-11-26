@@ -1,7 +1,9 @@
 import { ApplicationStatus } from "@app-portal/shared/constants";
+import { ArrowUpRight, Globe } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import DueSoonAlert from "@/components/applicant/DueSoonAlert";
 import PrivateFormAlert from "@/components/applicant/PrivateFormAlert";
 import FormMarkdown from "@/components/form/FormMarkdown";
 import Loading from "@/components/Loading";
@@ -12,6 +14,7 @@ import {
   useInvitedForms,
 } from "@/hooks/useApplicationForm";
 import { useMyApplicationResponses } from "@/hooks/useApplicationResponses";
+import { MAIN_SITE_URL, SOCIAL_LINKS } from "@/utils/links";
 
 const AppOverview: React.FC = () => {
   const {
@@ -84,10 +87,8 @@ const AppOverview: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="mt-5 max-w-5xl w-full px-5 sm:px-0">
-        {/* Without this, a failed lookup is indistinguishable from having no
-            invitations, and an invited user would just see nothing. */}
+    <div className="flex flex-col items-center px-4">
+      <div className="mt-5 max-w-7xl w-full px-5 sm:px-0">
         {invitedFormsError && (
           <p className="mb-5 text-red-600">
             Something went wrong while checking for private applications you
@@ -103,23 +104,27 @@ const AppOverview: React.FC = () => {
         ))}
       </div>
 
+      {form && !applied && (
+        <DueSoonAlert className="max-w-7xl mb-3" dueDate={form?.dueDate} />
+      )}
       {!form ? (
-        <div className="mx-auto max-w-5xl w-full px-5 py-5 font-sans leading-relaxed">
+        <div className="mx-auto max-w-7xl w-full px-5 py-5 font-sans leading-relaxed">
           <h1 className="mb-3 text-5xl text-black">Overview</h1>
           <div className="flex gap-2 flex-col sm:flex-row items-start justify-between mb-5">
             There are no active forms at the moment.
           </div>
         </div>
       ) : (
-        <div className="mb-5 max-w-5xl w-full px-10 py-5 font-sans leading-relaxed h-full rounded-xl shadow-sm border border-gray-200 bg-gray-50">
-          <h1 className="mb-3 text-5xl text-black">Overview</h1>
-          <div className="flex gap-2 flex-col sm:flex-row items-start justify-between mb-5">
-            <div className="flex flex-col">
-              <h2 className="text-blue text-2xl">Hack4Impact-UMD New Member</h2>
-              <h3 className="text-blue text-2xl">
-                Application {form.semester}
-              </h3>
-              <p className="text-gray-500 text-lg">
+        <div className="mb-5 max-w-7xl w-full px-4 md:px-10 py-8 md:py-10 font-sans leading-relaxed h-full rounded-xl shadow-sm border border-gray-200 bg-white">
+          <div className="flex gap-4 flex-col sm:flex-row items-start justify-between mb-8 pb-8 border-b border-gray-200">
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-semibold uppercase tracking-wider text-blue">
+                Overview
+              </p>
+              <h1 className="text-3xl md:text-4xl font-semibold tracking-tight leading-tight text-black text-balance">
+                Hack4Impact-UMD New Member Application {form.semester}
+              </h1>
+              <p className="text-gray-500 text-base">
                 Due:{" "}
                 {form.dueDate.toDate().toLocaleString("en-US", {
                   year: "numeric",
@@ -132,29 +137,64 @@ const AppOverview: React.FC = () => {
                 })}
               </p>
             </div>
-            {
-              <Button
-                onClick={handleApply}
-                disabled={
-                  wait || (Date.now() > form.dueDate.toMillis() && !applied)
-                }
-                className="w-full sm:w-fit cursor-pointer inline-flex items-center justify-center px-10 py-2 rounded-full bg-black
-                text-white transition-colors hover:bg-darkgray"
-              >
-                {applied
-                  ? "Go to status page"
-                  : Date.now() <= form.dueDate.toMillis()
-                    ? inProgress
-                      ? "Continue Application"
-                      : "Apply"
-                    : "Application Closed"}
-              </Button>
-            }
+            <Button
+              onClick={handleApply}
+              disabled={
+                wait || (Date.now() > form.dueDate.toMillis() && !applied)
+              }
+              className="w-full sm:w-fit shrink-0 sm:mt-7 cursor-pointer inline-flex items-center justify-center px-10 py-2 rounded-full bg-black
+              text-white transition-colors hover:bg-darkgray"
+            >
+              {applied
+                ? "Go to status page"
+                : Date.now() <= form.dueDate.toMillis()
+                  ? inProgress
+                    ? "Continue Application"
+                    : "Apply"
+                  : "Application Closed"}
+            </Button>
           </div>
-          <div className="font-[Karla] text-sm font-normal leading-tight text-justify [text-justify:inter-word] h-full">
-            <FormMarkdown className="text-black">
-              {form.description}
-            </FormMarkdown>
+          <div className="grid gap-10 xl:grid-cols-[minmax(0,48rem)_minmax(0,1fr)] lg:gap-16">
+            <div className="font-[Karla] text-sm font-normal min-w-0">
+              <FormMarkdown className="text-gray-800 leading-relaxed prose-strong:text-black [&_li::marker]:text-gray-500 [&_ul]:pl-0">
+                {form.description}
+              </FormMarkdown>
+            </div>
+            <aside className="xl:justify-self-end border p-4 rounded w-72 h-fit bg-gray-100/30">
+              <h2 className="mb-3 border-b pb-2 text-base font-semibold text-gray-600">
+                Learn more
+              </h2>
+              <ul className="flex flex-col gap-1 text-sm">
+                {[
+                  {
+                    href: MAIN_SITE_URL,
+                    label: "umd.hack4impact.org",
+                    Icon: Globe,
+                  },
+                  ...SOCIAL_LINKS,
+                ].map(({ href, label, Icon }) => (
+                  <li key={label}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group -mx-2 flex items-center gap-2.5 rounded-md px-2 py-1.5 text-gray-700 transition-colors hover:bg-gray-100 hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue"
+                    >
+                      <Icon
+                        className="size-4 text-gray-500 group-hover:text-black"
+                        strokeWidth={1.75}
+                        aria-hidden="true"
+                      />
+                      {label}
+                      <ArrowUpRight
+                        className="size-3.5 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100"
+                        aria-hidden="true"
+                      />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </aside>
           </div>
         </div>
       )}

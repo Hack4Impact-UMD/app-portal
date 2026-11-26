@@ -1,30 +1,14 @@
-import { Github, Instagram, Linkedin } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "@/hooks/useAuth";
+import { SOCIAL_LINKS } from "@/utils/links";
 import {
   loggedInMessages,
   loggedOutMessages,
   pickWeightedMessage,
 } from "@/utils/welcomeMessages";
-
-export const MAIN_SITE_URL = "https://umd.hack4impact.org/";
-
-const SOCIAL_LINKS = [
-  {
-    href: "https://www.instagram.com/hack4impactumd/",
-    label: "Instagram",
-    Icon: Instagram,
-  },
-  {
-    href: "https://www.linkedin.com/company/hack4impact-umd",
-    label: "LinkedIn",
-    Icon: Linkedin,
-  },
-  { href: "https://github.com/Hack4Impact-UMD", label: "GitHub", Icon: Github },
-];
 
 function useWelcomeMessage() {
   const { user } = useAuth();
@@ -68,12 +52,6 @@ interface SplitLayoutProps {
   children: ReactNode;
 }
 
-/**
- * Two-column page shell for the public pages (landing, log in, sign up): a
- * navy-tinted member photo with the logo, welcome message and social links on
- * the left, and the page's content on the right. On phones the photo becomes
- * a band above the content.
- */
 export default function SplitLayout({ topRight, children }: SplitLayoutProps) {
   const { isLoading } = useAuth();
   const message = useWelcomeMessage();
@@ -94,20 +72,20 @@ export default function SplitLayout({ topRight, children }: SplitLayoutProps) {
         />
         <Link
           to={"/"}
-          className="flex w-fit items-center gap-3 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-h4i-navy"
+          className="flex w-fit items-center gap-2 md:gap-3 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-h4i-navy"
         >
           <img
             src="h4i_logo_white.svg"
             alt="Hack4Impact-UMD"
-            className="h-[27px] w-auto"
+            className="h-[27px] w-40 md:w-auto"
           />
           <span aria-hidden="true" className="h-5 w-px bg-white/40" />
-          <span className="text-lg font-bold tracking-wide text-white/90">
+          <span className="md:text-lg font-bold md:tracking-wide text-white/90">
             Application Portal
           </span>
         </Link>
 
-        <div className="mt-8 flex items-center justify-between gap-4 text-sm text-white/80">
+        <div className="mt-8 flex flex-col items-start md:flex-row items-center justify-between gap-1 md:gap-4 text-sm text-white/80">
           <span>{isLoading ? "Hacking and impacting..." : message}</span>
           <ul aria-label="Social media" className="flex items-center gap-1">
             {SOCIAL_LINKS.map(({ href, label, Icon }) => (

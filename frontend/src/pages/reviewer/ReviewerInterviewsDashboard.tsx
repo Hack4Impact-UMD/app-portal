@@ -28,7 +28,7 @@ export default function ReviewerInterviewsDashboard() {
   const { rows: assignedInterviews, numInterviewed: numReviewed } = data;
 
   return (
-    <div className="max-w-5xl w-full rounded bg-white flex flex-col gap-2">
+    <div className="max-w-7xl w-full rounded bg-white flex flex-col gap-2">
       <div className="flex flex-row gap-2 items-center min-h-28 justify-stretch mt-4">
         <Button
           className={`h-28 min-w-40 text-white p-4 flex flex-col items-start 

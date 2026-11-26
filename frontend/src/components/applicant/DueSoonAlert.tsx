@@ -2,10 +2,18 @@ import type { TimestampLike } from "@app-portal/shared/types";
 import { TriangleAlertIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { cn } from "@/lib/utils";
+
 // 3 days
 const DUE_SOON_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 
-export default function DueSoonAlert({ dueDate }: { dueDate: TimestampLike }) {
+export default function DueSoonAlert({
+  dueDate,
+  className = "",
+}: {
+  dueDate: TimestampLike;
+  className?: string;
+}) {
   const due = dueDate.toDate();
 
   const shouldShow = () => {
@@ -30,7 +38,10 @@ export default function DueSoonAlert({ dueDate }: { dueDate: TimestampLike }) {
   return (
     <div
       role="alert"
-      className="flex w-full max-w-3xl items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900"
+      className={cn(
+        "flex w-full max-w-3xl items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900",
+        className,
+      )}
     >
       <TriangleAlertIcon
         className="mt-1 size-5 shrink-0 text-amber-600"

@@ -101,7 +101,7 @@ export default function ChangeDueDateDialog({
                   mode="single"
                   selected={date}
                   defaultMonth={date}
-                  hidden={{ before: new Date() }}
+                  disabled={{ before: new Date() }}
                   onSelect={(newDate) => {
                     if (newDate) setDate(newDate);
                     setPopoverOpen(false);

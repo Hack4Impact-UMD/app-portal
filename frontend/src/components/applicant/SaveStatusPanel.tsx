@@ -1,11 +1,23 @@
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import useForm from "@/hooks/useForm";
 import { cn } from "@/lib/utils";
 
-/** Decorative bufo emote; the adjacent text carries the meaning. */
-function Bufo({ src }: { src: string }) {
+function Bufo({ src, name }: { src: string; name: string }) {
   return (
-    <img src={src} alt="" aria-hidden="true" className="size-6 shrink-0" />
+    <Tooltip>
+      <TooltipTrigger>
+        <img src={src} alt="" aria-hidden="true" className="size-6 shrink-0" />
+      </TooltipTrigger>
+      <TooltipContent>
+        <img src={src} alt="" aria-hidden="true" className="size-32 shrink-0" />
+        <p className="text-center">{name}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -35,12 +47,15 @@ export default function SaveStatusPanel({ className }: { className?: string }) {
       >
         {!saveStatus.saved && !saveStatus.isError && saveStatus.isSaving ? (
           <p className="pulse font-bold flex flex-row items-center gap-1">
-            <Bufo src="/bufo-offers-a-loading-spinner.gif" />
+            <Bufo
+              name="bufo-offers-loading-spinner"
+              src="/bufo-offers-a-loading-spinner.gif"
+            />
             Saving...
           </p>
         ) : !saveStatus.saved && saveStatus.isError ? (
           <p className="flex flex-row items-center gap-1">
-            <Bufo src="/bufo-alarma.gif" />
+            <Bufo name="bufo-alarma" src="/bufo-alarma.gif" />
             <span>
               Failed to save
               {lastSaveTime && ` (last save: ${lastSaveTime})`}
@@ -48,12 +63,15 @@ export default function SaveStatusPanel({ className }: { className?: string }) {
           </p>
         ) : lastSaveTime ? (
           <p className="flex flex-row items-center gap-1">
-            <Bufo src="/bufo-yay.gif" />
+            <Bufo name="bufo-yay" src="/bufo-yay.gif" />
             Last save: {lastSaveTime}
           </p>
         ) : (
           <p className="flex flex-row items-center gap-1">
-            <Bufo src="/bufo-offers-a-loading-spinner.gif" />
+            <Bufo
+              name="bufo-offers-loading-spinner"
+              src="/bufo-offers-a-loading-spinner.gif"
+            />
             Form not yet saved!
           </p>
         )}

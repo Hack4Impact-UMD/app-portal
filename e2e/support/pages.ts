@@ -13,5 +13,7 @@ export async function logIn(page: Page, email: string, password = PASSWORD) {
 export async function logInAsApplicant(page: Page, email: string) {
   await logIn(page, email);
   await expect(page).toHaveURL(/\/apply$/);
-  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /New Member Application/ }),
+  ).toBeVisible();
 }

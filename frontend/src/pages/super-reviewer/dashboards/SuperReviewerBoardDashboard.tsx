@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 
 import { BoardMembersTable } from "@/components/dor/BoardDashboard/BoardMembersTable";
 import { useRows } from "@/components/dor/BoardDashboard/useRows";
-import Loading from "@/components/Loading";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import useSearch from "@/hooks/useSearch";
 
@@ -23,7 +23,12 @@ export default function SuperReviewerBoardDashboard() {
   if (!formId) return <p>No formId found! The url is probably malformed.</p>;
   if (boardError)
     return <p>Failed to fetch board members: {boardError.message}</p>;
-  if (boardPending || !boardMembers) return <Loading />;
+  if (boardPending || !boardMembers)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
 
   return (
     <div>

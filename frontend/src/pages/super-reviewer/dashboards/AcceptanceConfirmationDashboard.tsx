@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 
 import { AcceptanceConfirmationTable } from "@/components/dor/AcceptanceConfirmationDashboard";
 import { useRows } from "@/components/dor/AcceptanceConfirmationDashboard/useRows";
-import Loading from "@/components/Loading";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import useSearch from "@/hooks/useSearch";
 
@@ -23,7 +23,12 @@ export default function AcceptanceConfirmationDashboard() {
 
   if (!formId) return <p>No formId found! The URL is probably malformed.</p>;
   if (error) return <p>Something went wrong: {error.message}</p>;
-  if (isPending || !confirmations) return <Loading />;
+  if (isPending || !confirmations)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
 
   return (
     <div>
