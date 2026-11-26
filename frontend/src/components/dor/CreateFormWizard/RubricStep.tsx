@@ -1,4 +1,3 @@
-import type { ApplicantRole } from "@app-portal/shared/constants";
 import type { RoleReviewRubric } from "@app-portal/shared/types";
 import type { RubricValidationWarnings } from "@app-portal/shared/utils";
 import { validateRubricScoreKeys } from "@app-portal/shared/utils";
@@ -20,11 +19,9 @@ import {
   useDuplicateRubricsFromForm,
   useRubricsForForm,
 } from "@/hooks/useRubrics";
-import type { ApplicationForm } from "@/types/types";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
 
 type Mode = "copy" | "empty";
-type Weights = ApplicationForm["scoreWeights"];
 
 export function RubricStep({ formId }: { formId: string }) {
   const wizard = useWizardStep();
@@ -56,23 +53,23 @@ export function RubricStep({ formId }: { formId: string }) {
 
   const source =
     sourceId &&
-    !reviewFetching &&
-    !interviewFetching &&
-    reviewRubrics &&
-    interviewRubrics
+      !reviewFetching &&
+      !interviewFetching &&
+      reviewRubrics &&
+      interviewRubrics
       ? {
-          review: {
-            rubrics: reviewRubrics,
-            warnings: validateRubricScoreKeys(reviewRubrics, form.scoreWeights),
-          },
-          interview: {
-            rubrics: interviewRubrics,
-            warnings: validateRubricScoreKeys(
-              interviewRubrics,
-              form.interviewScoreWeights,
-            ),
-          },
-        }
+        review: {
+          rubrics: reviewRubrics,
+          warnings: validateRubricScoreKeys(reviewRubrics, form.scoreWeights),
+        },
+        interview: {
+          rubrics: interviewRubrics,
+          warnings: validateRubricScoreKeys(
+            interviewRubrics,
+            form.interviewScoreWeights,
+          ),
+        },
+      }
       : undefined;
   const sourceMatches =
     !!source &&
@@ -221,30 +218,6 @@ function SourceSummary({
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function WeightKeys({ label, weights }: { label: string; weights: Weights }) {
-  const roles = (
-    Object.entries(weights) as [ApplicantRole, Record<string, number>][]
-  ).filter(([, w]) => Object.keys(w).length > 0);
-
-  return (
-    <div>
-      <p className="font-medium text-black">{label}</p>
-      {roles.length === 0 ? (
-        <p className="text-muted-foreground">No weighted roles.</p>
-      ) : (
-        <ul className="list-disc pl-6 text-muted-foreground">
-          {roles.map(([role, w]) => (
-            <li key={role}>
-              {displayApplicantRoleNameNoEmoji(role)}:{" "}
-              {Object.keys(w).join(", ")}
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }
