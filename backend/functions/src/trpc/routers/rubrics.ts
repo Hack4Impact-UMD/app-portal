@@ -1,8 +1,10 @@
 import { ApplicantRole } from "@app-portal/shared/constants";
+import type { RoleReviewRubric } from "@app-portal/shared/types";
 import { validateRubricScoreKeys } from "@app-portal/shared/utils";
 import { TRPCError } from "@trpc/server";
+import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { v4 as uuidv4 } from "uuid"
+
 import { runTransaction } from "../../services/db";
 import { getForm } from "../../services/forms";
 import {
@@ -14,12 +16,17 @@ import {
   reviewCapableProcedure,
   superReviewerProcedure,
 } from "./rows/procedures";
-import type { RoleReviewRubric } from "@app-portal/shared/types";
 
-const validRubric = (rubrics: RoleReviewRubric[], weights: Record<ApplicantRole, Record<string, number>>) => {
-  const { missingInForm, missingInRubric } = validateRubricScoreKeys(rubrics, weights);
+const validRubric = (
+  rubrics: RoleReviewRubric[],
+  weights: Record<ApplicantRole, Record<string, number>>,
+) => {
+  const { missingInForm, missingInRubric } = validateRubricScoreKeys(
+    rubrics,
+    weights,
+  );
   return missingInForm.length === 0 && missingInRubric.length === 0;
-}
+};
 
 export const rubricsRouter = router({
   list: reviewCapableProcedure
@@ -83,10 +90,23 @@ export const rubricsRouter = router({
         await replaceRubricsForForm(
           "interview",
           destFormId,
-          interviewRubrics.map(r => ({ ...r, formId: destFormId, id: uuidv4() })),
+          interviewRubrics.map((r) => ({
+            ...r,
+            formId: destFormId,
+            id: uuidv4(),
+          })),
           tx,
         );
-        await replaceRubricsForForm("review", destFormId, reviewRubrics.map(r => ({ ...r, formId: destFormId, id: uuidv4() })), tx);
+        await replaceRubricsForForm(
+          "review",
+          destFormId,
+          reviewRubrics.map((r) => ({
+            ...r,
+            formId: destFormId,
+            id: uuidv4(),
+          })),
+          tx,
+        );
       });
     }),
 });

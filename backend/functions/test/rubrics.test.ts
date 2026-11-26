@@ -47,7 +47,8 @@ describe("rubrics.createFromForm", () => {
 
   const rubricsFor = async (
     collection:
-      FirestoreCollection.Rubrics | FirestoreCollection.InterviewRubrics,
+      | FirestoreCollection.Rubrics
+      | FirestoreCollection.InterviewRubrics,
     formId: string,
   ) =>
     (
