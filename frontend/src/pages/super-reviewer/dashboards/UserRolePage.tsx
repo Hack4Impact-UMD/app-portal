@@ -156,7 +156,7 @@ export default function UserRolePage() {
 
   return (
     <div className="p-4 w-full flex flex-col items-center bg-lightgray">
-      <div className="w-full max-w-5xl bg-white p-4 rounded">
+      <div className="w-full max-w-7xl bg-white p-4 rounded">
         <h1 className="font-bold text-xl mb-5 pt-5">Manage Users</h1>
         {error ? (
           <p>An error occurred while loading user data: {error.message}</p>

@@ -22,7 +22,7 @@ export function AssignedInterviewsPage() {
 
   return (
     <div className="w-full h-full bg-lightgray flex flex-col items-center p-2 py-4">
-      <div className="max-w-5xl w-full rounded bg-white p-4 flex flex-col gap-2">
+      <div className="max-w-7xl w-full rounded bg-white p-4 flex flex-col gap-2">
         <div className="flex flex-row items-start pb-4 border-b">
           <span className="text-center w-full font-bold text-muted-foreground">
             You are viewing all assigned interviews for {applicant.firstName}{" "}

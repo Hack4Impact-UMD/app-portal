@@ -110,7 +110,7 @@ function DecisionPage() {
 
   return (
     <>
-      <div className="mt-5 mx-auto max-w-5xl w-full px-5 py-5 font-sans leading-relaxed bg-white rounded">
+      <div className="mt-5 mx-auto max-w-7xl w-full px-5 py-5 font-sans leading-relaxed bg-white rounded">
         <div className="flex gap-2 flex-col sm:flex-row items-start justify-between mb-5">
           <div className="flex flex-col">
             <h2 className="text-blue text-2xl">

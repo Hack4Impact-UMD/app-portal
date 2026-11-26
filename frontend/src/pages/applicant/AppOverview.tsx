@@ -2,6 +2,7 @@ import { ApplicationStatus } from "@app-portal/shared/constants";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import DueSoonAlert from "@/components/applicant/DueSoonAlert";
 import PrivateFormAlert from "@/components/applicant/PrivateFormAlert";
 import FormMarkdown from "@/components/form/FormMarkdown";
 import Loading from "@/components/Loading";
@@ -85,9 +86,7 @@ const AppOverview: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="mt-5 max-w-5xl w-full px-5 sm:px-0">
-        {/* Without this, a failed lookup is indistinguishable from having no
-            invitations, and an invited user would just see nothing. */}
+      <div className="mt-5 max-w-7xl w-full px-5 sm:px-0">
         {invitedFormsError && (
           <p className="mb-5 text-red-600">
             Something went wrong while checking for private applications you
@@ -103,15 +102,18 @@ const AppOverview: React.FC = () => {
         ))}
       </div>
 
+      {form && !applied && (
+        <DueSoonAlert className="max-w-7xl mb-3" dueDate={form?.dueDate} />
+      )}
       {!form ? (
-        <div className="mx-auto max-w-5xl w-full px-5 py-5 font-sans leading-relaxed">
+        <div className="mx-auto max-w-7xl w-full px-5 py-5 font-sans leading-relaxed">
           <h1 className="mb-3 text-5xl text-black">Overview</h1>
           <div className="flex gap-2 flex-col sm:flex-row items-start justify-between mb-5">
             There are no active forms at the moment.
           </div>
         </div>
       ) : (
-        <div className="mb-5 max-w-5xl w-full px-10 py-5 font-sans leading-relaxed h-full rounded-xl shadow-sm border border-gray-200 bg-gray-50">
+        <div className="mb-5 max-w-7xl w-full px-10 py-5 font-sans leading-relaxed h-full rounded-xl shadow-sm border border-gray-200 bg-gray-50">
           <h1 className="mb-3 text-5xl text-black">Overview</h1>
           <div className="flex gap-2 flex-col sm:flex-row items-start justify-between mb-5">
             <div className="flex flex-col">

@@ -117,7 +117,7 @@ const ApplicationPage: React.FC = () => {
   return (
     <>
       <div className="flex flex-col items-center justify-center p-3">
-        <div className="flex w-full max-w-5xl flex-col md:flex-row md:items-start gap-4 md:gap-8 mt-3">
+        <div className="flex w-full max-w-7xl flex-col md:flex-row md:items-start gap-4 md:gap-8 mt-3">
           <aside className="flex w-full flex-col gap-3 px-1 md:w-56 md:shrink-0 md:sticky md:top-16 md:gap-6 md:pt-4">
             <SaveStatusPanel className="md:order-last md:border-t md:border-gray-200 md:pt-6" />
             <ApplicationStepsSidebar

@@ -41,7 +41,7 @@ export default function PrivateFormAlert({
   }
 
   return (
-    <Card className="w-full max-w-5xl mb-5 gap-0 bg-blue/10 border border-blue py-4">
+    <Card className="w-full max-w-7xl mb-5 gap-0 bg-blue/10 border border-blue py-4">
       <CardContent className="flex flex-col sm:flex-row sm:items-center gap-3 px-5">
         <MailOpenIcon
           className="size-5 text-blue shrink-0"

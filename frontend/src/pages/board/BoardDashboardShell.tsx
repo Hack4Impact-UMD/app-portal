@@ -68,7 +68,7 @@ export default function BoardDashboardShell() {
 
   return (
     <div className="w-full grow bg-lightgray flex flex-col items-center p-2 py-4">
-      <div className="max-w-5xl w-full rounded bg-white p-4 flex flex-col gap-2">
+      <div className="max-w-7xl w-full rounded bg-white p-4 flex flex-col gap-2">
         <div className="flex gap-2 flex-row items-center">
           {applicationsRoutes.map((route) => (
             <NavLink key={route.path} to={route.path}>

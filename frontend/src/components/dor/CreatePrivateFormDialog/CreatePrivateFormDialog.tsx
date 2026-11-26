@@ -173,7 +173,7 @@ export default function CreatePrivateFormDialog({
                   mode="single"
                   selected={dueDate}
                   defaultMonth={dueDate}
-                  hidden={{ before: new Date() }}
+                  disabled={{ before: new Date() }}
                   onSelect={(newDate) => {
                     if (newDate) {
                       const merged = new Date(newDate);

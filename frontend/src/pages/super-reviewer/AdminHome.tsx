@@ -123,7 +123,7 @@ export default function AdminHome() {
 
   return (
     <div className="w-full grow px-4 py-8 flex flex-col gap-6 bg-lightgray items-center">
-      <header className="max-w-5xl w-full">
+      <header className="max-w-7xl w-full">
         <h1 className="text-3xl font-bold text-black">
           Welcome, {user.firstName}!
         </h1>
@@ -132,7 +132,7 @@ export default function AdminHome() {
         </p>
       </header>
 
-      <section className="max-w-5xl w-full p-5 sm:p-6 bg-white rounded-lg">
+      <section className="max-w-7xl w-full p-5 sm:p-6 bg-white rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-start gap-4">
           <div className="grow">
             <h2 className="text-xl font-semibold text-black">
@@ -210,7 +210,7 @@ export default function AdminHome() {
       </section>
 
       {(user.role === PermissionRole.Board || isSuperReviewer) && (
-        <div className="max-w-5xl w-full grid gap-6 md:grid-cols-2">
+        <div className="max-w-7xl w-full grid gap-6 md:grid-cols-2">
           <ToolPanel
             title="Autograder runs"
             description="Watch grading jobs live and submit new ones."

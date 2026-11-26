@@ -236,7 +236,7 @@ export default function AutograderDashboard() {
 
   return (
     <div className="w-full grow px-2 py-4 flex flex-col gap-4 bg-lightgray items-center">
-      <div className="max-w-6xl w-full flex flex-col gap-4">
+      <div className="max-w-7xl w-full flex flex-col gap-4">
         <div className="flex flex-row flex-wrap items-start gap-4">
           <div className="grow">
             <h1 className="text-2xl font-bold">Autograder Runs</h1>

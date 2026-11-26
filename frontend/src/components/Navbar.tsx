@@ -18,7 +18,7 @@ function Navbar({ className }: { className?: string }) {
         className,
       )}
     >
-      <div className="flex items-center flex-row h-full max-w-5xl w-full">
+      <div className="flex items-center flex-row h-full max-w-7xl w-full">
         <div className="flex gap-2 items-center">
           <NavLink className="hidden sm:block" to="/">
             <img
