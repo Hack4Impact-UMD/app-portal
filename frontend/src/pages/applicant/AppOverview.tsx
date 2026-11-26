@@ -113,17 +113,16 @@ const AppOverview: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="mb-5 max-w-7xl w-full px-4 md:px-10 py-5 font-sans leading-relaxed h-full rounded-xl shadow-sm border border-gray-200 bg-gray-50">
-          <h1 className="mb-3 text-5xl text-black">Overview</h1>
-          <div className="flex gap-2 flex-col sm:flex-row items-start justify-between mb-5">
-            <div className="flex flex-col">
-              <h2 className="text-blue text-2xl leading-tight">
-                Hack4Impact-UMD New Member
-              </h2>
-              <h3 className="text-blue text-2xl leading-tight">
-                Application {form.semester}
-              </h3>
-              <p className="text-gray-500 text-lg leading-tight">
+        <div className="mb-5 max-w-7xl w-full px-4 md:px-10 py-8 md:py-10 font-sans leading-relaxed h-full rounded-xl shadow-sm border border-gray-200 bg-white">
+          <div className="flex gap-4 flex-col sm:flex-row items-start justify-between mb-8 pb-8 border-b border-gray-200">
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-semibold uppercase tracking-wider text-blue">
+                Overview
+              </p>
+              <h1 className="text-3xl md:text-4xl font-semibold tracking-tight leading-tight text-black text-balance">
+                Hack4Impact-UMD New Member Application {form.semester}
+              </h1>
+              <p className="text-gray-500 text-base">
                 Due:{" "}
                 {form.dueDate.toDate().toLocaleString("en-US", {
                   year: "numeric",
@@ -142,7 +141,7 @@ const AppOverview: React.FC = () => {
                 disabled={
                   wait || (Date.now() > form.dueDate.toMillis() && !applied)
                 }
-                className="w-full sm:w-fit cursor-pointer inline-flex items-center justify-center px-10 py-2 rounded-full bg-black
+                className="w-full sm:w-fit shrink-0 sm:mt-7 cursor-pointer inline-flex items-center justify-center px-10 py-2 rounded-full bg-black
                 text-white transition-colors hover:bg-darkgray"
               >
                 {applied
@@ -155,8 +154,8 @@ const AppOverview: React.FC = () => {
               </Button>
             }
           </div>
-          <div className="font-[Karla] text-sm font-normal h-full">
-            <FormMarkdown className="text-black">
+          <div className="font-[Karla] text-sm font-normal max-w-3xl">
+            <FormMarkdown className="text-gray-800 leading-relaxed prose-strong:text-black [&_li::marker]:text-gray-500 [&_ul]:pl-0">
               {form.description}
             </FormMarkdown>
           </div>
