@@ -217,8 +217,8 @@ export default function AdminHome() {
             ) : (
               <EmptyState>
                 No private forms yet. Use "Create New Form" and mark it private
-                to invite specific applicants, like a late round or internal
-                transfer.
+                to invite specific applicants. Useful for bootcamp tech
+                assessments.
               </EmptyState>
             )}
           </FormSection>
