@@ -1,5 +1,4 @@
 import { PermissionRole } from "@app-portal/shared/constants";
-import { HomeIcon } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 
@@ -32,26 +31,20 @@ function Navbar({ className }: { className?: string }) {
           </span>
           {user?.role && user.role !== PermissionRole.Applicant && (
             <>
-              <span className="font-light sm:mb-1">
+              <span className="font-light text-sm md:text-base sm:mb-1">
                 | {displayUserRoleName(user.role)}
               </span>
             </>
           )}
           {import.meta.env.DEV && (
             <>
-              <span className="font-mono px-2 text-sm bg-amber-400 rounded">
+              <span className="hidden md:block font-mono px-2 text-sm bg-amber-400 rounded">
                 DEV
               </span>
             </>
           )}
         </div>
         <div className="ml-auto flex flex-row items-center">
-          <NavLink
-            to="/"
-            className="border-r border-solid border-gray-400 pr-1"
-          >
-            <HomeIcon className="w-8 h-8 text-black cursor-pointer hover:bg-darkgray/5 rounded-md p-1 transition-colors" />
-          </NavLink>
           {!isLoading && isAuthed && user && (
             <NavProfile user={user} className="hover:bg-darkgray/5 ml-1" />
           )}

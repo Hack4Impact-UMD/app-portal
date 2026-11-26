@@ -85,7 +85,7 @@ const AppOverview: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center px-4">
       <div className="mt-5 max-w-7xl w-full px-5 sm:px-0">
         {invitedFormsError && (
           <p className="mb-5 text-red-600">
@@ -113,15 +113,17 @@ const AppOverview: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="mb-5 max-w-7xl w-full px-10 py-5 font-sans leading-relaxed h-full rounded-xl shadow-sm border border-gray-200 bg-gray-50">
+        <div className="mb-5 max-w-7xl w-full px-4 md:px-10 py-5 font-sans leading-relaxed h-full rounded-xl shadow-sm border border-gray-200 bg-gray-50">
           <h1 className="mb-3 text-5xl text-black">Overview</h1>
           <div className="flex gap-2 flex-col sm:flex-row items-start justify-between mb-5">
             <div className="flex flex-col">
-              <h2 className="text-blue text-2xl">Hack4Impact-UMD New Member</h2>
-              <h3 className="text-blue text-2xl">
+              <h2 className="text-blue text-2xl leading-tight">
+                Hack4Impact-UMD New Member
+              </h2>
+              <h3 className="text-blue text-2xl leading-tight">
                 Application {form.semester}
               </h3>
-              <p className="text-gray-500 text-lg">
+              <p className="text-gray-500 text-lg leading-tight">
                 Due:{" "}
                 {form.dueDate.toDate().toLocaleString("en-US", {
                   year: "numeric",
@@ -153,7 +155,7 @@ const AppOverview: React.FC = () => {
               </Button>
             }
           </div>
-          <div className="font-[Karla] text-sm font-normal leading-tight text-justify [text-justify:inter-word] h-full">
+          <div className="font-[Karla] text-sm font-normal h-full">
             <FormMarkdown className="text-black">
               {form.description}
             </FormMarkdown>

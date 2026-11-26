@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import useForm from "@/hooks/useForm";
 import { cn } from "@/lib/utils";
-
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 function Bufo({ src, name }: { src: string; name: string }) {
   return (
@@ -44,7 +47,10 @@ export default function SaveStatusPanel({ className }: { className?: string }) {
       >
         {!saveStatus.saved && !saveStatus.isError && saveStatus.isSaving ? (
           <p className="pulse font-bold flex flex-row items-center gap-1">
-            <Bufo src="/bufo-offers-a-loading-spinner.gif" />
+            <Bufo
+              name="bufo-offers-loading-spinner"
+              src="/bufo-offers-a-loading-spinner.gif"
+            />
             Saving...
           </p>
         ) : !saveStatus.saved && saveStatus.isError ? (
