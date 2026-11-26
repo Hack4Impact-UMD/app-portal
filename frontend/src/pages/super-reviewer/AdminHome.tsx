@@ -20,8 +20,8 @@ import ChangeDueDateDialog from "@/components/dor/ChangeDueDateDialog/ChangeDueD
 import CreatePrivateFormDialog from "@/components/dor/CreatePrivateFormDialog/CreatePrivateFormDialog";
 import DuplicateFormDialog from "@/components/dor/DuplicateFormDialog/DuplicateFormDialog";
 import InviteUsersDialog from "@/components/dor/InviteUsersDialog/InviteUsersDialog";
-import Loading from "@/components/Loading";
 import CreateInternalApplicantDialog from "@/components/reviewer/CreateInternalApplicantDialog";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -85,7 +85,12 @@ export default function AdminHome() {
     };
   }, [forms]);
 
-  if (!user) return <Loading />;
+  if (!user)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
 
   const route =
     user.role === PermissionRole.Reviewer
@@ -95,7 +100,12 @@ export default function AdminHome() {
         : "dor";
   const table = user.role === PermissionRole.Reviewer ? "apps" : "all";
 
-  if (isPending) return <Loading />;
+  if (isPending)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
   if (error) return <p>Failed to fetch forms: {error.message}</p>;
 
   const onAction = (form: ApplicationForm, action: FormAction) => {

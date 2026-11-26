@@ -3,8 +3,8 @@ import { useParams } from "react-router-dom";
 
 import InterviewerAssignmentsTable from "@/components/dor/InterviewerAssignmentsDashboard/InterviewerAssignmentsTable";
 import { useInterviewerAssignments } from "@/components/dor/InterviewerAssignmentsDashboard/useRows";
-import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 
 export function InterviewerAssignmentsPage() {
@@ -23,7 +23,12 @@ export function InterviewerAssignmentsPage() {
 
   if (!formId || !interviewerId)
     return <p>Form or interviewer ID not provided!</p>;
-  if (isPending) return <Loading />;
+  if (isPending)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
   if (error) return <p>Failed to fetch assignments: {error.message}</p>;
 
   const { interviewer, numInterviewed, rows: assignedInterviews } = data;

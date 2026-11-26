@@ -3,8 +3,8 @@ import { useParams } from "react-router-dom";
 
 import { ReviewerAssignmentsTable } from "@/components/dor/ReviewerAssignmentsDashboard";
 import { useReviewerAssignments } from "@/components/dor/ReviewerAssignmentsDashboard/useRows";
-import Loading from "@/components/Loading";
 import ApplicantRolePill from "@/components/role-pill/RolePill";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 
 export function ReviewerAssignmentsPage() {
@@ -19,7 +19,12 @@ export function ReviewerAssignmentsPage() {
   const { data, isPending, error } = useReviewerAssignments(formId, reviewerId);
 
   if (!formId || !reviewerId) return <p>Form or reviewer ID not provided!</p>;
-  if (isPending) return <Loading />;
+  if (isPending)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
   if (error) return <p>Failed to fetch assignments: {error.message}</p>;
 
   const { reviewer, numReviewed, rows: assignedApps } = data;

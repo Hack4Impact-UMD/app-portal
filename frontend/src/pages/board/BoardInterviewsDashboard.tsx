@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 
 import { BoardInterviewsTable } from "@/components/dor/BoardInterviewsDashboard";
 import { useRows } from "@/components/dor/QualifiedDashboard/useRows";
-import Loading from "@/components/Loading";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import useSearch from "@/hooks/useSearch";
@@ -41,7 +41,12 @@ export default function BoardInterviewsDashboard() {
 
   if (!formId) return <p>No formId found! The url is probably malformed.</p>;
   if (error) return <p>Something went wrong: {error.message}</p>;
-  if (isPending || !rows) return <Loading />;
+  if (isPending || !rows)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
 
   return (
     <div>

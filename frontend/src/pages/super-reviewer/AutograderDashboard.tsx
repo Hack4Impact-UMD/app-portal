@@ -13,7 +13,7 @@ import SubmitStandaloneGradingJobDialog from "@/components/admin/SubmitStandalon
 import type { AutograderStatusIconStatus } from "@/components/autograder/AutograderStatusIcon";
 import AutograderStatusIcon from "@/components/autograder/AutograderStatusIcon";
 import { DataTable } from "@/components/DataTable";
-import Loading from "@/components/Loading";
+import Spinner from "@/components/Spinner";
 import SortableHeader from "@/components/tables/SortableHeader";
 import { Button } from "@/components/ui/button";
 import { useApplicantForResponse } from "@/hooks/useApplicants";
@@ -283,7 +283,9 @@ export default function AutograderDashboard() {
           </div>
 
           {isPending ? (
-            <Loading />
+            <div className="flex items-center justify-center p-4 w-full h-full">
+              <Spinner />
+            </div>
           ) : error ? (
             <p className="text-destructive">
               Failed to load grading jobs: {error.message}

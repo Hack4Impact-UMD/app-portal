@@ -2,7 +2,7 @@ import { ApplicantRole, PermissionRole } from "@app-portal/shared/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import UserTable from "@/components/admin/UserTable";
-import Loading from "@/components/Loading";
+import Spinner from "@/components/Spinner";
 import { throwErrorToast } from "@/components/toasts/ErrorToast";
 import { trpc, trpcClient } from "@/config/trpc";
 import { useUsers } from "@/hooks/useUsers";
@@ -152,7 +152,12 @@ export default function UserRolePage() {
     },
   });
 
-  if (isPending) return <Loading />;
+  if (isPending)
+    return (
+      <div className="flex items-center justify-center p-4 w-full h-full">
+        <Spinner />
+      </div>
+    );
 
   return (
     <div className="p-4 w-full flex flex-col items-center bg-lightgray">
