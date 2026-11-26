@@ -1,30 +1,14 @@
-import { Github, Instagram, Linkedin } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "@/hooks/useAuth";
+import { SOCIAL_LINKS } from "@/utils/links";
 import {
   loggedInMessages,
   loggedOutMessages,
   pickWeightedMessage,
 } from "@/utils/welcomeMessages";
-
-export const MAIN_SITE_URL = "https://umd.hack4impact.org/";
-
-const SOCIAL_LINKS = [
-  {
-    href: "https://www.instagram.com/hack4impactumd/",
-    label: "Instagram",
-    Icon: Instagram,
-  },
-  {
-    href: "https://www.linkedin.com/company/hack4impact-umd",
-    label: "LinkedIn",
-    Icon: Linkedin,
-  },
-  { href: "https://github.com/Hack4Impact-UMD", label: "GitHub", Icon: Github },
-];
 
 function useWelcomeMessage() {
   const { user } = useAuth();

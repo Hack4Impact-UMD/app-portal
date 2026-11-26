@@ -1,4 +1,5 @@
 import { ApplicationStatus } from "@app-portal/shared/constants";
+import { ArrowUpRight, Globe } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,6 +14,7 @@ import {
   useInvitedForms,
 } from "@/hooks/useApplicationForm";
 import { useMyApplicationResponses } from "@/hooks/useApplicationResponses";
+import { MAIN_SITE_URL, SOCIAL_LINKS } from "@/utils/links";
 
 const AppOverview: React.FC = () => {
   const {
@@ -135,29 +137,64 @@ const AppOverview: React.FC = () => {
                 })}
               </p>
             </div>
-            {
-              <Button
-                onClick={handleApply}
-                disabled={
-                  wait || (Date.now() > form.dueDate.toMillis() && !applied)
-                }
-                className="w-full sm:w-fit shrink-0 sm:mt-7 cursor-pointer inline-flex items-center justify-center px-10 py-2 rounded-full bg-black
-                text-white transition-colors hover:bg-darkgray"
-              >
-                {applied
-                  ? "Go to status page"
-                  : Date.now() <= form.dueDate.toMillis()
-                    ? inProgress
-                      ? "Continue Application"
-                      : "Apply"
-                    : "Application Closed"}
-              </Button>
-            }
+            <Button
+              onClick={handleApply}
+              disabled={
+                wait || (Date.now() > form.dueDate.toMillis() && !applied)
+              }
+              className="w-full sm:w-fit shrink-0 sm:mt-7 cursor-pointer inline-flex items-center justify-center px-10 py-2 rounded-full bg-black
+              text-white transition-colors hover:bg-darkgray"
+            >
+              {applied
+                ? "Go to status page"
+                : Date.now() <= form.dueDate.toMillis()
+                  ? inProgress
+                    ? "Continue Application"
+                    : "Apply"
+                  : "Application Closed"}
+            </Button>
           </div>
-          <div className="font-[Karla] text-sm font-normal max-w-3xl">
-            <FormMarkdown className="text-gray-800 leading-relaxed prose-strong:text-black [&_li::marker]:text-gray-500 [&_ul]:pl-0">
-              {form.description}
-            </FormMarkdown>
+          <div className="grid gap-10 xl:grid-cols-[minmax(0,48rem)_minmax(0,1fr)] lg:gap-16">
+            <div className="font-[Karla] text-sm font-normal min-w-0">
+              <FormMarkdown className="text-gray-800 leading-relaxed prose-strong:text-black [&_li::marker]:text-gray-500 [&_ul]:pl-0">
+                {form.description}
+              </FormMarkdown>
+            </div>
+            <aside className="xl:justify-self-end border p-4 rounded w-72 h-fit bg-gray-100/30">
+              <h2 className="mb-3 border-b pb-2 text-base font-semibold text-gray-600">
+                Learn more
+              </h2>
+              <ul className="flex flex-col gap-1 text-sm">
+                {[
+                  {
+                    href: MAIN_SITE_URL,
+                    label: "umd.hack4impact.org",
+                    Icon: Globe,
+                  },
+                  ...SOCIAL_LINKS,
+                ].map(({ href, label, Icon }) => (
+                  <li key={label}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group -mx-2 flex items-center gap-2.5 rounded-md px-2 py-1.5 text-gray-700 transition-colors hover:bg-gray-100 hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue"
+                    >
+                      <Icon
+                        className="size-4 text-gray-500 group-hover:text-black"
+                        strokeWidth={1.75}
+                        aria-hidden="true"
+                      />
+                      {label}
+                      <ArrowUpRight
+                        className="size-3.5 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100"
+                        aria-hidden="true"
+                      />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </aside>
           </div>
         </div>
       )}

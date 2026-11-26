@@ -1,13 +1,11 @@
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import SplitLayout, {
-  MAIN_SITE_URL,
-  topRightLinkClass,
-} from "@/components/SplitLayout";
+import SplitLayout, { topRightLinkClass } from "@/components/SplitLayout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { displayUserRoleName } from "@/utils/display";
+import { MAIN_SITE_URL } from "@/utils/links";
 
 export default function LandingPage() {
   const { user, logout, isLoading } = useAuth();
