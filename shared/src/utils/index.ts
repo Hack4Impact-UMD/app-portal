@@ -1,8 +1,10 @@
+import type { ApplicantRole } from "../constants/index.js";
 import { ApplicationStatus, ReviewStatus } from "../constants/index.js";
 import type {
   ApplicationFormBase,
   ApplicationInterviewData,
   ApplicationReviewData,
+  RoleReviewRubric,
 } from "../types/index.js";
 
 export type ScoreWarningHandler = (message: string) => void;
@@ -88,6 +90,56 @@ function averageScore(scores: Record<string, number>) {
   if (Object.values(scores).length === 0) return 0;
   const scoreValues = Object.values(scores);
   return scoreValues.reduce((acc, s) => acc + s, 0) / scoreValues.length;
+}
+
+export interface RubricValidationWarnings {
+  missingInForm: Array<{ role: ApplicantRole; scoreKey: string }>;
+  missingInRubric: Array<{ role: ApplicantRole; scoreWeight: string }>;
+}
+
+export function validateRubricScoreKeys(
+  rubrics: RoleReviewRubric[],
+  weights: Record<ApplicantRole, Record<string, number>>,
+): RubricValidationWarnings {
+  const missingInForm: Array<{ role: ApplicantRole; scoreKey: string }> = [];
+  const missingInRubric: Array<{ role: ApplicantRole; scoreWeight: string }> =
+    [];
+
+  const allRoles = Object.keys(weights) as ApplicantRole[];
+
+  allRoles.forEach((role) => {
+    const roleWeights = weights[role];
+    if (!roleWeights) return;
+
+    // find relevant form weights and rubric keys for this role
+    const formScoreWeights = new Set(Object.keys(roleWeights));
+    const rubricScoreKeys = new Set<string>();
+    rubrics.forEach((rubric) => {
+      const appliesToRole =
+        rubric.roles.length === 0 || rubric.roles.includes(role);
+      if (appliesToRole) {
+        rubric.rubricQuestions.forEach((question) => {
+          rubricScoreKeys.add(question.scoreKey);
+        });
+      }
+    });
+
+    // find rubric keys missing from form weights
+    rubricScoreKeys.forEach((scoreKey) => {
+      if (!formScoreWeights.has(scoreKey)) {
+        missingInForm.push({ role, scoreKey });
+      }
+    });
+
+    // find form weights missing from rubric keys
+    formScoreWeights.forEach((scoreWeight) => {
+      if (!rubricScoreKeys.has(scoreWeight)) {
+        missingInRubric.push({ role, scoreWeight });
+      }
+    });
+  });
+
+  return { missingInForm, missingInRubric };
 }
 
 function hasScoreKeyMismatch(

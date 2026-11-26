@@ -8,6 +8,7 @@ import {
   countPreviouslyApplied,
   getGradingJobMaxScore,
   pickBestGradingJob,
+  validateRubricScoreKeys,
 } from "./index.js";
 
 type Weights = Partial<Record<ApplicantRole, Record<string, number>>>;
@@ -142,5 +143,101 @@ describe("countPreviouslyApplied", () => {
         isActive,
       ),
     ).toBe(0);
+  });
+});
+
+describe("validateRubricScoreKeys", () => {
+  const rubric = (roles: ApplicantRole[], keys: string[]) => ({
+    id: `rubric-${roles.join("-") || "all"}`,
+    formId: "form",
+    roles,
+    rubricQuestions: keys.map((scoreKey) => ({ scoreKey, prompt: scoreKey })),
+  });
+  const weights = (w: Weights) => w as FullWeights;
+
+  const { Engineer, Designer } = ApplicantRole;
+
+  it("reports nothing when rubric keys match the weights exactly", () => {
+    expect(
+      validateRubricScoreKeys(
+        [rubric([Engineer], ["tech", "culture"])],
+        weights({ [Engineer]: { tech: 0.5, culture: 0.5 } }),
+      ),
+    ).toEqual({ missingInForm: [], missingInRubric: [] });
+  });
+
+  it("reports weighted keys that no rubric scores", () => {
+    expect(
+      validateRubricScoreKeys(
+        [rubric([Engineer], ["tech"])],
+        weights({ [Engineer]: { tech: 0.5, culture: 0.5 } }),
+      ),
+    ).toEqual({
+      missingInForm: [],
+      missingInRubric: [{ role: Engineer, scoreWeight: "culture" }],
+    });
+  });
+
+  it("reports rubric keys the form doesn't weight", () => {
+    expect(
+      validateRubricScoreKeys(
+        [rubric([Engineer], ["tech", "extra"])],
+        weights({ [Engineer]: { tech: 1 } }),
+      ),
+    ).toEqual({
+      missingInForm: [{ role: Engineer, scoreKey: "extra" }],
+      missingInRubric: [],
+    });
+  });
+
+  it("treats a zero weight as a key the rubric must still score", () => {
+    expect(
+      validateRubricScoreKeys(
+        [rubric([Engineer], ["tech"])],
+        weights({ [Engineer]: { tech: 1, noted: 0 } }),
+      ).missingInRubric,
+    ).toEqual([{ role: Engineer, scoreWeight: "noted" }]);
+  });
+
+  it("applies a rubric with no roles to every weighted role", () => {
+    expect(
+      validateRubricScoreKeys(
+        [rubric([], ["tech"])],
+        weights({ [Engineer]: { tech: 1 }, [Designer]: { tech: 1 } }),
+      ),
+    ).toEqual({ missingInForm: [], missingInRubric: [] });
+  });
+
+  it("combines keys from every rubric that applies to a role", () => {
+    expect(
+      validateRubricScoreKeys(
+        [rubric([], ["culture"]), rubric([Engineer], ["tech"])],
+        weights({ [Engineer]: { tech: 0.5, culture: 0.5 } }),
+      ),
+    ).toEqual({ missingInForm: [], missingInRubric: [] });
+  });
+
+  it("doesn't count another role's rubric toward a role", () => {
+    expect(
+      validateRubricScoreKeys(
+        [rubric([Engineer], ["tech"]), rubric([Designer], ["design"])],
+        weights({ [Engineer]: { tech: 1 }, [Designer]: { tech: 1 } }),
+      ),
+    ).toEqual({
+      missingInForm: [{ role: Designer, scoreKey: "design" }],
+      missingInRubric: [{ role: Designer, scoreWeight: "tech" }],
+    });
+  });
+
+  it("reports every weighted key when there are no rubrics", () => {
+    expect(
+      validateRubricScoreKeys(
+        [],
+        weights({ [Engineer]: { tech: 1 }, [Designer]: { design: 1 } }),
+      ).missingInRubric,
+    ).toEqual([
+      { role: Engineer, scoreWeight: "tech" },
+      { role: Designer, scoreWeight: "design" },
+    ]);
   });
 });

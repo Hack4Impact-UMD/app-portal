@@ -1,5 +1,7 @@
 import { ApplicantRole } from "@app-portal/shared/constants";
 import type { RoleReviewRubric } from "@app-portal/shared/types";
+import type { RubricValidationWarnings } from "@app-portal/shared/utils";
+import { validateRubricScoreKeys } from "@app-portal/shared/utils";
 import { AlertTriangleIcon } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
@@ -23,8 +25,6 @@ import {
   useUploadInterviewRubrics,
 } from "@/hooks/useInterviewRubrics";
 import { useRubricsForForm, useUploadRubrics } from "@/hooks/useRubrics";
-import type { RubricValidationWarnings } from "@/services/rubricService";
-import { validateRubricScoreKeys } from "@/services/rubricService";
 import { displayApplicantRoleNameNoEmoji } from "@/utils/display";
 
 function ValidationWarningDisplay({
@@ -135,8 +135,9 @@ export default function RubricBuilderPage() {
       if (form) {
         const warnings = validateRubricScoreKeys(
           parsed,
-          form,
-          rubricType === "interview",
+          rubricType === "interview"
+            ? form.interviewScoreWeights
+            : form.scoreWeights,
         );
         setValidationWarnings(warnings);
       }

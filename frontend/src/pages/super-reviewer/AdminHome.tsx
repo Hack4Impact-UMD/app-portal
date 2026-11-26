@@ -3,6 +3,7 @@ import {
   CalendarClockIcon,
   EllipsisVertical,
   LockIcon,
+  LucidePlus,
   MailIcon,
   MailOpenIcon,
   PlusIcon,
@@ -17,6 +18,7 @@ import { Link, useNavigate } from "react-router-dom";
 import UploadInterviewRubricDialog from "@/components/admin/UploadInterviewRubricDialog";
 import UploadReviewRubricDialog from "@/components/admin/UploadReviewRubricDialog";
 import ChangeDueDateDialog from "@/components/dor/ChangeDueDateDialog/ChangeDueDateDialog";
+import { CreateFormWizard } from "@/components/dor/CreateFormWizard/CreateFormWizard";
 import CreatePrivateFormDialog from "@/components/dor/CreatePrivateFormDialog/CreatePrivateFormDialog";
 import DuplicateFormDialog from "@/components/dor/DuplicateFormDialog/DuplicateFormDialog";
 import InviteUsersDialog from "@/components/dor/InviteUsersDialog/InviteUsersDialog";
@@ -62,6 +64,7 @@ export default function AdminHome() {
     useState(false);
   const [showInviteUsersDialog, setShowInviteUsersDialog] = useState(false);
   const [formsLocked, setFormsLocked] = useState(true);
+  const [formWizardOpen, setFormWizardOpen] = useState(false);
 
   const { mutate: setFormActiveStatus, isPending: activePending } =
     useUpdateApplicationFormActive();
@@ -153,23 +156,36 @@ export default function AdminHome() {
             </p>
           </div>
           {isSuperReviewer && (
-            <Button
-              variant="outline"
-              size="sm"
-              aria-pressed={!formsLocked}
-              onClick={() => setFormsLocked((l) => !l)}
-              className={cn(
-                "self-start",
-                !formsLocked && "border-blue text-blue hover:text-blue",
-              )}
-            >
-              {formsLocked ? (
-                <LockIcon className="size-4" />
-              ) : (
-                <UnlockIcon className="size-4" />
-              )}
-              {formsLocked ? "Unlock form settings" : "Lock form settings"}
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                aria-pressed={!formsLocked}
+                onClick={() => setFormsLocked((l) => !l)}
+                className={cn(
+                  "self-start",
+                  !formsLocked && "border-blue text-blue hover:text-blue",
+                )}
+              >
+                {formsLocked ? (
+                  <LockIcon className="size-4" />
+                ) : (
+                  <UnlockIcon className="size-4" />
+                )}
+                {formsLocked ? "Unlock form settings" : "Lock form settings"}
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setFormWizardOpen(true)}
+              >
+                <LucidePlus /> Create New Form
+              </Button>
+              <CreateFormWizard
+                open={formWizardOpen}
+                setOpen={setFormWizardOpen}
+              />
+            </>
           )}
         </div>
 
